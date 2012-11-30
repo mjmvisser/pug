@@ -28,11 +28,15 @@ CookQueue {
             }
 
             onCooked: {
-                var lines = stdout.split("\n");
-                debug(lines);
+                debug("Identify.onCooked called");
+                var lines = stdout.replace(/\n$/, "").split("\n");
+                debug("lines is " + JSON.stringify(lines));
                 for (var i = 0; i < lines.length; i++) {
                     var tokens = lines[i].split("=");
+                    debug("tokens is " + JSON.stringify(tokens));
                     var data = input.elements[index].data;
+                    if (typeof data === "undefined")
+                        data = {};
                     data[tokens[0]] = tokens[1]; 
                     input.elements[index].data = data;
                 }
