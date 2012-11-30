@@ -253,6 +253,20 @@ void Element::append(const QString path)
     }
 }
 
+void Element::scan()
+{
+    if (hasFrames()) {
+        QFileInfo fileInfo(m_pattern);
+        QDir parentDir = fileInfo.absoluteDir();
+        QFileInfoList entries = parentDir.entryInfoList();
+        foreach (QFileInfo entry, entries) {
+            if (!entry.isHidden() && entry.isFile() && matches(entry.absoluteFilePath())) {
+                append(entry.absoluteFilePath());
+            }
+        }
+    }
+}
+
 const QString Element::toString() const
 {
     if (hasFrames()) {

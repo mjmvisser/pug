@@ -56,6 +56,7 @@ public:
 
     Q_INVOKABLE bool matches(const QString path) const;
     Q_INVOKABLE void append(const QString path);
+    Q_INVOKABLE void scan();
 
     const QString toString() const;
 
