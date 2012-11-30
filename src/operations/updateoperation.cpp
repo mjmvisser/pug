@@ -13,6 +13,9 @@ UpdateOperationAttached::UpdateOperationAttached(QObject *parent) :
         connect(node(), SIGNAL(updated(int)),
                 this, SLOT(onUpdated(int)));
         m_updatableFlag = true;
+    } else if (node()->hasSignal(SIGNAL(update(const QVariant))) ||
+               node()->hasSignal(SIGNAL(updated(int)))) {
+        error() << node() << "is missing the update or updated signal";
     }
 }
 
