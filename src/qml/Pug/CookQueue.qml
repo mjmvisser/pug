@@ -9,7 +9,6 @@ Repeater {
     property var __pending
     property var __env
 
-
     signal cook(var env)
     signal cooked(int status)
     signal itemCooked(int status)
@@ -31,7 +30,7 @@ Repeater {
     }
         
     onCook: {
-        debug("onCook");
+        debug("CookQueue.onCook, count=" + self.count);
         __env = env;
         __pending = [];
         __cooking = [];
