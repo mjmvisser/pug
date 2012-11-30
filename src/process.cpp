@@ -37,7 +37,7 @@ const QString Process::stdout() const
 
 void Process::onCook(const QVariant env)
 {
-    debug() << "onCook";
+    debug() << "Process::onCook";
     m_stdout.clear();
 
     // TODO: at some point, we'll need to load these from a file instead of using the system environment
@@ -53,7 +53,7 @@ void Process::onCook(const QVariant env)
 
     QStringList args = m_argv;
 
-    debug() << args;
+    debug() << "Process" << args;
 
     if (args.length() > 0) {
         QString program = args.takeFirst();

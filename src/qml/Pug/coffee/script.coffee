@@ -1,5 +1,5 @@
 buildArgv = () ->
-  argv = [Qt.resolvedUrl(@script).replace("file://", "")]
+  argv = [@script]
   for prop in @properties
     if not prop.input and not prop.output and @[prop.name]?
       if @[prop.name] != false and prop.noFlag != true
