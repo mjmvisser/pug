@@ -3,7 +3,7 @@ var buildArgv, generatePath, parentPath;
 
 buildArgv = function() {
   var argv, flagPrefix, prop, _i, _len, _ref;
-  argv = [Qt.resolvedUrl(this.script).replace("file://", "")];
+  argv = [this.script];
   _ref = this.properties;
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     prop = _ref[_i];
