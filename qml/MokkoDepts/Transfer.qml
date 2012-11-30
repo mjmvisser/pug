@@ -57,7 +57,7 @@ Branch {
                 project: node("/project")
                 release: release
                 user: node("/prod")
-                thumbnailPath: workSeqThumbnail.outputPath
+                thumbnail: workSeqThumbnail
             }
         }
 
@@ -73,17 +73,14 @@ Branch {
                 delivery: transfer
                 release: release
                 code: "{FILENAME}.{FRAME}.{EXT}"
-                startFrame: releaseSeq.element.firstFrame
-                endFrame: releaseSeq.element.lastFrame
-                sourcePathLink: releaseSeq           
             }
             
             ShotgunFile {
                 project: node("/project")
                 release: release
                 user: node("/prod")
-                thumbnailPath: workSeqThumbnail.outputPath
-                filmstripPath: workSeqfilmstrip.outputPath
+                thumbnail: workSeqThumbnail
+                filmstrip: workSeqfilmstrip
             }
         }
     }
@@ -110,7 +107,7 @@ Branch {
 
         File {
             id: workSeq
-            name: "workFile"
+            name: "workSeq"
             pattern: "{FILENAME}.{FRAME}.{EXT}"
             ReleaseOperation.releasable: true
             ReleaseOperation.target: releaseSeq

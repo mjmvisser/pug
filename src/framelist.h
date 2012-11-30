@@ -26,6 +26,8 @@ public:
     const QString pattern() const;
     void setPattern(const QString);
 
+    const QString toString() const;
+
 signals:
     void framesChanged(const QVariantList& frames);
     void patternChanged(const QString& pattern);

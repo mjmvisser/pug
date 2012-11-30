@@ -1,5 +1,7 @@
 import Pug 1.0
 
+import "js/shotgunutils.js" as ShotgunUtils
+
 ShotgunEntity {
     name: "Element"
 
@@ -9,10 +11,16 @@ ShotgunEntity {
     property alias code: codeField.pattern
     property var user
     property var sourcePathLink
-    property alias startFrame: startFrameField.value
-    property alias endFrame: endFrameField.value
 
-    property string subdir: sourcePathLink.elements[sourcePathLink.ShotgunOperation.index].directory.replace(sourcePathLink.node("..").elements[sourcePathLink.ShotgunOperation.index], "")
+    property var subdir: {
+        var parentDir = ShotgunUtils.safeElementAttribute(parent, "directory");
+        var grandparentDir =  ShotgunUtils.safeElementAttribute(parent.node(".."), "directory");
+        if (parentDir && grandparentDir) {
+            return parentDir.replace(grandparentDir, "");
+        } else {
+            return null;
+        }
+    }
 
     ShotgunField {
         id: codeField
@@ -37,12 +45,14 @@ ShotgunEntity {
         id: startFrameField
         name: "sg_start_frame"
         type: ShotgunField.Number
+        value: ShotgunUtils.safeElementAttribute(parent, "firstFrame")                         
     }
 
     ShotgunField {
         id: endFrameField
         name: "sg_end_frame"
         type: ShotgunField.Number
+        value: ShotgunUtils.safeElementAttribute(parent, "lastFrame")                         
     }
     
     ShotgunField {

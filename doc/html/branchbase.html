@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- branchbase.cpp -->
+  <title>Pug : BranchBase Class</title>
+  <link rel="stylesheet" type="text/css" href="style/offline.css" />
+</head>
+<body>
+<li>Modules</li>
+<li><a href="qmlmodule-pug1-pug.html">Pug</a></li>
+<li>BranchBase</li>
+<div class="toc">
+<h3><a name="toc">Contents</a></h3>
+<ul>
+<li class="level1"><a href="#properties">Properties</a></li>
+<li class="level1"><a href="#public-functions">Public Functions</a></li>
+<li class="level1"><a href="#signal">Signals</a></li>
+<li class="level1"><a href="#details">Detailed Description</a></li>
+</ul>
+</div>
+<h1 class="title">BranchBase Class</h1>
+<pre class="cpp"><span class="preprocessor">#include &lt;<a href="collision-branchbase.html">BranchBase</a>&gt;</span></pre><p><b>Inherits: </b>NodeBase.</p>
+<p><b>Inherited by: </b></p>
+<ul>
+<li><a href="branchbase-members.html">List of all members, including inherited members</a></li>
+</ul>
+<a name="properties"></a>
+<h2>Properties</h2>
+<ul>
+<li class="fn"><b><a href="branchbase.html#elements-prop">elements</a></b> : const QQmlListProperty&lt;Element&gt;</li>
+<li class="fn"><b><a href="branchbase.html#pattern-prop">pattern</a></b> : QString</li>
+<li class="fn"><b><a href="branchbase.html#root-prop">root</a></b> : BranchBase *</li>
+</ul>
+<ul>
+<li class="fn">5 properties inherited from <a href="nodebase.html#properties">NodeBase</a></li>
+<li class="fn">6 properties inherited from <a href="pugitem.html#properties">PugItem</a></li>
+</ul>
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#BranchBase">BranchBase</a></b>(QObject *<i> parent</i> = 0)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#addElement">addElement</a></b>(Element *)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#areFieldsComplete">areFieldsComplete</a></b>(const QString<i> pattern</i>, const QVariantMap<i> fields</i>) const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#clearElements">clearElements</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QList&lt;Element *&gt; &amp; </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#elements">elements</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QList&lt;const Element *&gt; &amp; </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#elements-2">elements</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QQmlListProperty&lt;Element&gt; </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#elements-prop">elements_</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#exactMatch">exactMatch</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QList&lt;const Field *&gt; </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#fields">fields</a></b>(const QStringList<i> fieldNameList</i> = QStringList()) const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QList&lt;Field *&gt; </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#fields-2">fields</a></b>(const QStringList<i> fieldNameList</i> = QStringList())</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> Field * </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#findField">findField</a></b>(const QString<i> name</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const Field * </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#findField-2">findField</a></b>(const QString<i> name</i>) const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> BranchBase * </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#parentBranch">parentBranch</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const BranchBase * </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#parentBranch-2">parentBranch</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QString </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#pattern-prop">pattern</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> BranchBase * </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#root-prop">root</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const BranchBase * </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#root-prop">root</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#setExactMatch">setExactMatch</a></b>(bool<i> f</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#setPaths">setPaths</a></b>(const QStringList)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#pattern-prop">setPattern</a></b>(const QString)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#root-prop">setRoot</a></b>(BranchBase *)</td></tr>
+</table>
+<ul>
+<li class="fn">14 public functions inherited from <a href="nodebase.html#public-functions">NodeBase</a></li>
+<li class="fn">18 public functions inherited from <a href="pugitem.html#public-functions">PugItem</a></li>
+</ul>
+<a name="signals"></a>
+<h2>Signals</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#elements-prop">elementsChanged</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#pattern-prop">patternChanged</a></b>(const QString<i> pattern</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#root-prop">rootChanged</a></b>(BranchBase *<i> root</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#update">update</a></b>(const QVariant<i> env</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="branchbase.html#updated">updated</a></b>(int<i> status</i>)</td></tr>
+</table>
+<ul>
+<li class="fn">5 signal inherited from <a href="nodebase.html#signals">NodeBase</a></li>
+<li class="fn">3 signal inherited from <a href="pugitem.html#signals">PugItem</a></li>
+</ul>
+<h3>Additional Inherited Members</h3>
+<ul>
+<li class="fn">7 protected functions inherited from <a href="pugitem.html#protected-functions">PugItem</a></li>
+</ul>
+<a name="details"></a>
+<!-- $$$BranchBase-description -->
+<div class="descr">
+<h2>Detailed Description</h2>
+</div>
+<!-- @@@BranchBase -->
+<div class="prop">
+<h2>Property Documentation</h2>
+<!-- $$$elements-prop$$$elements_$$$elementsChanged -->
+<h3 class="fn"><a name="elements-prop"></a><span class="name">elements</span> : const <span class="type">QQmlListProperty</span>&lt;<span class="type"><a href="collision-element.html">Element</a></span>&gt;</h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> QQmlListProperty&lt;Element&gt; </td><td class="memItemRight bottomAlign"><span class="name"><b>elements_</b></span>()</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>elementsChanged</b></span>()</td></tr>
+</table>
+<!-- @@@elements -->
+<!-- $$$pattern-prop$$$pattern$$$setPatternconstQString$$$patternChangedconstQString -->
+<h3 class="fn"><a name="pattern-prop"></a><span class="name">pattern</span> : <span class="type">QString</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QString </td><td class="memItemRight bottomAlign"><span class="name"><b>pattern</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setPattern</b></span>(const QString)</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>patternChanged</b></span>(const QString<i> pattern</i>)</td></tr>
+</table>
+<!-- @@@pattern -->
+<!-- $$$root-prop$$$root$$$root$$$setRootBranchBase*$$$rootChangedBranchBase* -->
+<h3 class="fn"><a name="root-prop"></a><span class="name">root</span> : <span class="type"><a href="collision-branchbase.html">BranchBase</a></span> *</h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> BranchBase * </td><td class="memItemRight bottomAlign"><span class="name"><b>root</b></span>()</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> const BranchBase * </td><td class="memItemRight bottomAlign"><span class="name"><b>root</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setRoot</b></span>(BranchBase *)</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>rootChanged</b></span>(BranchBase *<i> root</i>)</td></tr>
+</table>
+<!-- @@@root -->
+</div>
+<div class="func">
+<h2>Member Function Documentation</h2>
+<!-- $$$BranchBase[overload1]$$$BranchBaseQObject* -->
+<h3 class="fn"><a name="BranchBase"></a>BranchBase::<span class="name">BranchBase</span>(<span class="type">QObject</span> *<i> parent</i> = 0)</h3>
+<!-- @@@BranchBase -->
+<!-- $$$addElement[overload1]$$$addElementElement* -->
+<h3 class="fn"><a name="addElement"></a><span class="type">void</span> BranchBase::<span class="name">addElement</span>(<span class="type"><a href="collision-element.html">Element</a></span> *)</h3>
+<!-- @@@addElement -->
+<!-- $$$areFieldsComplete[overload1]$$$areFieldsCompleteconstQStringconstQVariantMap -->
+<h3 class="fn"><a name="areFieldsComplete"></a><span class="type">bool</span> BranchBase::<span class="name">areFieldsComplete</span>(const <span class="type">QString</span><i> pattern</i>, const <span class="type">QVariantMap</span><i> fields</i>) const</h3>
+<!-- @@@areFieldsComplete -->
+<!-- $$$clearElements[overload1]$$$clearElements -->
+<h3 class="fn"><a name="clearElements"></a><span class="type">void</span> BranchBase::<span class="name">clearElements</span>()</h3>
+<!-- @@@clearElements -->
+<!-- $$$elements[overload1]$$$elements -->
+<h3 class="fn"><a name="elements"></a><span class="type">QList</span>&lt;<span class="type"><a href="collision-element.html">Element</a></span> *&gt; &amp; BranchBase::<span class="name">elements</span>()</h3>
+<!-- @@@elements -->
+<!-- $$$elements$$$elements -->
+<h3 class="fn"><a name="elements-2"></a>const <span class="type">QList</span>&lt;const <span class="type"><a href="collision-element.html">Element</a></span> *&gt; &amp; BranchBase::<span class="name">elements</span>() const</h3>
+<!-- @@@elements -->
+<!-- $$$exactMatch[overload1]$$$exactMatch -->
+<h3 class="fn"><a name="exactMatch"></a><span class="type">bool</span> BranchBase::<span class="name">exactMatch</span>() const</h3>
+<p><b>See also </b><a href="branchbase.html#setExactMatch">setExactMatch</a>().</p>
+<!-- @@@exactMatch -->
+<!-- $$$fields[overload1]$$$fieldsconstQStringList -->
+<h3 class="fn"><a name="fields"></a>const <span class="type">QList</span>&lt;const <span class="type">Field</span> *&gt; BranchBase::<span class="name">fields</span>(const <span class="type">QStringList</span><i> fieldNameList</i> = QStringList()) const</h3>
+<!-- @@@fields -->
+<!-- $$$fields$$$fieldsconstQStringList -->
+<h3 class="fn"><a name="fields-2"></a>const <span class="type">QList</span>&lt;<span class="type">Field</span> *&gt; BranchBase::<span class="name">fields</span>(const <span class="type">QStringList</span><i> fieldNameList</i> = QStringList())</h3>
+<!-- @@@fields -->
+<!-- $$$findField[overload1]$$$findFieldconstQString -->
+<h3 class="fn"><a name="findField"></a><span class="type">Field</span> * BranchBase::<span class="name">findField</span>(const <span class="type">QString</span><i> name</i>)</h3>
+<!-- @@@findField -->
+<!-- $$$findField$$$findFieldconstQString -->
+<h3 class="fn"><a name="findField-2"></a>const <span class="type">Field</span> * BranchBase::<span class="name">findField</span>(const <span class="type">QString</span><i> name</i>) const</h3>
+<!-- @@@findField -->
+<!-- $$$parentBranch[overload1]$$$parentBranch -->
+<h3 class="fn"><a name="parentBranch"></a><span class="type"><a href="collision-branchbase.html">BranchBase</a></span> * BranchBase::<span class="name">parentBranch</span>()</h3>
+<!-- @@@parentBranch -->
+<!-- $$$parentBranch$$$parentBranch -->
+<h3 class="fn"><a name="parentBranch-2"></a>const <span class="type"><a href="collision-branchbase.html">BranchBase</a></span> * BranchBase::<span class="name">parentBranch</span>() const</h3>
+<!-- @@@parentBranch -->
+<!-- $$$setExactMatch[overload1]$$$setExactMatchbool -->
+<h3 class="fn"><a name="setExactMatch"></a><span class="type">void</span> BranchBase::<span class="name">setExactMatch</span>(<span class="type">bool</span><i> f</i>)</h3>
+<p><b>See also </b><a href="branchbase.html#exactMatch">exactMatch</a>().</p>
+<!-- @@@setExactMatch -->
+<!-- $$$setPaths[overload1]$$$setPathsconstQStringList -->
+<h3 class="fn"><a name="setPaths"></a><span class="type">void</span> BranchBase::<span class="name">setPaths</span>(const <span class="type">QStringList</span>)</h3>
+<!-- @@@setPaths -->
+<!-- $$$update[overload1]$$$updateconstQVariant -->
+<h3 class="fn"><a name="update"></a><span class="type">void</span> BranchBase::<span class="name">update</span>(const <span class="type">QVariant</span><i> env</i>)<tt> [signal]</tt></h3>
+<!-- @@@update -->
+<!-- $$$updated[overload1]$$$updatedint -->
+<h3 class="fn"><a name="updated"></a><span class="type">void</span> BranchBase::<span class="name">updated</span>(<span class="type">int</span><i> status</i>)<tt> [signal]</tt></h3>
+<!-- @@@updated -->
+</div>
+</body>
+</html>

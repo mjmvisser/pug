@@ -244,6 +244,7 @@ const QString ReleaseOperationAttached::release(const QString srcPath, const QSt
 
 void ReleaseOperationAttached::onFileOpQueueFinished()
 {
+    debug() << ".onFileOpQueueFinished";
     const ReleaseOperationAttached *targetAttached = m_target->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
     const QString versionFieldName = targetAttached->findVersionFieldName();
     int version = targetAttached->findLastVersion(env());

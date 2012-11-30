@@ -7,4 +7,8 @@ Process {
     property string script
     
     argv: Script.buildArgv.call(self)
+    
+    function generatePath(index, hasFrames) {
+        return Script.generatePath.call(self, index, hasFrames);
+    }
 }

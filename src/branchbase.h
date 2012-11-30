@@ -49,6 +49,8 @@ public:
     const QList<const Field *> fields(const QStringList fieldNameList = QStringList()) const;
     const QList<Field *> fields(const QStringList fieldNameList = QStringList());
 
+    bool areFieldsComplete(const QString pattern, const QVariantMap fields) const;
+
     Q_INVOKABLE const QVariant match(const QString pattern, const QString path, bool exact) const;
     Q_INVOKABLE const QVariant match(const QString pattern, const QString path) const;
     Q_INVOKABLE const QStringList fieldNames(const QString pattern) const;
@@ -71,7 +73,6 @@ signals:
 private:
     const QStringList listMatchingPathsHelper(const QDir parentDir, const QVariantMap fields) const;
     bool containsFields(const QVariantMap& needle, const QVariantMap& haystack) const;
-    bool containsFields(const QStringList& needle, const QStringList& haystack) const;
 
     BranchBase *m_root;
     QList<Element *> m_elements;

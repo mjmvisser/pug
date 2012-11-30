@@ -1,4 +1,4 @@
-export QTDIR=~/workspace/qt5/qtbase
+export QTDIR=/prod/tools/common/qt5
 export PATH=$QTDIR/bin:$PATH
 export QML_IMPORT_PATH=~/workspace/pug/imports:~/workspace/pug/qml
 export PYTHONPATH=~/workspace/pug/python

@@ -14,6 +14,7 @@
 
 File::File(QObject *parent) :
     BranchBase(parent),
+    m_input(),
     m_linkType(File::Hard)
 {
     setExactMatch(true);

@@ -125,7 +125,7 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
     }
 
     QVariant result;
-    debug() << "building value from" << branch << "with" << QJsonDocument::fromVariant(fields).toJson().constData();
+    copious() << "building value from" << branch << "with" << QJsonDocument::fromVariant(fields).toJson().constData();
     if (m_type == ShotgunField::String) {
         if (field) {
             QVariant value = field->get(fields);
@@ -157,14 +157,18 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
     } else if (m_type == ShotgunField::Pattern) {
         if (branch->elements().length() > 0) {
             int index = branch->property("ShotgunOperation.index").toInt();
-            QVariantMap data = branch->parse(branch->elements().at(index)->path()).toMap();
+            QVariantMap data = branch->elements().at(index)->data().toMap();
             for (QVariantMap::const_iterator i = fields.constBegin(); i != fields.constEnd(); ++i) {
                 if (!data.contains(i.key()))
                     data.insert(i.key(), i.value());
             }
-            result = branch->formatFields(m_pattern, data);
+            if (branch->areFieldsComplete(m_pattern, data)) {
+                result = branch->formatFields(m_pattern, data);
+            } else {
+                error() << branch << "missing fields for" << m_pattern;
+            }
         } else {
-            error() << "on" << branch << "specifies a type of Pattern but" << branch << ".elements has no entries";
+            error() << branch << "specifies a type of Pattern but" << branch << ".elements has no entries";
         }
 
     } else if (m_type == ShotgunField::Link) {
@@ -208,7 +212,7 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
         error() << "on" << branch << "has an unsupported type " << m_type;
     }
 
-    debug() << ">>" << result;
+    copious() << ">>" << result;
     return result;
 }
 

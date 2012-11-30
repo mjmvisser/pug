@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- branchbase.cpp -->
+  <title>Pug : BranchBase</title>
+  <link rel="stylesheet" type="text/css" href="style/offline.css" />
+</head>
+<body>
+<li>Basic QML Types</li>
+<li>BranchBase</li>
+<div class="toc">
+<h3><a name="toc">Contents</a></h3>
+<ul>
+<li class="level1"><a href="#details">Detailed Description</a></li>
+</ul>
+</div>
+<h1 class="title">BranchBase</h1>
+<span class="subtitle"></span>
+<!-- $$$BranchBase-brief -->
+<p>The BranchBase class is the base class for files and directories (&quot;branches&quot;). <a href="#details">More...</a></p>
+<!-- @@@BranchBase -->
+<p>BranchBase instantiates the C++ class <a href="branchbase.html">BranchBase</a></p>
+<!-- $$$BranchBase-description -->
+<a name="details"></a>
+<h2>Detailed Description</h2>
+<p>BranchBase is the base class of Branch and File, which represent directories and files, respectively. Branches have a root() that indicates their filesystem parent. If the root is not set, it is assumed to be the first parent of type BranchBase.</p>
+<p>For example, consider the following example:</p>
+<pre class="qml">import Pug 1.0
+
+<span class="type">Root</span> {
+    <span class="type">Branch</span> {
+        <span class="name">id</span>: <span class="name">topLevel</span>
+
+        <span class="type">Branch</span> {
+            <span class="name">id</span>: <span class="name">first</span>
+        }
+
+        <span class="type">Branch</span> {
+            <span class="name">id</span>: <span class="name">second</span>
+            <span class="name">root</span>: <span class="name">first</span>
+
+            <span class="type">File</span> {
+                <span class="name">id</span>: <span class="name">third</span>
+            }
+        }
+    }
+}</pre>
+<p>In this object tree, the root of third is second, the root of second is first, and the root of first is topLevel.</p>
+<p>The pattern property contains a string that is used to match, parse or format paths and data from a map of field names to field values. The pattern may reference fields using curly braces, i.e&#x2e;:</p>
+<pre class="qml"><span class="type">Branch</span> {
+    <span class="name">pattern</span>: <span class="string">&quot;/prod/projects/{PROJECT}/shots/{SEQUENCE}_{SHOT}&quot;</span>
+}</pre>
+<p>The path or paths matched by the pattern are stored in the elements property. Each element is an instance of Element. Each element also has a data property that contains the fields represented by the element's path.</p>
+<!-- @@@BranchBase -->
+</body>
+</html>

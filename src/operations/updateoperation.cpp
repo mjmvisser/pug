@@ -32,7 +32,6 @@ void UpdateOperationAttached::setUpdatable(bool c)
 void UpdateOperationAttached::run()
 {
     if (m_updatableFlag) {
-        debug() << node() << "updating";
         emit update(env());
     } else {
         setStatus(OperationAttached::Finished);
@@ -42,6 +41,7 @@ void UpdateOperationAttached::run()
 
 void UpdateOperationAttached::onUpdated(int s)
 {
+    Q_ASSERT(operation());
     setStatus(static_cast<OperationAttached::Status>(s));
     continueRunning();
 }

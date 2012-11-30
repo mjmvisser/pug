@@ -1,5 +1,6 @@
-import QtQuick 2.0
 import Pug 1.0
+
+import "js/shotgunutils.js" as ShotgunUtils
 
 ShotgunEntity {
     name: "Version"
@@ -8,10 +9,8 @@ ShotgunEntity {
     property alias entity: entityField
     property alias release: releaseField.link
     property alias code: codeField.pattern
-    property alias firstFrame: firstFrameField.value
-    property alias lastFrame: lastFrameField.value
-    property alias thumbnailPath: thumbnailField.value
-    property alias filmstripPath: filmstripField.value
+    property var thumbnail: null
+    property var filmstrip: null 
     property var user
     
     ShotgunField {
@@ -47,12 +46,15 @@ ShotgunEntity {
         id: firstFrameField
         name: "sg_first_frame"
         type: ShotgunField.Number
+        value: ShotgunUtils.safeElementAttribute(parent, "firstFrame")                         
+
     }
 
     ShotgunField {
         id: lastFrameField
         name: "sg_last_frame"
         type: ShotgunField.Number
+        value: ShotgunUtils.safeElementAttribute(parent, "lastFrame")                         
     }
     
     ShotgunField {
@@ -65,11 +67,13 @@ ShotgunEntity {
     ShotgunField {
         id: thumbnailField
         name: "image"
+        value: ShotgunUtils.safeElementAttribute(thumbnail, "path")
     }
 
     ShotgunField {
         id: filmstripField
         name: "filmstrip_image"
+        value: ShotgunUtils.safeElementAttribute(filmstrip, "path")
     }
 
     ShotgunField {

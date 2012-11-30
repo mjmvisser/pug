@@ -1,13 +1,15 @@
 import Pug 1.0
 
+import "js/shotgunutils.js" as ShotgunUtils
+
 ShotgunEntity {
     name: "Attachment"
 
     property alias project: projectField.link
     property alias release: releaseField.link
-    property alias thumbnailPath: thumbnailField.value
-    property alias filmstripPath: filmstripField.value
-    property var user
+    property var thumbnail: null
+    property var filmstrip: null
+    property var user: null
 
     ShotgunUrlField {
         id: thisFileField
@@ -32,11 +34,13 @@ ShotgunEntity {
     ShotgunField {
         id: thumbnailField
         name: "image"
+        value: ShotgunUtils.safeElementAttribute(thumbnail, "path")
     }
 
     ShotgunField {
         id: filmstripField
         name: "filmstrip_image"
+        value: ShotgunUtils.safeElementAttribute(filmstrip, "path")
     }
     
     ShotgunField {

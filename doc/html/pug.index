@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE QDOCINDEX>
+<INDEX url="" title="Pug" version="">
+    <namespace access="public" threadsafety="unspecified" status="commendable" name="" href="" location="">
+        <page access="public" status="commendable" name="BranchBase" href="collision-branchbase.html" title="Name Collision: BranchBase" fulltitle="Name Collision: BranchBase" subtitle="" location="">
+            <qmlclass access="public" status="commendable" name="BranchBase" fullname="Pug1::BranchBase" href="qml-pug1-branchbase.html" title="BranchBase" fulltitle="BranchBase" subtitle="" location="branchbase.cpp"/>
+            <class access="public" threadsafety="unspecified" status="commendable" name="BranchBase" fullname="BranchBase#BranchBase" href="collision-branchbase-branchbase.html" location="branchbase.h" bases="NodeBase" module="Pug">
+                <function access="public" threadsafety="unspecified" status="commendable" name="BranchBase" fullname="BranchBase#BranchBase#BranchBase" href="collision-branchbase-branchbase.html#BranchBase" location="branchbase.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="BranchBase(QObject * parent)">
+                    <parameter left="QObject *" right="" name="parent" default="0"/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="addElement" fullname="BranchBase#BranchBase#addElement" href="collision-branchbase-branchbase.html#addElement" location="branchbase.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="addElement(Element * )">
+                    <parameter left="Element *" right="" name="" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="areFieldsComplete" fullname="BranchBase#BranchBase#areFieldsComplete" href="collision-branchbase-branchbase.html#areFieldsComplete" location="branchbase.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="areFieldsComplete(const QString pattern, const QVariantMap fields) const">
+                    <parameter left="const QString" right="" name="pattern" default=""/>
+                    <parameter left="const QVariantMap" right="" name="fields" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="clearElements" fullname="BranchBase#BranchBase#clearElements" href="collision-branchbase-branchbase.html#clearElements" location="branchbase.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="clearElements()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="elements" fullname="BranchBase#BranchBase#elements" href="collision-branchbase-branchbase.html#elements" location="branchbase.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="QList&lt;Element *&gt; &amp;" signature="elements()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="elements" fullname="BranchBase#BranchBase#elements" href="collision-branchbase-branchbase.html#elements-2" location="branchbase.h" virtual="non" meta="plain" const="true" static="false" overload="true" overload-number="2" type="const QList&lt;const Element *&gt; &amp;" signature="elements() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="elementsChanged" fullname="BranchBase#BranchBase#elementsChanged" href="collision-branchbase-branchbase.html#elements-prop" location="branchbase.h" virtual="non" meta="signal" const="false" static="false" overload="false" associated-property="elements" type="void" signature="elementsChanged()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="elements_" fullname="BranchBase#BranchBase#elements_" href="collision-branchbase-branchbase.html#elements-prop" location="branchbase.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="elements" type="QQmlListProperty&lt;Element&gt;" signature="elements_()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="exactMatch" fullname="BranchBase#BranchBase#exactMatch" href="collision-branchbase-branchbase.html#exactMatch" location="branchbase.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="exactMatch() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="fields" fullname="BranchBase#BranchBase#fields" href="collision-branchbase-branchbase.html#fields-2" location="branchbase.h" virtual="non" meta="plain" const="false" static="false" overload="true" overload-number="2" type="const QList&lt;Field *&gt;" signature="fields(const QStringList fieldNameList)">
+                    <parameter left="const QStringList" right="" name="fieldNameList" default="QStringList()"/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="fields" fullname="BranchBase#BranchBase#fields" href="collision-branchbase-branchbase.html#fields" location="branchbase.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="const QList&lt;const Field *&gt;" signature="fields(const QStringList fieldNameList) const">
+                    <parameter left="const QStringList" right="" name="fieldNameList" default="QStringList()"/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="findField" fullname="BranchBase#BranchBase#findField" href="collision-branchbase-branchbase.html#findField" location="branchbase.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="Field *" signature="findField(const QString name)">
+                    <parameter left="const QString" right="" name="name" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="findField" fullname="BranchBase#BranchBase#findField" href="collision-branchbase-branchbase.html#findField-2" location="branchbase.h" virtual="non" meta="plain" const="true" static="false" overload="true" overload-number="2" type="const Field *" signature="findField(const QString name) const">
+                    <parameter left="const QString" right="" name="name" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="parentBranch" fullname="BranchBase#BranchBase#parentBranch" href="collision-branchbase-branchbase.html#parentBranch" location="branchbase.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="BranchBase *" signature="parentBranch()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="parentBranch" fullname="BranchBase#BranchBase#parentBranch" href="collision-branchbase-branchbase.html#parentBranch-2" location="branchbase.h" virtual="non" meta="plain" const="true" static="false" overload="true" overload-number="2" type="const BranchBase *" signature="parentBranch() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="pattern" fullname="BranchBase#BranchBase#pattern" href="collision-branchbase-branchbase.html#pattern-prop" location="branchbase.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="pattern" type="const QString" signature="pattern() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="patternChanged" fullname="BranchBase#BranchBase#patternChanged" href="collision-branchbase-branchbase.html#pattern-prop" location="branchbase.h" virtual="non" meta="signal" const="false" static="false" overload="false" associated-property="pattern" type="void" signature="patternChanged(const QString pattern)">
+                    <parameter left="const QString" right="" name="pattern" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="root" fullname="BranchBase#BranchBase#root" href="collision-branchbase-branchbase.html#root-prop" location="branchbase.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="root" type="BranchBase *" signature="root()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="root" fullname="BranchBase#BranchBase#root" href="collision-branchbase-branchbase.html#root-prop" location="branchbase.h" virtual="non" meta="plain" const="true" static="false" overload="true" overload-number="2" associated-property="root" type="const BranchBase *" signature="root() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="rootChanged" fullname="BranchBase#BranchBase#rootChanged" href="collision-branchbase-branchbase.html#root-prop" location="branchbase.h" virtual="non" meta="signal" const="false" static="false" overload="false" associated-property="root" type="void" signature="rootChanged(BranchBase * root)">
+                    <parameter left="BranchBase *" right="" name="root" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setExactMatch" fullname="BranchBase#BranchBase#setExactMatch" href="collision-branchbase-branchbase.html#setExactMatch" location="branchbase.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setExactMatch(bool f)">
+                    <parameter left="bool" right="" name="f" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setPaths" fullname="BranchBase#BranchBase#setPaths" href="collision-branchbase-branchbase.html#setPaths" location="branchbase.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setPaths(const QStringList )">
+                    <parameter left="const QStringList" right="" name="" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setPattern" fullname="BranchBase#BranchBase#setPattern" href="collision-branchbase-branchbase.html#pattern-prop" location="branchbase.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="pattern" type="void" signature="setPattern(const QString )">
+                    <parameter left="const QString" right="" name="" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setRoot" fullname="BranchBase#BranchBase#setRoot" href="collision-branchbase-branchbase.html#root-prop" location="branchbase.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="root" type="void" signature="setRoot(BranchBase * )">
+                    <parameter left="BranchBase *" right="" name="" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="update" fullname="BranchBase#BranchBase#update" href="collision-branchbase-branchbase.html#update" location="branchbase.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="update(const QVariant env)">
+                    <parameter left="const QVariant" right="" name="env" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="updated" fullname="BranchBase#BranchBase#updated" href="collision-branchbase-branchbase.html#updated" location="branchbase.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="updated(int status)">
+                    <parameter left="int" right="" name="status" default=""/>
+                </function>
+                <property access="public" threadsafety="unspecified" status="commendable" name="elements" fullname="BranchBase#BranchBase#elements" href="collision-branchbase-branchbase.html#elements-prop" location="branchbase.h" type="QQmlListProperty&lt;Element&gt;">
+                    <getter name="elements_"/>
+                    <notifier name="elementsChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="pattern" fullname="BranchBase#BranchBase#pattern" href="collision-branchbase-branchbase.html#pattern-prop" location="branchbase.h" type="QString">
+                    <getter name="pattern"/>
+                    <setter name="setPattern"/>
+                    <notifier name="patternChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="root" fullname="BranchBase#BranchBase#root" href="collision-branchbase-branchbase.html#root-prop" location="branchbase.h" type="BranchBase *">
+                    <getter name="root"/>
+                    <getter name="root"/>
+                    <setter name="setRoot"/>
+                    <notifier name="rootChanged"/>
+                </property>
+            </class>
+        </page>
+        <page access="public" status="commendable" name="Element" href="collision-element.html" title="Name Collision: Element" fulltitle="Name Collision: Element" subtitle="" location="">
+            <qmlclass access="public" status="commendable" name="Element" fullname="Pug1::Element" href="qml-pug1-element.html" title="Element" fulltitle="Element" subtitle="" location="element.cpp"/>
+            <class access="public" threadsafety="unspecified" status="commendable" name="Element" fullname="Element#Element" href="collision-element-element.html" location="element.h" bases="PugItem" module="Pug">
+                <function access="public" threadsafety="unspecified" status="commendable" name="Element" fullname="Element#Element#Element" href="collision-element-element.html#Element" location="element.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="Element(QObject * parent)">
+                    <parameter left="QObject *" right="" name="parent" default="0"/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="baseName" fullname="Element#Element#baseName" href="collision-element-element.html#baseName-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="baseName" type="const QString" signature="baseName() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="data" fullname="Element#Element#data" href="collision-element-element.html#data-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="data" type="const QVariant" signature="data() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="dataChanged" fullname="Element#Element#dataChanged" href="collision-element-element.html#data-prop" location="element.h" virtual="non" meta="signal" const="false" static="false" overload="false" associated-property="data" type="void" signature="dataChanged(const QVariant data)">
+                    <parameter left="const QVariant" right="" name="data" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="directory" fullname="Element#Element#directory" href="collision-element-element.html#directory-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="directory" type="const QString" signature="directory() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="elementChanged" fullname="Element#Element#elementChanged" href="collision-element-element.html#extension-prop" location="element.h" virtual="non" meta="signal" const="false" static="false" overload="false" associated-property="extension" type="void" signature="elementChanged()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="extension" fullname="Element#Element#extension" href="collision-element-element.html#extension-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="extension" type="const QString" signature="extension() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="firstFrame" fullname="Element#Element#firstFrame" href="collision-element-element.html#firstFrame-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="firstFrame" type="const QVariant" signature="firstFrame() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="frame" fullname="Element#Element#frame" href="collision-element-element.html#frame" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="const QVariant" signature="frame(const QString path) const">
+                    <parameter left="const QString" right="" name="path" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="frameList" fullname="Element#Element#frameList" href="collision-element-element.html#frameList-prop" location="element.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="frameList" type="FrameList *" signature="frameList()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="frameList" fullname="Element#Element#frameList" href="collision-element-element.html#frameList-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="true" overload-number="2" associated-property="frameList" type="const FrameList *" signature="frameList() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="frameSpec" fullname="Element#Element#frameSpec" href="collision-element-element.html#frameSpec-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="frameSpec" type="const QString" signature="frameSpec() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="frames" fullname="Element#Element#frames" href="collision-element-element.html#frames-prop" location="element.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="frames" type="QVariant" signature="frames()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="frames" fullname="Element#Element#frames" href="collision-element-element.html#frames-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="true" overload-number="2" associated-property="frames" type="const QVariant" signature="frames() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="hasFrames" fullname="Element#Element#hasFrames" href="collision-element-element.html#hasFrames" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="hasFrames() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="lastFrame" fullname="Element#Element#lastFrame" href="collision-element-element.html#lastFrame-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="lastFrame" type="const QVariant" signature="lastFrame() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="path" fullname="Element#Element#path" href="collision-element-element.html#path-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="path" type="const QString" signature="path() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="path" fullname="Element#Element#path" href="collision-element-element.html#path-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="true" overload-number="2" associated-property="path" type="const QString" signature="path(QVariant frame) const">
+                    <parameter left="QVariant" right="" name="frame" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="paths" fullname="Element#Element#paths" href="collision-element-element.html#paths-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="paths" type="const QStringList" signature="paths() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="pattern" fullname="Element#Element#pattern" href="collision-element-element.html#pattern-prop" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="pattern" type="const QString" signature="pattern() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setData" fullname="Element#Element#setData" href="collision-element-element.html#data-prop" location="element.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="data" type="void" signature="setData(const QVariant )">
+                    <parameter left="const QVariant" right="" name="" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setFrameList" fullname="Element#Element#setFrameList" href="collision-element-element.html#frameList-prop" location="element.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="frameList" type="void" signature="setFrameList(FrameList * )">
+                    <parameter left="FrameList *" right="" name="" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setFrames" fullname="Element#Element#setFrames" href="collision-element-element.html#frames-prop" location="element.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="frames" type="void" signature="setFrames(const QVariant )">
+                    <parameter left="const QVariant" right="" name="" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setPattern" fullname="Element#Element#setPattern" href="collision-element-element.html#pattern-prop" location="element.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="pattern" type="void" signature="setPattern(const QString )">
+                    <parameter left="const QString" right="" name="" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="toString" fullname="Element#Element#toString" href="collision-element-element.html#toString" location="element.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="const QString" signature="toString() const"/>
+                <property access="public" threadsafety="unspecified" status="commendable" name="baseName" fullname="Element#Element#baseName" href="collision-element-element.html#baseName-prop" location="element.h" type="QString">
+                    <getter name="baseName"/>
+                    <notifier name="elementChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="data" fullname="Element#Element#data" href="collision-element-element.html#data-prop" location="element.h" type="QVariant">
+                    <getter name="data"/>
+                    <setter name="setData"/>
+                    <notifier name="dataChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="directory" fullname="Element#Element#directory" href="collision-element-element.html#directory-prop" location="element.h" type="QString">
+                    <getter name="directory"/>
+                    <notifier name="elementChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="extension" fullname="Element#Element#extension" href="collision-element-element.html#extension-prop" location="element.h" type="QString">
+                    <getter name="extension"/>
+                    <notifier name="elementChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="firstFrame" fullname="Element#Element#firstFrame" href="collision-element-element.html#firstFrame-prop" location="element.h" type="QVariant">
+                    <getter name="firstFrame"/>
+                    <notifier name="elementChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="frameList" fullname="Element#Element#frameList" href="collision-element-element.html#frameList-prop" location="element.h" type="FrameList *">
+                    <getter name="frameList"/>
+                    <getter name="frameList"/>
+                    <setter name="setFrameList"/>
+                    <notifier name="elementChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="frameSpec" fullname="Element#Element#frameSpec" href="collision-element-element.html#frameSpec-prop" location="element.h" type="QString">
+                    <getter name="frameSpec"/>
+                    <notifier name="elementChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="frames" fullname="Element#Element#frames" href="collision-element-element.html#frames-prop" location="element.h" type="QVariant">
+                    <getter name="frames"/>
+                    <getter name="frames"/>
+                    <setter name="setFrames"/>
+                    <notifier name="elementChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="lastFrame" fullname="Element#Element#lastFrame" href="collision-element-element.html#lastFrame-prop" location="element.h" type="QVariant">
+                    <getter name="lastFrame"/>
+                    <notifier name="elementChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="path" fullname="Element#Element#path" href="collision-element-element.html#path-prop" location="element.h" type="QString">
+                    <getter name="path"/>
+                    <getter name="path"/>
+                    <notifier name="elementChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="paths" fullname="Element#Element#paths" href="collision-element-element.html#paths-prop" location="element.h" type="QStringList">
+                    <getter name="paths"/>
+                    <notifier name="elementChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="pattern" fullname="Element#Element#pattern" href="collision-element-element.html#pattern-prop" location="element.h" type="QString">
+                    <getter name="pattern"/>
+                    <setter name="setPattern"/>
+                    <notifier name="elementChanged"/>
+                </property>
+            </class>
+        </page>
+        <page access="public" status="commendable" name="FrameList" href="collision-framelist.html" title="Name Collision: FrameList" fulltitle="Name Collision: FrameList" subtitle="" location="">
+            <qmlclass access="public" status="commendable" name="FrameList" fullname="Pug1::FrameList" href="qml-pug1-framelist.html" title="FrameList" fulltitle="FrameList" subtitle="" location="framelist.cpp"/>
+            <class access="public" threadsafety="unspecified" status="commendable" name="FrameList" fullname="FrameList#FrameList" href="collision-framelist-framelist.html" location="framelist.h" bases="PugItem" module="Pug">
+                <function access="public" threadsafety="unspecified" status="commendable" name="FrameList" fullname="FrameList#FrameList#FrameList" href="collision-framelist-framelist.html#FrameList" location="framelist.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="FrameList(QObject * parent)">
+                    <parameter left="QObject *" right="" name="parent" default="0"/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="firstFrame" fullname="FrameList#FrameList#firstFrame" href="collision-framelist-framelist.html#firstFrame-prop" location="framelist.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="firstFrame" type="const QVariant" signature="firstFrame() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="frames" fullname="FrameList#FrameList#frames" href="collision-framelist-framelist.html#frames-prop" location="framelist.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="frames" type="QVariantList" signature="frames()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="frames" fullname="FrameList#FrameList#frames" href="collision-framelist-framelist.html#frames-prop" location="framelist.h" virtual="non" meta="plain" const="true" static="false" overload="true" overload-number="2" associated-property="frames" type="const QVariantList" signature="frames() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="framesChanged" fullname="FrameList#FrameList#framesChanged" href="collision-framelist-framelist.html#lastFrame-prop" location="framelist.h" virtual="non" meta="signal" const="false" static="false" overload="false" associated-property="lastFrame" type="void" signature="framesChanged(const QVariantList &amp; frames)">
+                    <parameter left="const QVariantList &amp;" right="" name="frames" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="lastFrame" fullname="FrameList#FrameList#lastFrame" href="collision-framelist-framelist.html#lastFrame-prop" location="framelist.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="lastFrame" type="const QVariant" signature="lastFrame() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="pattern" fullname="FrameList#FrameList#pattern" href="collision-framelist-framelist.html#pattern-prop" location="framelist.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="pattern" type="const QString" signature="pattern() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="patternChanged" fullname="FrameList#FrameList#patternChanged" href="collision-framelist-framelist.html#pattern-prop" location="framelist.h" virtual="non" meta="signal" const="false" static="false" overload="false" associated-property="pattern" type="void" signature="patternChanged(const QString &amp; pattern)">
+                    <parameter left="const QString &amp;" right="" name="pattern" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setFrames" fullname="FrameList#FrameList#setFrames" href="collision-framelist-framelist.html#frames-prop" location="framelist.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="frames" type="void" signature="setFrames(const QVariantList )">
+                    <parameter left="const QVariantList" right="" name="" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setPattern" fullname="FrameList#FrameList#setPattern" href="collision-framelist-framelist.html#pattern-prop" location="framelist.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="pattern" type="void" signature="setPattern(const QString )">
+                    <parameter left="const QString" right="" name="" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="toString" fullname="FrameList#FrameList#toString" href="collision-framelist-framelist.html#toString" location="framelist.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="const QString" signature="toString() const"/>
+                <property access="public" threadsafety="unspecified" status="commendable" name="firstFrame" fullname="FrameList#FrameList#firstFrame" href="collision-framelist-framelist.html#firstFrame-prop" location="framelist.h" type="QVariant">
+                    <getter name="firstFrame"/>
+                    <notifier name="framesChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="frames" fullname="FrameList#FrameList#frames" href="collision-framelist-framelist.html#frames-prop" location="framelist.h" type="QVariantList">
+                    <getter name="frames"/>
+                    <getter name="frames"/>
+                    <setter name="setFrames"/>
+                    <notifier name="framesChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="lastFrame" fullname="FrameList#FrameList#lastFrame" href="collision-framelist-framelist.html#lastFrame-prop" location="framelist.h" type="QVariant">
+                    <getter name="lastFrame"/>
+                    <notifier name="framesChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="pattern" fullname="FrameList#FrameList#pattern" href="collision-framelist-framelist.html#pattern-prop" location="framelist.h" type="QString">
+                    <getter name="pattern"/>
+                    <setter name="setPattern"/>
+                    <notifier name="patternChanged"/>
+                </property>
+            </class>
+        </page>
+        <page access="public" status="commendable" name="PugItem" href="collision-pugitem.html" title="Name Collision: PugItem" fulltitle="Name Collision: PugItem" subtitle="" location="">
+            <qmlclass access="public" status="commendable" name="PugItem" fullname="Pug1::PugItem" href="qml-pug1-pugitem.html" title="PugItem" fulltitle="PugItem" subtitle="" location="pugitem.cpp"/>
+            <class access="public" threadsafety="unspecified" status="commendable" name="PugItem" fullname="PugItem#PugItem" href="collision-pugitem-pugitem.html" location="pugitem.h" bases="" module="Pug">
+                <function access="public" threadsafety="unspecified" status="commendable" name="PugItem" fullname="PugItem#PugItem#PugItem" href="collision-pugitem-pugitem.html#PugItem" location="pugitem.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="PugItem(QObject * parent)">
+                    <parameter left="QObject *" right="" name="parent" default="0"/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="attachedPropertiesObject" fullname="PugItem#PugItem#attachedPropertiesObject" href="collision-pugitem-pugitem.html#attachedPropertiesObject-2" location="pugitem.h" virtual="non" meta="plain" const="false" static="false" overload="true" overload-number="2" type="T *" signature="attachedPropertiesObject(const QMetaObject * mo, bool create)">
+                    <parameter left="const QMetaObject *" right="" name="mo" default=""/>
+                    <parameter left="bool" right="" name="create" default="true"/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="attachedPropertiesObject" fullname="PugItem#PugItem#attachedPropertiesObject" href="collision-pugitem-pugitem.html#attachedPropertiesObject" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="const T *" signature="attachedPropertiesObject(const QMetaObject * mo, bool create) const">
+                    <parameter left="const QMetaObject *" right="" name="mo" default=""/>
+                    <parameter left="bool" right="" name="create" default="true"/>
+                </function>
+                <function access="protected" threadsafety="unspecified" status="commendable" name="classBegin" fullname="PugItem#PugItem#classBegin" href="collision-pugitem-pugitem.html#classBegin" location="pugitem.h" virtual="impure" meta="plain" const="false" static="false" overload="false" type="void" signature="classBegin()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="className" fullname="PugItem#PugItem#className" href="collision-pugitem-pugitem.html#className-prop" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="className" type="const QString" signature="className() const"/>
+                <function access="protected" threadsafety="unspecified" status="commendable" name="componentComplete" fullname="PugItem#PugItem#componentComplete" href="collision-pugitem-pugitem.html#componentComplete" location="pugitem.h" virtual="impure" meta="plain" const="false" static="false" overload="false" type="void" signature="componentComplete()"/>
+                <function access="protected" threadsafety="unspecified" status="commendable" name="copious" fullname="PugItem#PugItem#copious" href="collision-pugitem-pugitem.html#copious" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="Logger" signature="copious() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="data_" fullname="PugItem#PugItem#data_" href="collision-pugitem-pugitem.html#data-prop" location="pugitem.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="data" type="QQmlListProperty&lt;PugItem&gt;" signature="data_()"/>
+                <function access="protected" threadsafety="unspecified" status="commendable" name="debug" fullname="PugItem#PugItem#debug" href="collision-pugitem-pugitem.html#debug" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="Logger" signature="debug() const"/>
+                <function access="protected" threadsafety="unspecified" status="commendable" name="error" fullname="PugItem#PugItem#error" href="collision-pugitem-pugitem.html#error" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="Logger" signature="error() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="firstParent" fullname="PugItem#PugItem#firstParent" href="collision-pugitem-pugitem.html#firstParent-2" location="pugitem.h" virtual="non" meta="plain" const="false" static="false" overload="true" overload-number="2" type="T *" signature="firstParent()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="firstParent" fullname="PugItem#PugItem#firstParent" href="collision-pugitem-pugitem.html#firstParent" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="const T *" signature="firstParent() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="hasProperty" fullname="PugItem#PugItem#hasProperty" href="collision-pugitem-pugitem.html#hasProperty" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="hasProperty(const char * ) const">
+                    <parameter left="const char *" right="" name="" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="hasSignal" fullname="PugItem#PugItem#hasSignal" href="collision-pugitem-pugitem.html#hasSignal" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="hasSignal(const char * ) const">
+                    <parameter left="const char *" right="" name="" default=""/>
+                </function>
+                <function access="protected" threadsafety="unspecified" status="commendable" name="info" fullname="PugItem#PugItem#info" href="collision-pugitem-pugitem.html#info" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="Logger" signature="info() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="log" fullname="PugItem#PugItem#log" href="collision-pugitem-pugitem.html#log-prop" location="pugitem.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="log" type="Log *" signature="log()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="log" fullname="PugItem#PugItem#log" href="collision-pugitem-pugitem.html#log-prop" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="true" overload-number="2" associated-property="log" type="const Log *" signature="log() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="logLevel" fullname="PugItem#PugItem#logLevel" href="collision-pugitem-pugitem.html#logLevel-prop" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="logLevel" type="Log::MessageType" signature="logLevel() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="logLevelChanged" fullname="PugItem#PugItem#logLevelChanged" href="collision-pugitem-pugitem.html#logLevel-prop" location="pugitem.h" virtual="non" meta="signal" const="false" static="false" overload="false" associated-property="logLevel" type="void" signature="logLevelChanged(Log::MessageType logLevel)">
+                    <parameter left="Log::MessageType" right="" name="logLevel" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="name" fullname="PugItem#PugItem#name" href="collision-pugitem-pugitem.html#name-prop" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="name" type="const QString" signature="name() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="nameChanged" fullname="PugItem#PugItem#nameChanged" href="collision-pugitem-pugitem.html#name-prop" location="pugitem.h" virtual="non" meta="signal" const="false" static="false" overload="false" associated-property="name" type="void" signature="nameChanged(const QString name)">
+                    <parameter left="const QString" right="" name="name" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="parent" fullname="PugItem#PugItem#parent" href="collision-pugitem-pugitem.html#parent-2" location="pugitem.h" virtual="non" meta="plain" const="false" static="false" overload="true" overload-number="2" type="T *" signature="parent()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="parent" fullname="PugItem#PugItem#parent" href="collision-pugitem-pugitem.html#parent" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="const T *" signature="parent() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="parentChanged" fullname="PugItem#PugItem#parentChanged" href="collision-pugitem-pugitem.html#parentChanged" location="pugitem.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="parentChanged(PugItem * parent)">
+                    <parameter left="PugItem *" right="" name="parent" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="parentItem" fullname="PugItem#PugItem#parentItem" href="collision-pugitem-pugitem.html#parent-prop" location="pugitem.h" virtual="non" meta="plain" const="false" static="false" overload="true" overload-number="2" associated-property="parent" type="PugItem *" signature="parentItem()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="parentItem" fullname="PugItem#PugItem#parentItem" href="collision-pugitem-pugitem.html#parent-prop" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" associated-property="parent" type="const PugItem *" signature="parentItem() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setLogLevel" fullname="PugItem#PugItem#setLogLevel" href="collision-pugitem-pugitem.html#logLevel-prop" location="pugitem.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="logLevel" type="void" signature="setLogLevel(Log::MessageType )">
+                    <parameter left="Log::MessageType" right="" name="" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setName" fullname="PugItem#PugItem#setName" href="collision-pugitem-pugitem.html#name-prop" location="pugitem.h" virtual="non" meta="plain" const="false" static="false" overload="false" associated-property="name" type="void" signature="setName(const QString )">
+                    <parameter left="const QString" right="" name="" default=""/>
+                </function>
+                <function access="protected" threadsafety="unspecified" status="commendable" name="warning" fullname="PugItem#PugItem#warning" href="collision-pugitem-pugitem.html#warning" location="pugitem.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="Logger" signature="warning() const"/>
+                <property access="public" threadsafety="unspecified" status="commendable" name="className" fullname="PugItem#PugItem#className" href="collision-pugitem-pugitem.html#className-prop" location="pugitem.h" type="QString">
+                    <getter name="className"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="data" fullname="PugItem#PugItem#data" href="collision-pugitem-pugitem.html#data-prop" location="pugitem.h" type="QQmlListProperty&lt;PugItem&gt;">
+                    <getter name="data_"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="log" fullname="PugItem#PugItem#log" href="collision-pugitem-pugitem.html#log-prop" location="pugitem.h" type="Log">
+                    <getter name="log"/>
+                    <getter name="log"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="logLevel" fullname="PugItem#PugItem#logLevel" href="collision-pugitem-pugitem.html#logLevel-prop" location="pugitem.h" type="Log::MessageType">
+                    <getter name="logLevel"/>
+                    <setter name="setLogLevel"/>
+                    <notifier name="logLevelChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="name" fullname="PugItem#PugItem#name" href="collision-pugitem-pugitem.html#name-prop" location="pugitem.h" type="QString">
+                    <getter name="name"/>
+                    <setter name="setName"/>
+                    <notifier name="nameChanged"/>
+                </property>
+                <property access="public" threadsafety="unspecified" status="commendable" name="parent" fullname="PugItem#PugItem#parent" href="collision-pugitem-pugitem.html#parent-prop" location="pugitem.h" type="PugItem *">
+                    <getter name="parentItem"/>
+                    <getter name="parentItem"/>
+                </property>
+            </class>
+        </page>
+        <page access="public" status="commendable" name="Pug" href="qmlmodule-pug1-pug.html" title="" fulltitle="" subtitle="" location="pugplugin.cpp"/>
+    </namespace>
+</INDEX>

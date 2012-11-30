@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- pugitem.cpp -->
+  <title>Pug : PugItem Class</title>
+  <link rel="stylesheet" type="text/css" href="style/offline.css" />
+</head>
+<body>
+<li>Modules</li>
+<li><a href="qmlmodule-pug1-pug.html">Pug</a></li>
+<li>PugItem</li>
+<div class="toc">
+<h3><a name="toc">Contents</a></h3>
+<ul>
+<li class="level1"><a href="#properties">Properties</a></li>
+<li class="level1"><a href="#public-functions">Public Functions</a></li>
+<li class="level1"><a href="#signal">Signals</a></li>
+<li class="level1"><a href="#protected-functions">Protected Functions</a></li>
+<li class="level1"><a href="#details">Detailed Description</a></li>
+</ul>
+</div>
+<h1 class="title">PugItem Class</h1>
+<pre class="cpp"><span class="preprocessor">#include &lt;<a href="collision-pugitem.html">PugItem</a>&gt;</span></pre><p><b>Inherited by: </b><a href="element.html">Element</a> and <a href="framelist.html">FrameList</a>.</p>
+<ul>
+<li><a href="pugitem-members.html">List of all members, including inherited members</a></li>
+</ul>
+<a name="properties"></a>
+<h2>Properties</h2>
+<table class="propsummary">
+<tr><td class="topAlign"><ul>
+<li class="fn"><b><a href="pugitem.html#className-prop">className</a></b> : const QString</li>
+<li class="fn"><b><a href="pugitem.html#data-prop">data</a></b> : const QQmlListProperty&lt;PugItem&gt;</li>
+<li class="fn"><b><a href="pugitem.html#log-prop">log</a></b> : const Log</li>
+</ul></td><td class="topAlign"><ul>
+<li class="fn"><b><a href="pugitem.html#logLevel-prop">logLevel</a></b> : Log::MessageType</li>
+<li class="fn"><b><a href="pugitem.html#name-prop">name</a></b> : QString</li>
+<li class="fn"><b><a href="pugitem.html#parent-prop">parent</a></b> : PugItem * const</li>
+</ul>
+</td></tr>
+</table>
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#PugItem">PugItem</a></b>(QObject *<i> parent</i> = 0)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const T * </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#attachedPropertiesObject">attachedPropertiesObject</a></b>(const QMetaObject *<i> mo</i>, bool<i> create</i> = true) const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> T * </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#attachedPropertiesObject-2">attachedPropertiesObject</a></b>(const QMetaObject *<i> mo</i>, bool<i> create</i> = true)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QString </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#className-prop">className</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QQmlListProperty&lt;PugItem&gt; </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#data-prop">data_</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const T * </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#firstParent">firstParent</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> T * </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#firstParent-2">firstParent</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#hasProperty">hasProperty</a></b>(const char *) const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#hasSignal">hasSignal</a></b>(const char *) const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> Log * </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#log-prop">log</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const Log * </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#log-prop">log</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> Log::MessageType </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#logLevel-prop">logLevel</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QString </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#name-prop">name</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const T * </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#parent">parent</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> T * </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#parent-2">parent</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const PugItem * </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#parent-prop">parentItem</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> PugItem * </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#parent-prop">parentItem</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#logLevel-prop">setLogLevel</a></b>(Log::MessageType)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#name-prop">setName</a></b>(const QString)</td></tr>
+</table>
+<a name="signals"></a>
+<h2>Signals</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#logLevel-prop">logLevelChanged</a></b>(Log::MessageType<i> logLevel</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#name-prop">nameChanged</a></b>(const QString<i> name</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#parentChanged">parentChanged</a></b>(PugItem *<i> parent</i>)</td></tr>
+</table>
+<a name="protected-functions"></a>
+<h2>Protected Functions</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> virtual void </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#classBegin">classBegin</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> virtual void </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#componentComplete">componentComplete</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> Logger </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#copious">copious</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> Logger </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#debug">debug</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> Logger </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#error">error</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> Logger </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#info">info</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> Logger </td><td class="memItemRight bottomAlign"><b><a href="pugitem.html#warning">warning</a></b>() const</td></tr>
+</table>
+<a name="details"></a>
+<!-- $$$PugItem-description -->
+<div class="descr">
+<h2>Detailed Description</h2>
+</div>
+<!-- @@@PugItem -->
+<div class="prop">
+<h2>Property Documentation</h2>
+<!-- $$$className-prop$$$className -->
+<h3 class="fn"><a name="className-prop"></a><span class="name">className</span> : const <span class="type">QString</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QString </td><td class="memItemRight bottomAlign"><span class="name"><b>className</b></span>() const</td></tr>
+</table>
+<!-- @@@className -->
+<!-- $$$data-prop$$$data_ -->
+<h3 class="fn"><a name="data-prop"></a><span class="name">data</span> : const <span class="type">QQmlListProperty</span>&lt;<span class="type"><a href="collision-pugitem.html">PugItem</a></span>&gt;</h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> QQmlListProperty&lt;PugItem&gt; </td><td class="memItemRight bottomAlign"><span class="name"><b>data_</b></span>()</td></tr>
+</table>
+<!-- @@@data -->
+<!-- $$$log-prop$$$log$$$log -->
+<h3 class="fn"><a name="log-prop"></a><span class="name">log</span> : const <span class="type">Log</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> Log * </td><td class="memItemRight bottomAlign"><span class="name"><b>log</b></span>()</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> const Log * </td><td class="memItemRight bottomAlign"><span class="name"><b>log</b></span>() const</td></tr>
+</table>
+<!-- @@@log -->
+<!-- $$$logLevel-prop$$$logLevel$$$setLogLevelLog::MessageType$$$logLevelChangedLog::MessageType -->
+<h3 class="fn"><a name="logLevel-prop"></a><span class="name">logLevel</span> : <span class="type"><a href="log.html#MessageType-enum">Log::MessageType</a></span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> Log::MessageType </td><td class="memItemRight bottomAlign"><span class="name"><b>logLevel</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setLogLevel</b></span>(Log::MessageType)</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>logLevelChanged</b></span>(Log::MessageType<i> logLevel</i>)</td></tr>
+</table>
+<!-- @@@logLevel -->
+<!-- $$$name-prop$$$name$$$setNameconstQString$$$nameChangedconstQString -->
+<h3 class="fn"><a name="name-prop"></a><span class="name">name</span> : <span class="type">QString</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QString </td><td class="memItemRight bottomAlign"><span class="name"><b>name</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setName</b></span>(const QString)</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>nameChanged</b></span>(const QString<i> name</i>)</td></tr>
+</table>
+<!-- @@@name -->
+<!-- $$$parent-prop$$$parentItem$$$parentItem -->
+<h3 class="fn"><a name="parent-prop"></a><span class="name">parent</span> : <span class="type"><a href="collision-pugitem.html">PugItem</a></span> * const</h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const PugItem * </td><td class="memItemRight bottomAlign"><span class="name"><b>parentItem</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> PugItem * </td><td class="memItemRight bottomAlign"><span class="name"><b>parentItem</b></span>()</td></tr>
+</table>
+<!-- @@@parent -->
+</div>
+<div class="func">
+<h2>Member Function Documentation</h2>
+<!-- $$$PugItem[overload1]$$$PugItemQObject* -->
+<h3 class="fn"><a name="PugItem"></a>PugItem::<span class="name">PugItem</span>(<span class="type">QObject</span> *<i> parent</i> = 0)</h3>
+<!-- @@@PugItem -->
+<!-- $$$attachedPropertiesObject[overload1]$$$attachedPropertiesObjectconstQMetaObject*bool -->
+<h3 class="fn"><a name="attachedPropertiesObject"></a>const <span class="type">T</span> * PugItem::<span class="name">attachedPropertiesObject</span>(const <span class="type">QMetaObject</span> *<i> mo</i>, <span class="type">bool</span><i> create</i> = true) const</h3>
+<!-- @@@attachedPropertiesObject -->
+<!-- $$$attachedPropertiesObject$$$attachedPropertiesObjectconstQMetaObject*bool -->
+<h3 class="fn"><a name="attachedPropertiesObject-2"></a><span class="type">T</span> * PugItem::<span class="name">attachedPropertiesObject</span>(const <span class="type">QMetaObject</span> *<i> mo</i>, <span class="type">bool</span><i> create</i> = true)</h3>
+<!-- @@@attachedPropertiesObject -->
+<!-- $$$classBegin[overload1]$$$classBegin -->
+<h3 class="fn"><a name="classBegin"></a><span class="type">void</span> PugItem::<span class="name">classBegin</span>()<tt> [virtual protected]</tt></h3>
+<!-- @@@classBegin -->
+<!-- $$$componentComplete[overload1]$$$componentComplete -->
+<h3 class="fn"><a name="componentComplete"></a><span class="type">void</span> PugItem::<span class="name">componentComplete</span>()<tt> [virtual protected]</tt></h3>
+<!-- @@@componentComplete -->
+<!-- $$$copious[overload1]$$$copious -->
+<h3 class="fn"><a name="copious"></a><span class="type">Logger</span> PugItem::<span class="name">copious</span>() const<tt> [protected]</tt></h3>
+<!-- @@@copious -->
+<!-- $$$debug[overload1]$$$debug -->
+<h3 class="fn"><a name="debug"></a><span class="type">Logger</span> PugItem::<span class="name">debug</span>() const<tt> [protected]</tt></h3>
+<!-- @@@debug -->
+<!-- $$$error[overload1]$$$error -->
+<h3 class="fn"><a name="error"></a><span class="type">Logger</span> PugItem::<span class="name">error</span>() const<tt> [protected]</tt></h3>
+<!-- @@@error -->
+<!-- $$$firstParent[overload1]$$$firstParent -->
+<h3 class="fn"><a name="firstParent"></a>const <span class="type">T</span> * PugItem::<span class="name">firstParent</span>() const</h3>
+<!-- @@@firstParent -->
+<!-- $$$firstParent$$$firstParent -->
+<h3 class="fn"><a name="firstParent-2"></a><span class="type">T</span> * PugItem::<span class="name">firstParent</span>()</h3>
+<!-- @@@firstParent -->
+<!-- $$$hasProperty[overload1]$$$hasPropertyconstchar* -->
+<h3 class="fn"><a name="hasProperty"></a><span class="type">bool</span> PugItem::<span class="name">hasProperty</span>(const <span class="type">char</span> *) const</h3>
+<!-- @@@hasProperty -->
+<!-- $$$hasSignal[overload1]$$$hasSignalconstchar* -->
+<h3 class="fn"><a name="hasSignal"></a><span class="type">bool</span> PugItem::<span class="name">hasSignal</span>(const <span class="type">char</span> *) const</h3>
+<!-- @@@hasSignal -->
+<!-- $$$info[overload1]$$$info -->
+<h3 class="fn"><a name="info"></a><span class="type">Logger</span> PugItem::<span class="name">info</span>() const<tt> [protected]</tt></h3>
+<!-- @@@info -->
+<!-- $$$parent[overload1]$$$parent -->
+<h3 class="fn"><a name="parent"></a>const <span class="type">T</span> * PugItem::<span class="name">parent</span>() const</h3>
+<!-- @@@parent -->
+<!-- $$$parent$$$parent -->
+<h3 class="fn"><a name="parent-2"></a><span class="type">T</span> * PugItem::<span class="name">parent</span>()</h3>
+<!-- @@@parent -->
+<!-- $$$parentChanged[overload1]$$$parentChangedPugItem* -->
+<h3 class="fn"><a name="parentChanged"></a><span class="type">void</span> PugItem::<span class="name">parentChanged</span>(<span class="type"><a href="collision-pugitem.html">PugItem</a></span> *<i> parent</i>)<tt> [signal]</tt></h3>
+<!-- @@@parentChanged -->
+<!-- $$$warning[overload1]$$$warning -->
+<h3 class="fn"><a name="warning"></a><span class="type">Logger</span> PugItem::<span class="name">warning</span>() const<tt> [protected]</tt></h3>
+<!-- @@@warning -->
+</div>
+</body>
+</html>

@@ -621,6 +621,7 @@ void Operation::continueRunning()
 
             connect(attached, SIGNAL(finished(OperationAttached*)),
                     this, SLOT(onFinished(OperationAttached*)));
+            Q_ASSERT(this);
             attached->run(this, m_runningEnv);
             break;
 

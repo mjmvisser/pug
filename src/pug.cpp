@@ -4,6 +4,23 @@
 #include "pug.h"
 #include "operation.h"
 
+/*!
+    \qmlmodule Pug
+*/
+
+/*!
+    \class Pug
+    \inmodule Pug
+*/
+
+/*!
+    \qmltype Pug
+    \instantiates Pug
+    \brief Main entry point for access to the Pug graph.
+
+    Main entry point for access to the Pug graph.
+*/
+
 Pug::Pug(QQmlEngine* engine, QObject *parent) :
         PugItem(parent),
         m_engine(engine),

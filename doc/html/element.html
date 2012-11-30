@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- element.cpp -->
+  <title>Pug : Element Class</title>
+  <link rel="stylesheet" type="text/css" href="style/offline.css" />
+</head>
+<body>
+<li>Modules</li>
+<li><a href="qmlmodule-pug1-pug.html">Pug</a></li>
+<li>Element</li>
+<div class="toc">
+<h3><a name="toc">Contents</a></h3>
+<ul>
+<li class="level1"><a href="#properties">Properties</a></li>
+<li class="level1"><a href="#public-functions">Public Functions</a></li>
+<li class="level1"><a href="#signal">Signals</a></li>
+<li class="level1"><a href="#details">Detailed Description</a></li>
+</ul>
+</div>
+<h1 class="title">Element Class</h1>
+<pre class="cpp"><span class="preprocessor">#include &lt;<a href="collision-element.html">Element</a>&gt;</span></pre><p><b>Inherits: </b><a href="pugitem.html">PugItem</a>.</p>
+<ul>
+<li><a href="element-members.html">List of all members, including inherited members</a></li>
+</ul>
+<a name="properties"></a>
+<h2>Properties</h2>
+<table class="propsummary">
+<tr><td class="topAlign"><ul>
+<li class="fn"><b><a href="element.html#baseName-prop">baseName</a></b> : const QString</li>
+<li class="fn"><b><a href="element.html#data-prop">data</a></b> : QVariant</li>
+<li class="fn"><b><a href="element.html#directory-prop">directory</a></b> : const QString</li>
+<li class="fn"><b><a href="element.html#extension-prop">extension</a></b> : const QString</li>
+<li class="fn"><b><a href="element.html#firstFrame-prop">firstFrame</a></b> : const QVariant</li>
+<li class="fn"><b><a href="element.html#frameList-prop">frameList</a></b> : FrameList *</li>
+</ul></td><td class="topAlign"><ul>
+<li class="fn"><b><a href="element.html#frameSpec-prop">frameSpec</a></b> : const QString</li>
+<li class="fn"><b><a href="element.html#frames-prop">frames</a></b> : QVariant</li>
+<li class="fn"><b><a href="element.html#lastFrame-prop">lastFrame</a></b> : const QVariant</li>
+<li class="fn"><b><a href="element.html#path-prop">path</a></b> : const QString</li>
+<li class="fn"><b><a href="element.html#paths-prop">paths</a></b> : const QStringList</li>
+<li class="fn"><b><a href="element.html#pattern-prop">pattern</a></b> : QString</li>
+</ul>
+</td></tr>
+</table>
+<ul>
+<li class="fn">6 properties inherited from <a href="pugitem.html#properties">PugItem</a></li>
+</ul>
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="element.html#Element">Element</a></b>(QObject *<i> parent</i> = 0)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QString </td><td class="memItemRight bottomAlign"><b><a href="element.html#baseName-prop">baseName</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QVariant </td><td class="memItemRight bottomAlign"><b><a href="element.html#data-prop">data</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QString </td><td class="memItemRight bottomAlign"><b><a href="element.html#directory-prop">directory</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QString </td><td class="memItemRight bottomAlign"><b><a href="element.html#extension-prop">extension</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QVariant </td><td class="memItemRight bottomAlign"><b><a href="element.html#firstFrame-prop">firstFrame</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QVariant </td><td class="memItemRight bottomAlign"><b><a href="element.html#frame">frame</a></b>(const QString<i> path</i>) const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> FrameList * </td><td class="memItemRight bottomAlign"><b><a href="element.html#frameList-prop">frameList</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const FrameList * </td><td class="memItemRight bottomAlign"><b><a href="element.html#frameList-prop">frameList</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QString </td><td class="memItemRight bottomAlign"><b><a href="element.html#frameSpec-prop">frameSpec</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QVariant </td><td class="memItemRight bottomAlign"><b><a href="element.html#frames-prop">frames</a></b>()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QVariant </td><td class="memItemRight bottomAlign"><b><a href="element.html#frames-prop">frames</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="element.html#hasFrames">hasFrames</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QVariant </td><td class="memItemRight bottomAlign"><b><a href="element.html#lastFrame-prop">lastFrame</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QString </td><td class="memItemRight bottomAlign"><b><a href="element.html#path-prop">path</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QString </td><td class="memItemRight bottomAlign"><b><a href="element.html#path-prop">path</a></b>(QVariant<i> frame</i>) const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QStringList </td><td class="memItemRight bottomAlign"><b><a href="element.html#paths-prop">paths</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QString </td><td class="memItemRight bottomAlign"><b><a href="element.html#pattern-prop">pattern</a></b>() const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="element.html#data-prop">setData</a></b>(const QVariant)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="element.html#frameList-prop">setFrameList</a></b>(FrameList *)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="element.html#frames-prop">setFrames</a></b>(const QVariant)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="element.html#pattern-prop">setPattern</a></b>(const QString)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> const QString </td><td class="memItemRight bottomAlign"><b><a href="element.html#toString">toString</a></b>() const</td></tr>
+</table>
+<ul>
+<li class="fn">18 public functions inherited from <a href="pugitem.html#public-functions">PugItem</a></li>
+</ul>
+<a name="signals"></a>
+<h2>Signals</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="element.html#data-prop">dataChanged</a></b>(const QVariant<i> data</i>)</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="element.html#extension-prop">elementChanged</a></b>()</td></tr>
+</table>
+<ul>
+<li class="fn">3 signal inherited from <a href="pugitem.html#signals">PugItem</a></li>
+</ul>
+<h3>Additional Inherited Members</h3>
+<ul>
+<li class="fn">7 protected functions inherited from <a href="pugitem.html#protected-functions">PugItem</a></li>
+</ul>
+<a name="details"></a>
+<!-- $$$Element-description -->
+<div class="descr">
+<h2>Detailed Description</h2>
+</div>
+<!-- @@@Element -->
+<div class="prop">
+<h2>Property Documentation</h2>
+<!-- $$$baseName-prop$$$baseName$$$elementChanged -->
+<h3 class="fn"><a name="baseName-prop"></a><span class="name">baseName</span> : const <span class="type">QString</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QString </td><td class="memItemRight bottomAlign"><span class="name"><b>baseName</b></span>() const</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b><a href="element.html#extension-prop">elementChanged</a></b></span>()</td></tr>
+</table>
+<!-- @@@baseName -->
+<!-- $$$data-prop$$$data$$$setDataconstQVariant$$$dataChangedconstQVariant -->
+<h3 class="fn"><a name="data-prop"></a><span class="name">data</span> : <span class="type">QVariant</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QVariant </td><td class="memItemRight bottomAlign"><span class="name"><b>data</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setData</b></span>(const QVariant)</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>dataChanged</b></span>(const QVariant<i> data</i>)</td></tr>
+</table>
+<!-- @@@data -->
+<!-- $$$directory-prop$$$directory$$$elementChanged -->
+<h3 class="fn"><a name="directory-prop"></a><span class="name">directory</span> : const <span class="type">QString</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QString </td><td class="memItemRight bottomAlign"><span class="name"><b>directory</b></span>() const</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b><a href="element.html#extension-prop">elementChanged</a></b></span>()</td></tr>
+</table>
+<!-- @@@directory -->
+<!-- $$$extension-prop$$$extension$$$elementChanged -->
+<h3 class="fn"><a name="extension-prop"></a><span class="name">extension</span> : const <span class="type">QString</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QString </td><td class="memItemRight bottomAlign"><span class="name"><b>extension</b></span>() const</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>elementChanged</b></span>()</td></tr>
+</table>
+<!-- @@@extension -->
+<!-- $$$firstFrame-prop$$$firstFrame$$$elementChanged -->
+<h3 class="fn"><a name="firstFrame-prop"></a><span class="name">firstFrame</span> : const <span class="type">QVariant</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QVariant </td><td class="memItemRight bottomAlign"><span class="name"><b>firstFrame</b></span>() const</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b><a href="element.html#extension-prop">elementChanged</a></b></span>()</td></tr>
+</table>
+<!-- @@@firstFrame -->
+<!-- $$$frameList-prop$$$frameList$$$frameList$$$setFrameListFrameList*$$$elementChanged -->
+<h3 class="fn"><a name="frameList-prop"></a><span class="name">frameList</span> : <span class="type"><a href="collision-framelist.html">FrameList</a></span> *</h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> FrameList * </td><td class="memItemRight bottomAlign"><span class="name"><b>frameList</b></span>()</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> const FrameList * </td><td class="memItemRight bottomAlign"><span class="name"><b>frameList</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setFrameList</b></span>(FrameList *)</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b><a href="element.html#extension-prop">elementChanged</a></b></span>()</td></tr>
+</table>
+<!-- @@@frameList -->
+<!-- $$$frameSpec-prop$$$frameSpec$$$elementChanged -->
+<h3 class="fn"><a name="frameSpec-prop"></a><span class="name">frameSpec</span> : const <span class="type">QString</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QString </td><td class="memItemRight bottomAlign"><span class="name"><b>frameSpec</b></span>() const</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b><a href="element.html#extension-prop">elementChanged</a></b></span>()</td></tr>
+</table>
+<!-- @@@frameSpec -->
+<!-- $$$frames-prop$$$frames$$$frames$$$setFramesconstQVariant$$$elementChanged -->
+<h3 class="fn"><a name="frames-prop"></a><span class="name">frames</span> : <span class="type">QVariant</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> QVariant </td><td class="memItemRight bottomAlign"><span class="name"><b>frames</b></span>()</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> const QVariant </td><td class="memItemRight bottomAlign"><span class="name"><b>frames</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setFrames</b></span>(const QVariant)</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b><a href="element.html#extension-prop">elementChanged</a></b></span>()</td></tr>
+</table>
+<!-- @@@frames -->
+<!-- $$$lastFrame-prop$$$lastFrame$$$elementChanged -->
+<h3 class="fn"><a name="lastFrame-prop"></a><span class="name">lastFrame</span> : const <span class="type">QVariant</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QVariant </td><td class="memItemRight bottomAlign"><span class="name"><b>lastFrame</b></span>() const</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b><a href="element.html#extension-prop">elementChanged</a></b></span>()</td></tr>
+</table>
+<!-- @@@lastFrame -->
+<!-- $$$path-prop$$$path$$$pathQVariant$$$elementChanged -->
+<h3 class="fn"><a name="path-prop"></a><span class="name">path</span> : const <span class="type">QString</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QString </td><td class="memItemRight bottomAlign"><span class="name"><b>path</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> const QString </td><td class="memItemRight bottomAlign"><span class="name"><b>path</b></span>(QVariant<i> frame</i>) const</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b><a href="element.html#extension-prop">elementChanged</a></b></span>()</td></tr>
+</table>
+<!-- @@@path -->
+<!-- $$$paths-prop$$$paths$$$elementChanged -->
+<h3 class="fn"><a name="paths-prop"></a><span class="name">paths</span> : const <span class="type">QStringList</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QStringList </td><td class="memItemRight bottomAlign"><span class="name"><b>paths</b></span>() const</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b><a href="element.html#extension-prop">elementChanged</a></b></span>()</td></tr>
+</table>
+<!-- @@@paths -->
+<!-- $$$pattern-prop$$$pattern$$$setPatternconstQString$$$elementChanged -->
+<h3 class="fn"><a name="pattern-prop"></a><span class="name">pattern</span> : <span class="type">QString</span></h3>
+<p><b>Access functions:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> const QString </td><td class="memItemRight bottomAlign"><span class="name"><b>pattern</b></span>() const</td></tr>
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b>setPattern</b></span>(const QString)</td></tr>
+</table>
+<p><b>Notifier signal:</b></p>
+<table class="alignedsummary">
+<tr><td class="memItemLeft topAlign rightAlign"> void </td><td class="memItemRight bottomAlign"><span class="name"><b><a href="element.html#extension-prop">elementChanged</a></b></span>()</td></tr>
+</table>
+<!-- @@@pattern -->
+</div>
+<div class="func">
+<h2>Member Function Documentation</h2>
+<!-- $$$Element[overload1]$$$ElementQObject* -->
+<h3 class="fn"><a name="Element"></a>Element::<span class="name">Element</span>(<span class="type">QObject</span> *<i> parent</i> = 0)</h3>
+<!-- @@@Element -->
+<!-- $$$frame[overload1]$$$frameconstQString -->
+<h3 class="fn"><a name="frame"></a>const <span class="type">QVariant</span> Element::<span class="name">frame</span>(const <span class="type">QString</span><i> path</i>) const</h3>
+<!-- @@@frame -->
+<!-- $$$hasFrames[overload1]$$$hasFrames -->
+<h3 class="fn"><a name="hasFrames"></a><span class="type">bool</span> Element::<span class="name">hasFrames</span>() const</h3>
+<!-- @@@hasFrames -->
+<!-- $$$toString[overload1]$$$toString -->
+<h3 class="fn"><a name="toString"></a>const <span class="type">QString</span> Element::<span class="name">toString</span>() const</h3>
+<!-- @@@toString -->
+</div>
+</body>
+</html>

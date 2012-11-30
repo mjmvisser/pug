@@ -2,6 +2,22 @@
 
 #include "pugitem.h"
 
+/*!
+    \class PugItem
+    \inmodule Pug
+*/
+
+/*!
+    \qmltype PugItem
+    \instantiates PugItem
+    \inqmlmodule Pug
+    \brief The base class of all classes in the Pug module.
+
+    PugItem is the base class of all classes in the Pug module. It has properties and
+    methods for instance naming, child Pug items, the parent Pug item and logging that
+    are available to all Pug items.
+*/
+
 PugItem::PugItem(QObject *parent) :
     QObject(parent),
     m_log(new Log(this)),

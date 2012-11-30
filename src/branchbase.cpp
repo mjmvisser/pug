@@ -11,6 +11,59 @@
 #include "field.h"
 #include "property.h"
 
+/*!
+    \class BranchBase
+    \inmodule Pug
+*/
+/*!
+    \qmltype BranchBase
+    \instantiates BranchBase
+    \inqmlmodule Pug
+    \brief The BranchBase class is the base class for files and directories ("branches").
+
+    BranchBase is the base class of Branch and File, which represent directories and files,
+    respectively. Branches have a root() that indicates their filesystem parent. If the root
+    is not set, it is assumed to be the first parent of type BranchBase.
+
+    For example, consider the following example:
+    \qml
+        import Pug 1.0
+
+        Root {
+            Branch {
+                id: topLevel
+
+                Branch {
+                    id: first
+                }
+
+                Branch {
+                    id: second
+                    root: first
+
+                    File {
+                        id: third
+                    }
+                }
+            }
+        }
+    \endqml
+    In this object tree, the root of third is second, the root of second is first, and the root of first
+    is topLevel.
+
+    The pattern property contains a string that is used to match, parse or format paths and data from
+    a map of field names to field values. The pattern may reference fields using curly braces, i.e.:
+    \qml
+        Branch {
+            pattern: "/prod/projects/{PROJECT}/shots/{SEQUENCE}_{SHOT}"
+        }
+    \endqml
+
+    The path or paths matched by the pattern are stored in the elements property. Each element is an
+    instance of Element. Each element also has a data property that contains the fields represented
+    by the element's path.
+*/
+
 BranchBase::BranchBase(QObject *parent) :
     NodeBase(parent),
     m_root()
@@ -431,10 +484,22 @@ const QVariant BranchBase::parse(const QString path) const
     return QVariant();
 }
 
+bool BranchBase::areFieldsComplete(const QString pattern, const QVariantMap fields) const
+{
+    foreach (const QString fieldName, fieldNames(pattern)) {
+        const Field *field = findField(fieldName);
+        QVariant value = field->get(fields);
+        if (!value.isValid())
+            return false;
+    }
+
+    return true;
+}
+
 const QString BranchBase::map(const QVariant fields) const
 {
     copious() << ".map" << fields;
-    if (fields.isValid() && fields.type() == QVariant::Map && containsFields(fieldNames(m_pattern), fields.toMap().keys())) {
+    if (fields.isValid() && fields.type() == QVariant::Map && areFieldsComplete(m_pattern, fields.toMap())) {
         QString mappedParent;
         const BranchBase *rootBranch = qobject_cast<const BranchBase *>(root());
         // recurse
@@ -495,14 +560,6 @@ bool BranchBase::containsFields(const QVariantMap& needle, const QVariantMap& ha
     }
 
     return true;
-}
-
-bool BranchBase::containsFields(const QStringList& needle, const QStringList& haystack) const
-{
-    QSet<QString> needleSet = QSet<QString>::fromList(needle);
-    QSet<QString> haystackSet = QSet<QString>::fromList(haystack);
-
-    return haystackSet.contains(needleSet);
 }
 
 const QStringList BranchBase::listMatchingPathsHelper(const QDir parentDir, const QVariantMap fields) const

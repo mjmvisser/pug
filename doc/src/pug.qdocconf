@@ -1,0 +1,13 @@
+project = Pug
+description = Pug
+sourcedirs = ../../src ../../qml
+headerdirs = ../../src
+excludedirs = ../../src/old
+sources.fileextensions = "*.cpp *.qdoc *.qml"
+headers.fileextensions = "*.h"
+outputdir = ../html
+outputformats = HTML
+HTML.stylesheets = template/style/offline.css
+HTML.extraimages = template/images/btn_next_green.png
+HTML.headerstyles = \
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline.css\" />\n"

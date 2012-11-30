@@ -12,3 +12,8 @@ imports/*
 core.*
 .nfs*
 Makefile
+*.orig
+*.BACKUP.*
+*.BASE.*
+*.LOCAL.*
+*.REMOTE.*

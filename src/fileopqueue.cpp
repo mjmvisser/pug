@@ -4,7 +4,7 @@
 #include "fileopqueue.h"
 
 FileOpQueue::FileOpQueue(QObject *parent) :
-    QObject(parent),
+    PugItem(parent),
     m_process(new QProcess(this))
 {
     m_process->setProcessChannelMode(QProcess::ForwardedChannels);
@@ -124,7 +124,7 @@ void FileOpQueue::continueRunning()
             break;
         }
 
-        //qDebug() << argv;
+        copious() << argv;
 
         const QString program = argv.takeFirst();
         m_process->start(program, argv);

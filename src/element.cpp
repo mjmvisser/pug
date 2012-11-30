@@ -6,6 +6,23 @@
 #include "element.h"
 #include "framelist.h"
 
+/*!
+    \class Element
+    \inmodule Pug
+*/
+
+/*!
+    \qmltype Element
+    \instantiates Element
+    \inqmlmodule Pug
+    \brief Elements encapsulate the path of a directory, a file, or a sequence of files, and related data.
+
+    Elements encapsulate the path of a directory, a file, or a sequence of files, and related data.
+    BranchBase-derived classes contain a list of elements, each which is an instance of Element.
+    Elements have convenience read-only properties that return the directory, baseName, frameSpec and extension
+    of their path. They also store a FrameList object and corresponding read-only frames convenience property.
+*/
+
 Element::Element(QObject *parent) :
     PugItem(parent),
     m_frameList()
@@ -233,6 +250,15 @@ void Element::append(const QString path)
         }
     } else {
         qWarning() << this << ".append, but do not have frames";
+    }
+}
+
+const QString Element::toString() const
+{
+    if (hasFrames()) {
+        return QString("%s [%s]").arg(m_pattern).arg(m_frameList->toString());
+    } else {
+        return m_pattern;
     }
 }
 

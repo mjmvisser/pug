@@ -37,18 +37,16 @@ Branch {
                 release: release
                 user: node("/prod")
                 code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
-                firstFrame: releaseSeq.elements[releaseSeq.ShotgunOperation.index].firstFrame
-                lastFrame: releaseSeq.elements[releaseSeq.ShotgunOperation.index].lastFrame
-                thumbnailPath: workSeq.thumbnail.elements[releaseSeq.ShotgunOperation.index].path
-                filmstripPath: workSeq.filmstrip.elements[releaseSeq.ShotgunOperation.index].path
+                thumbnail: workSeq.thumbnail
+                filmstrip: workSeq.filmstrip
             }
 
             ShotgunFile {
                 project: node("/project")
                 release: release
                 user: node("/prod")
-                thumbnailPath: workSeq.thumbnail.elements[releaseSeq.ShotgunOperation.index].path
-                filmstripPath: workSeq.filmstrip.elements[releaseSeq.ShotgunOperation.index].path
+                thumbnail: workSeq.thumbnail
+                filmstrip: workSeq.filmstrip
             }
         }
     }

@@ -7,7 +7,9 @@
 #include <QStringList>
 #include <QProcess>
 
-class FileOpQueue : public QObject
+#include "pugitem.h"
+
+class FileOpQueue : public PugItem
 {
     Q_OBJECT
     Q_PROPERTY(QString user READ user WRITE setUser NOTIFY userChanged)

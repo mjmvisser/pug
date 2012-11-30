@@ -3,6 +3,8 @@ import MokkoDepts 1.0
 import ShotgunEntities 1.0
 
 Root {
+    //logLevel: Log.Copious
+    
     Shotgun {
         id: shotgun
         baseUrl: "https://mokko.shotgunstudio.com"
@@ -159,11 +161,11 @@ Root {
         }
     }
     
-    Footage {
-        id: footage
-        name: "footage"
-        root: shot
-    }
+    // Footage {
+        // id: footage
+        // name: "footage"
+        // root: shot
+    // }
     
     Plates {
         id: plate

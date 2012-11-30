@@ -200,7 +200,8 @@ PugTestCase {
         releaseSpy.wait(500);
         
         var releasePath = tmpDir + "releasetests/abc/foo/release/main/v003/dag.%04d.txt";
-        compare(releaseSeq.elements[0].path, releasePath);
+        compare(releaseSeq.elements[0].pattern, releasePath);
+        compare(releaseBranch.elements[0].path, tmpDir + "releasetests/abc/foo/release/main/v003/");
         
         for (var frame = 1; frame <= 4; frame++) {
             var framePath = releasePath.replace("%04d", zeroFill(frame, 4));

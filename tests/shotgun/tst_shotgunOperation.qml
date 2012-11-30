@@ -318,18 +318,16 @@ PugTestCase {
                         release: compRelease
                         user: prod
                         code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
-                        firstFrame: releaseSeq.elements[releaseSeq.ShotgunOperation.index].firstFrame
-                        lastFrame: releaseSeq.elements[releaseSeq.ShotgunOperation.index].lastFrame
-                        thumbnailPath: workSeqThumbnail.elements[releaseSeq.ShotgunOperation.index].path
-                        filmstripPath: workSeqFilmstrip.elements[releaseSeq.ShotgunOperation.index].path
+                        thumbnail: workSeqThumbnail
+                        filmstrip: workSeqFilmstrip
                     }
 
                     ShotgunFile {
                         project: project
                         release: compRelease
                         user: prod
-                        thumbnailPath: workSeqThumbnail.outputPath
-                        filmstripPath: workSeqFilmstrip.outputPath
+                        thumbnail: workSeqThumbnail
+                        filmstrip: workSeqFilmstrip
                     }
                 }
             }
@@ -340,8 +338,6 @@ PugTestCase {
                 pattern: "work/{USER}/"
                 
                 File {
-                    //logLevel: Log.Debug
-                    //ReleaseOperation.logLevel: Log.Debug
                     id: workSeq
                     name: "workSeq"
                     pattern: "images/{FILENAME}.{FRAME}.{EXT}"
@@ -351,12 +347,6 @@ PugTestCase {
                 }
                 
                 MakeThumbnail {
-                    //CookOperation.cookable: true
-                    //logLevel: Log.Debug
-                    //UpdateOperation.logLevel: Log.Error
-                    //ReleaseOperation.logLevel: Log.Error
-                    //CookOperation.logLevel: Log.Debug
-                    //ShotgunOperation.logLevel: Log.Error
                     id: workSeqThumbnail
                     name: "workSeqThumbnail"
                     input: workSeq
@@ -364,8 +354,6 @@ PugTestCase {
                 }
 
                 MakeThumbnail {
-                    //CookOperation.cookable: true
-                    //logLevel: Log.Debug
                     id: workSeqFilmstrip
                     name: "workSeqFilmstrip"
                     input: workSeq
@@ -404,15 +392,15 @@ PugTestCase {
         var workPath = tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/work/mvisser/somefile.txt";
         var releasePath = tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/release/main/v001/somefile.txt";
 
+        var env2 = env;
+        env2.VERSION = 1;
+
+        compare(releaseFile.root, transferRelease);
+        compare(transferRelease.map(env2), tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/release/main/v001/");
+
         verify(Util.exists(workPath));
         compare(workFile.map(env), workPath);
         
-        // check that the config is good
-        update.run(workFile, env);
-        updateSpy.wait(1000);
-        compare(workFile.elements.length, 1);
-        compare(workFile.elements[0].path, workPath);
-
         release.run(workFile, env);
         releaseSpy.wait(10000);
         
@@ -465,7 +453,7 @@ PugTestCase {
         updateSpy.wait(1000);
     
         compare(workSeq.elements.length, 1);
-        compare(workSeq.elements[0].path, workPath);
+        compare(workSeq.elements[0].pattern, workPath);
 
         release.run(compWork, env);
         releaseSpy.wait(10000);

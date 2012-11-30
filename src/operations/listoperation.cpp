@@ -1,5 +1,7 @@
+#include <iostream>
+
 #include "listoperation.h"
-#include "nodebase.h"
+#include "branchbase.h"
 
 ListOperationAttached::ListOperationAttached(QObject *parent) :
     OperationAttached(parent)
@@ -8,6 +10,14 @@ ListOperationAttached::ListOperationAttached(QObject *parent) :
 
 void ListOperationAttached::run()
 {
+    BranchBase *branch = qobject_cast<BranchBase *>(node());
+
+    if (branch) {
+        foreach (const Element *element, branch->elements()) {
+            std::cout << element->toString().toUtf8().constData() << std::endl;
+        }
+    }
+
     setStatus(OperationAttached::Finished);
     continueRunning();
 }

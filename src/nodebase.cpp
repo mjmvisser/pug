@@ -394,9 +394,14 @@ const QList<NodeBase *> NodeBase::inputs()
     foreach (QObject *o, children()) {
         Property *p = qobject_cast<Property*>(o);
         if (p && p->isInput()) {
-            NodeBase *input = QObject::property(p->name().toUtf8()).value<NodeBase*>();
-            if (input) {
-                result.append(input);
+            if (hasProperty(p->name().toUtf8())) {
+                QVariant v = QObject::property(p->name().toUtf8());
+                if (v.canConvert<NodeBase *>()) {
+                    NodeBase *input = v.value<NodeBase*>();
+                    if (input) {
+                        result.append(input);
+                    }
+                }
             }
         }
     }
@@ -412,9 +417,14 @@ const QList<const NodeBase *> NodeBase::inputs() const
     foreach (const QObject *o, children()) {
         const Property *p = qobject_cast<const Property*>(o);
         if (p && p->isInput()) {
-            const NodeBase *input = QObject::property(p->name().toUtf8()).value<NodeBase*>();
-            if (input) {
-                result.append(input);
+            if (hasProperty(p->name().toUtf8())) {
+                QVariant v = QObject::property(p->name().toUtf8());
+                if (v.canConvert<NodeBase *>()) {
+                    const NodeBase *input = v.value<NodeBase*>();
+                    if (input) {
+                        result.append(input);
+                    }
+                }
             }
         }
     }

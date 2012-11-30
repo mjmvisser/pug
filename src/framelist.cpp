@@ -6,6 +6,18 @@
 
 #include "framelist.h"
 
+/*!
+    \class FrameList
+    \inmodule Pug
+*/
+
+/*!
+    \qmltype FrameList
+    \instantiates FrameList
+    \inqmlmodule Pug
+    \brief A FrameList represents a list of frames, which may or may not be contiguous.
+*/
+
 FrameList::FrameList(QObject *parent) :
     PugItem(parent)
 {
@@ -68,6 +80,11 @@ void FrameList::setPattern(const QString pattern)
         emit patternChanged(framesToPattern(m_frames));
         emit framesChanged(m_frames);
     }
+}
+
+const QString FrameList::toString() const
+{
+    return pattern();
 }
 
 static const QString formatRange(float start, float end, float by)
