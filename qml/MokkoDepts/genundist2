@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ "$OS" == "Darwin" ]; then
+    nuke=Nuke$NUKE_VERSION
+else
+    nuke=Nuke${NUKE_VERSION%v*}
+fi
+
+# run the script through Nuke
+exec $nuke -t $0.py "$@"

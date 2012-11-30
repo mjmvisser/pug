@@ -1,0 +1,14 @@
+pug
+tst_*
+!tst_*.*
+moc_*.cpp
+qrc_*.cpp
+*.moc
+*.o
+*.a
+*.so
+*.pyc
+imports/*
+core.*
+.nfs*
+Makefile

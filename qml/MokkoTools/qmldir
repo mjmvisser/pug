@@ -1,0 +1,4 @@
+module MokkoTools
+MakeThumbnail 1.0 MakeThumbnail.qml
+Sequence 1.0 Sequence.qml
+Identify 1.0 Identify.qml

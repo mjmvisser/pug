@@ -1,0 +1,9 @@
+module ShotgunEntities
+ShotgunDelivery 1.0 ShotgunDelivery.qml
+ShotgunElement 1.0 ShotgunElement.qml
+ShotgunPublishEvent 1.0 ShotgunPublishEvent.qml
+ShotgunScene 1.0 ShotgunScene.qml
+ShotgunShot 1.0 ShotgunShot.qml
+ShotgunStep 1.0 ShotgunStep.qml
+ShotgunVersion 1.0 ShotgunVersion.qml
+ShotgunFile 1.0 ShotgunFile.qml

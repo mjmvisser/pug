@@ -1,0 +1,51 @@
+import QtQuick 2.0
+import Pug 1.0
+
+import "js/identify.js" as Identify
+
+CookQueue {
+    id: self
+    property var input
+    property var elements: input.elements
+    property var metadata: {} 
+    count: input !== null ? input.elements.length : 0
+
+    component: Component {
+        Script {
+            property int index
+            script: "identify"
+            property string format: Identify.buildFormatString(self.metadata)
+            property string path: elements[index].paths[0]
+
+            Property {
+                name: "format"
+                property string flagPrefix: "-"
+            }
+
+            Property {
+                name: "path"
+                property bool noFlag: true
+            }
+
+            onCooked: {
+                var lines = stdout.split("\n");
+                debug(lines);
+                for (var i = 0; i < lines.length; i++) {
+                    var tokens = lines[i].split("=");
+                    var data = input.elements[index].data;
+                    data[tokens[0]] = tokens[1]; 
+                    input.elements[index].data = data;
+                }
+            }
+        }
+    }
+
+    Property {
+        input: true
+        name: "input"
+    }
+    
+    Property {
+        name: "metadata"
+    }
+}        
