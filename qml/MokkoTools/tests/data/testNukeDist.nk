@@ -1,0 +1,16 @@
+# Created by 3DEqualizer4 using Export Nuke Distortion Nodes export script
+tde4_ldp_classic_3de_mixed {
+ direction undistort
+ tde4_focal_length_cm 1.8000000 
+ tde4_filmback_width_cm 2.7650000 
+ tde4_filmback_height_cm 1.4581055 
+ tde4_lens_center_offset_x_cm 0.0000000 
+ tde4_lens_center_offset_y_cm 0.0000000 
+ tde4_pixel_aspect 1.0000000 
+ Distortion -0.0468421 
+ Anamorphic_Squeeze 1.0000000 
+ Curvature_X 0.0000000 
+ Curvature_Y 0.0000000 
+ Quartic_Distortion -0.0457895 
+ name tde4_ldp_036-0010
+}

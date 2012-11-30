@@ -5,21 +5,36 @@ CookQueue {
     id: self
     property var input
     property var elements: []
-    property string distortNukeFile
+    property var nukeDistortFile
     property string outputFormat
+    count: input !== null ? input.elements.length : 0
+
+    Property {
+        input: true
+        name: "input"
+    }
+
+    Property {
+        input: true
+        name: "nukeDistortFile"
+    }
+    
+    Property {
+        name: "outputFormat"
+    }
 
     component: Component {
         Script {
             property int index
-            script: Qt.resolvedUrl("$NUKE_EXEC -t $PIPELINE_QTENGINE2/qtdistort.py").replace("file://", "")
+            script: Qt.resolvedUrl("scripts/makeDistorted.sh").replace("file://", "")
             property var inputsequence: input.elements[index].pattern
             property string outsequence: generatePath(self.name, index, input.elements[index].frameSpec, input.elements[index].extension)
             property real start: input.elements[index].firstFrame
             property real end: input.elements[index].lastFrame
-            property string distortnukefile: distortNukeFile
-            property string out_format: outputFormat
-            property string render: "True"
-            property string debug: "True"
+            property string distortnukefile: nukeDistortFile.elements[0].path
+            property string outformat: outputFormat
+            property string __render: "True"
+            property string __debug: "True"
 
             Property {
                 name: "inputsequence"
@@ -43,20 +58,20 @@ CookQueue {
             }
 
             Property {
-                name: "out_format"
+                name: "outformat"
             }
 
             Property {
-                name: "render"
+                name: "__render"
             }
 
             Property {
-                name: "debug"
+                name: "__debug"
             }
 
             onCooked: {
                 debug("onCooked");
-                var newElement = Util.createElement(self, {pattern: outputPath, data: input.elements[index].data});
+                var newElement = Util.createElement(self, {pattern: inputsequence, data: input.elements[index].data});
                 elements.push(newElement);
                 
                 debug("new element " + newElement.pattern);
@@ -66,10 +81,5 @@ CookQueue {
                 debug("onCook");
             }
         }
-    }
-
-    Property {
-        input: true
-        name: "input"
     }
 }        
