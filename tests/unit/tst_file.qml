@@ -32,18 +32,18 @@ PugTestCase {
         id: branch
         pattern: tmpDir + "filetests/"
     
-        Field {
-            name: "FOO"
-        }
-
-        Field {
-            name: "BAR"
-            regexp: "\\d{4}|(?:%04d)"
-        }
-
-        Field {
-            name: "BAZ"
-        }
+        fields: [
+            Field {
+                name: "FOO" 
+            },
+            Field {
+                name: "BAR"
+                regexp: "\\d{4}|(?:%04d)"
+            },
+            Field {
+                name: "BAZ"
+            }
+        ]
         
         File {
             id: file

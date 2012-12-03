@@ -5,11 +5,11 @@ import "js/shotgunutils.js" as ShotgunUtils
 ShotgunEntity {
     name: "Attachment"
 
-    property alias project: projectField.link
-    property alias release: releaseField.link
-    property var thumbnail: null
-    property var filmstrip: null
-    property var user: null
+    property var project
+    property var release
+    property var thumbnail
+    property var filmstrip
+    property var user
 
     ShotgunUrlField {
         id: thisFileField
@@ -18,17 +18,17 @@ ShotgunEntity {
     }
 
     ShotgunField {
-        id: projectField
         name: "project"
         type: ShotgunField.Link
         linkType: "Project"
+        link: project
     }
     
     ShotgunField {
-        id: releaseField
         name: "publish_event_sg_files_publish_events"
         type: ShotgunField.MultiLink
         linkType: "PublishEvent"
+        link: release
     }
 
     ShotgunField {

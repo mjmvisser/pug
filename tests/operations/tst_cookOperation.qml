@@ -34,28 +34,21 @@ PugTestCase {
     Root {
         id: root
 
-        UpdateOperation {
-            id: update
-        }
+        operations: [
+            UpdateOperation {
+                id: update
+            },
+            CookOperation {
+                id: cook
+                dependencies: update
+            }
+        ]
         
-        CookOperation {
-            id: cook
-            dependencies: update
-        }
-        
-        Field {
-            name: "ROOT"
-            regexp: tmpDir
-        }
-        
-        Field {
-            name: "FOO"
-        }
-        
-        Field {
-            name: "FILENAME"
-            regexp: ".*"
-        }
+        fields: [ 
+            Field { name: "ROOT"; regexp: tmpDir },
+            Field { name: "FOO" },
+            Field { name: "FILENAME"; regexp: ".*" }
+        ]
         
         Branch {
             id: abc
@@ -94,6 +87,8 @@ PugTestCase {
                     property File input: workFile
                     property var elements: []
 
+                    inputs: Input { name: "input" }
+
                     component: Component {
                         PugItem {
                             id: item
@@ -124,11 +119,6 @@ PugTestCase {
                                 item.cooked(Operation.Finished);
                             }
                         }
-                    }
-
-                    Property {
-                        name: "input"
-                        input: true
                     }
                 }
                 

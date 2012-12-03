@@ -9,7 +9,7 @@
 #include "branchbase.h"
 #include "root.h"
 #include "field.h"
-#include "property.h"
+#include "param.h"
 
 /*!
     \class BranchBase
@@ -68,12 +68,8 @@ BranchBase::BranchBase(QObject *parent) :
     NodeBase(parent),
     m_root()
 {
-    Property *rootProperty = new Property(this);
-    rootProperty->setName("root");
-    rootProperty->setInput(true);
-
-    Property *patternProperty = new Property(this);
-    patternProperty->setName("pattern");
+    addInput("root");
+    addParam("pattern");
 }
 
 const QList<const Field *> BranchBase::fields(const QStringList fieldNameList) const
@@ -91,34 +87,9 @@ const QList<const Field *> BranchBase::fields(const QStringList fieldNameList) c
     }
 
     // our fields
-    foreach (const QObject *o, children()) {
-        const Field *field = qobject_cast<const Field *>(o);
-        if (field && fnames.contains(field->name()))
-            results.append(field);
-    }
-
-    return results;
-}
-
-const QList<Field *> BranchBase::fields(const QStringList fieldNameList)
-{
-    QList<Field *> results;
-
-    // add our list of field names to those passed in
-    QStringList fnames = fieldNameList;
-    fnames.append(fieldNames(pattern()));
-
-    // parent fields
-    BranchBase *s = root();
-    if (s) {
-        results.append(s->fields(fnames));
-    }
-
-    // our fields
-    foreach (QObject *o, children()) {
-        Field *field = qobject_cast<Field *>(o);
-        if (field && fnames.contains(field->name()))
-            results.append(field);
+    foreach (const Field *f, m_fields) {
+        if (fnames.contains(f->name()))
+            results.append(f);
     }
 
     return results;
@@ -166,6 +137,11 @@ const QList<const Element *>& BranchBase::elements() const
 QList<Element *>& BranchBase::elements()
 {
     return m_elements;
+}
+
+QQmlListProperty<Field> BranchBase::fields_()
+{
+    return QQmlListProperty<Field>(this, m_fields);
 }
 
 void BranchBase::clearElements()
@@ -244,9 +220,8 @@ const BranchBase *BranchBase::parentBranch() const
 Field *BranchBase::findField(const QString name)
 {
     // check our fields first
-    foreach (QObject *o, children()) {
-        Field *field = qobject_cast<Field *>(o);
-        if (field && field->name() == name) {
+    foreach (Field *field, m_fields) {
+        if (field->name() == name) {
             return field;
         }
     }
@@ -263,9 +238,8 @@ Field *BranchBase::findField(const QString name)
 const Field *BranchBase::findField(const QString name) const
 {
     // check our fields first
-    foreach (const QObject *o, children()) {
-        const Field *field = qobject_cast<const Field *>(o);
-        if (field && field->name() == name) {
+    foreach (const Field *field, m_fields) {
+        if (field->name() == name) {
             return field;
         }
     }
@@ -488,6 +462,11 @@ bool BranchBase::areFieldsComplete(const QString pattern, const QVariantMap fiel
 {
     foreach (const QString fieldName, fieldNames(pattern)) {
         const Field *field = findField(fieldName);
+        if (!field) {
+            error() << "can't find field" << fieldName;
+            return false;
+        }
+
         QVariant value = field->get(fields);
         if (!value.isValid())
             return false;
@@ -538,10 +517,10 @@ const QStringList BranchBase::listMatchingPaths(const QVariant data) const
             if (parentDir.isAbsolute()) {
                 result = listMatchingPathsHelper(parentDir, data.toMap());
             } else {
-                qWarning() << ".map returned a relative path" << parentPath;
+                warning() << ".map returned a relative path" << parentPath;
             }
         } else {
-            qWarning() << ".map returned an empty path!";
+            warning() << ".map returned an empty path!";
         }
     }
     return result;

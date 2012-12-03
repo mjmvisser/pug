@@ -2,7 +2,8 @@
 #include <QQmlProperty>
 
 #include "nodebase.h"
-#include "property.h"
+#include "param.h"
+#include "input.h"
 
 NodeBase::NodeBase(QObject *parent) :
     PugItem(parent),
@@ -14,35 +15,27 @@ QQmlListProperty<NodeBase> NodeBase::nodes_()
 {
     return QQmlListProperty<NodeBase>(this, 0, NodeBase::nodes_append,
                                         NodeBase::nodes_count,
-                                        NodeBase::nodes_at,
+                                        NodeBase::node_at,
                                         NodeBase::nodes_clear);
 }
 
-QQmlListProperty<PropertyBase> NodeBase::properties_()
+QQmlListProperty<Param> NodeBase::params_()
 {
-    return QQmlListProperty<PropertyBase>(this, 0, NodeBase::properties_append,
-                                        NodeBase::properties_count,
-                                        NodeBase::properties_at,
-                                        NodeBase::properties_clear);
+    return QQmlListProperty<Param>(this, 0, NodeBase::params_append,
+                                        NodeBase::params_count,
+                                        NodeBase::param_at,
+                                        NodeBase::params_clear);
 }
 
-QQmlListProperty<NodeBase> NodeBase::inputs_()
+QQmlListProperty<Input> NodeBase::inputs_()
 {
-    return QQmlListProperty<NodeBase>(this, 0, NodeBase::inputs_append,
+    return QQmlListProperty<Input>(this, 0, NodeBase::inputs_append,
                                         NodeBase::inputs_count,
-                                        NodeBase::inputs_at,
+                                        NodeBase::input_at,
                                         NodeBase::inputs_clear);
 }
 
-QQmlListProperty<Operation> NodeBase::operations_()
-{
-    return QQmlListProperty<Operation>(this, 0, NodeBase::operations_append,
-                                        NodeBase::operations_count,
-                                        NodeBase::operations_at,
-                                        NodeBase::operations_clear);
-}
-
-// children property
+// nodes property
 void NodeBase::nodes_append(QQmlListProperty<NodeBase> *prop, NodeBase *node)
 {
     NodeBase *that = static_cast<NodeBase *>(prop->object);
@@ -61,7 +54,7 @@ int NodeBase::nodes_count(QQmlListProperty<NodeBase> *prop)
     return count;
 }
 
-NodeBase *NodeBase::nodes_at(QQmlListProperty<NodeBase> *prop, int i)
+NodeBase *NodeBase::node_at(QQmlListProperty<NodeBase> *prop, int i)
 {
     int index = 0;
     foreach (QObject *o, prop->object->children()) {
@@ -87,139 +80,73 @@ void NodeBase::nodes_clear(QQmlListProperty<NodeBase> *prop)
     emit that->nodesChanged();
 }
 
-// properties property
-void NodeBase::properties_append(QQmlListProperty<PropertyBase> *prop, PropertyBase *p)
+// params property
+void NodeBase::params_append(QQmlListProperty<Param> *prop, Param *p)
 {
     NodeBase *that = static_cast<NodeBase *>(prop->object);
 
     p->setParent(that);
-    emit that->propertiesChanged();
+    that->m_params.append(p);
+    emit that->paramsChanged();
 }
 
-int NodeBase::properties_count(QQmlListProperty<PropertyBase> *prop)
-{
-    int count = 0;
-    foreach (QObject *o, prop->object->children()) {
-        if (qobject_cast<PropertyBase *>(o))
-            count++;
-    }
-    return count;
-}
-
-PropertyBase *NodeBase::properties_at(QQmlListProperty<PropertyBase> *prop, int i)
-{
-    int index = 0;
-    foreach (QObject *o, prop->object->children()) {
-        PropertyBase *p = qobject_cast<PropertyBase *>(o);
-        if (p) {
-            if (index == i)
-                return p;
-            index++;
-        }
-    }
-    return 0;
-}
-
-void NodeBase::properties_clear(QQmlListProperty<PropertyBase> *prop)
+int NodeBase::params_count(QQmlListProperty<Param> *prop)
 {
     NodeBase *that = static_cast<NodeBase *>(prop->object);
-    const QObjectList properties = prop->object->children();
-    foreach (QObject *o, properties) {
-        PropertyBase *p = qobject_cast<PropertyBase *>(o);
-        if (p)
-            p->setParent(0);
+    return that->m_params.count();
+}
+
+Param *NodeBase::param_at(QQmlListProperty<Param> *prop, int i)
+{
+    NodeBase *that = static_cast<NodeBase *>(prop->object);
+    if (i < that->m_params.count())
+        return that->m_params[i];
+    else
+        return 0;
+}
+
+void NodeBase::params_clear(QQmlListProperty<Param> *prop)
+{
+    NodeBase *that = static_cast<NodeBase *>(prop->object);
+    foreach (Param *p, that->m_params) {
+        p->setParent(0);
     }
-    emit that->propertiesChanged();
+    that->m_params.clear();
+    emit that->paramsChanged();
 }
 
 // inputs property
-void NodeBase::inputs_append(QQmlListProperty<NodeBase> *prop, NodeBase *p)
-{
-    Q_UNUSED(prop);
-    Q_UNUSED(p);
-}
-
-int NodeBase::inputs_count(QQmlListProperty<NodeBase> *prop)
-{
-    int count = 0;
-    foreach (QObject *o, prop->object->children()) {
-        Property *p = qobject_cast<Property *>(o);
-        if (p && p->isInput()) {
-            count++;
-        }
-    }
-    return count;
-}
-
-NodeBase *NodeBase::inputs_at(QQmlListProperty<NodeBase> *prop, int i)
-{
-    int index = 0;
-    foreach (QObject *o, prop->object->children()) {
-        Property *p = qobject_cast<Property *>(o);
-        if (p && p->isInput()) {
-            if (index == i)
-                return prop->object->property(p->name().toUtf8()).value<NodeBase *>();
-            index++;
-        }
-    }
-    return 0;
-}
-
-void NodeBase::inputs_clear(QQmlListProperty<NodeBase> *prop)
+void NodeBase::inputs_append(QQmlListProperty<Input> *prop, Input *in)
 {
     NodeBase *that = static_cast<NodeBase *>(prop->object);
-    const QObjectList inputs = prop->object->children();
-    foreach (QObject *o, inputs) {
-        Property *p = qobject_cast<Property *>(o);
-        if (p && p->isInput())
-            p->setParent(0);
-    }
+
+    in->setParent(that);
+    that->m_inputs.append(in);
     emit that->inputsChanged();
 }
 
-// operations property
-void NodeBase::operations_append(QQmlListProperty<Operation> *prop, Operation *p)
+int NodeBase::inputs_count(QQmlListProperty<Input> *prop)
 {
     NodeBase *that = static_cast<NodeBase *>(prop->object);
-
-    p->setParent(that);
-    emit that->operationsChanged();
+    return that->m_inputs.count();
 }
 
-int NodeBase::operations_count(QQmlListProperty<Operation> *prop)
-{
-    int count = 0;
-    foreach (QObject *o, prop->object->children()) {
-        if (qobject_cast<Operation *>(o))
-            count++;
-    }
-    return count;
-}
-
-Operation *NodeBase::operations_at(QQmlListProperty<Operation> *prop, int i)
-{
-    int index = 0;
-    foreach (QObject *o, prop->object->children()) {
-        Operation *p = qobject_cast<Operation *>(o);
-        if (p) {
-            if (index == i)
-                return p;
-            index++;
-        }
-    }
-    return 0;
-}
-
-void NodeBase::operations_clear(QQmlListProperty<Operation> *prop)
+Input *NodeBase::input_at(QQmlListProperty<Input> *prop, int i)
 {
     NodeBase *that = static_cast<NodeBase *>(prop->object);
-    const QObjectList operations = prop->object->children();
-    foreach (QObject *o, operations) {
-        Operation *node = qobject_cast<Operation *>(o);
-        if (node)
-            node->setParent(0);
+    if (i < that->m_inputs.count())
+        return that->m_inputs[i];
+    else
+        return 0;
+}
+
+void NodeBase::inputs_clear(QQmlListProperty<Input> *prop)
+{
+    NodeBase *that = static_cast<NodeBase *>(prop->object);
+    foreach (Input *in, that->m_inputs) {
+        in->setParent(0);
     }
-    emit that->operationsChanged();
+    emit that->inputsChanged();
 }
 
 bool NodeBase::isOutput() const
@@ -386,21 +313,18 @@ const NodeBase *NodeBase::nodeInChildren(const QString n) const
     return 0;
 }
 
-const QList<NodeBase *> NodeBase::inputs()
+const QList<const NodeBase *> NodeBase::upstream() const
 {
-    copious() << ".inputs";
-    QList<NodeBase *> result;
-    // loop through properties and find inputs
-    foreach (QObject *o, children()) {
-        Property *p = qobject_cast<Property*>(o);
-        if (p && p->isInput()) {
-            if (hasProperty(p->name().toUtf8())) {
-                QVariant v = QObject::property(p->name().toUtf8());
-                if (v.canConvert<NodeBase *>()) {
-                    NodeBase *input = v.value<NodeBase*>();
-                    if (input) {
-                        result.append(input);
-                    }
+    copious() << ".upstream";
+    QList<const NodeBase *> result;
+    // loop through inputs and find upstream nodes
+    foreach (const Input *in, m_inputs) {
+        if (hasProperty(in->name().toUtf8())) {
+            QVariant v = QObject::property(in->name().toUtf8());
+            if (v.canConvert<NodeBase *>()) {
+                const NodeBase *input = v.value<NodeBase*>();
+                if (input) {
+                    result.append(input);
                 }
             }
         }
@@ -409,21 +333,18 @@ const QList<NodeBase *> NodeBase::inputs()
     return result;
 }
 
-const QList<const NodeBase *> NodeBase::inputs() const
+const QList<NodeBase *> NodeBase::upstream()
 {
-    copious() << ".inputs";
-    QList<const NodeBase *> result;
-    // loop through properties and find inputs
-    foreach (const QObject *o, children()) {
-        const Property *p = qobject_cast<const Property*>(o);
-        if (p && p->isInput()) {
-            if (hasProperty(p->name().toUtf8())) {
-                QVariant v = QObject::property(p->name().toUtf8());
-                if (v.canConvert<NodeBase *>()) {
-                    const NodeBase *input = v.value<NodeBase*>();
-                    if (input) {
-                        result.append(input);
-                    }
+    copious() << ".upstream";
+    QList<NodeBase *> result;
+    // loop through inputs and find upstream nodes
+    foreach (const Input *in, m_inputs) {
+        if (hasProperty(in->name().toUtf8())) {
+            QVariant v = QObject::property(in->name().toUtf8());
+            if (v.canConvert<NodeBase *>()) {
+                NodeBase *input = v.value<NodeBase*>();
+                if (input) {
+                    result.append(input);
                 }
             }
         }
@@ -437,10 +358,10 @@ const QList<NodeBase *> NodeBase::downstream()
     QList<NodeBase *> result;
 
     if (parent<NodeBase>()) {
-        // loop through siblings properties and find inputs
+        // loop through siblings params and find inputs
         foreach (QObject *o, QObject::parent()->children()) {
             NodeBase *n = qobject_cast<NodeBase*>(o);
-            if (n && n->inputs().contains(this))
+            if (n && n->upstream().contains(this))
                 result.append(n);
         }
     }
@@ -453,10 +374,10 @@ const QList<const NodeBase *> NodeBase::downstream() const
     QList<const NodeBase *> result;
 
     if (parent<NodeBase>()) {
-        // loop through siblings properties and find inputs
+        // loop through siblings params and find inputs
         foreach (const QObject *o, QObject::parent()->children()) {
             const NodeBase *n = qobject_cast<const NodeBase*>(o);
-            if (n && n->inputs().contains(this))
+            if (n && n->upstream().contains(this))
                 result.append(n);
         }
     }
@@ -485,4 +406,20 @@ NodeBase *NodeBase::rootBranch()
         p = p->parent<NodeBase>();
 
     return p;
+}
+
+void NodeBase::addInput(const QString name)
+{
+    Input *input = new Input(this);
+    input->setName(name);
+    m_inputs.append(input);
+    emit inputsChanged();
+}
+
+void NodeBase::addParam(const QString name)
+{
+    Param *param = new Param(this);
+    param->setName(name);
+    m_params.append(param);
+    emit paramsChanged();
 }

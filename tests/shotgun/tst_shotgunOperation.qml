@@ -60,11 +60,7 @@ PugTestCase {
     
     Root {
         id: root
-        
-        UpdateOperation {
-            id: update
-        }
-    
+
         Shotgun {
             id: shotgun
             baseUrl: "https://mokko.shotgunstudio.com"
@@ -72,85 +68,49 @@ PugTestCase {
             scriptName: "test"
         }
         
-        ShotgunOperation {
-            id: shotgunPull
-            name: "shotgunPull"
-            mode: ShotgunOperation.Pull
-            shotgun: shotgun
-            dependencies: update
-        }
-        
-        CookOperation {
-            id: cook
-            name: "cook"
-            dependencies: shotgunPull
-        }
-        
-        ReleaseOperation {
-            id: release
-            dependencies: cook
-            triggers: shotgunPush
-        }
-        
-        ShotgunOperation {
-            id: shotgunPush
-            name: "shotgunPush"
-            mode: ShotgunOperation.Push
-            shotgun: shotgun
-        }
+        operations: [
+            UpdateOperation {
+                id: update
+            },
+            ShotgunOperation {
+                id: shotgunPull
+                name: "shotgunPull"
+                mode: ShotgunOperation.Pull
+                shotgun: shotgun
+                dependencies: update
+            },
+            CookOperation {
+                id: cook
+                name: "cook"
+                dependencies: shotgunPull
+            },
+            ReleaseOperation {
+                id: release
+                dependencies: cook
+                triggers: shotgunPush
+            },
+            ShotgunOperation {
+                id: shotgunPush
+                name: "shotgunPush"
+                mode: ShotgunOperation.Push
+                shotgun: shotgun
+            }
+        ]
     
-        Field {
-            name: "ROOT"
-            values: tmpDir + "shotguntests"
-        }
-        
-        Field {
-            name: "PROJECT"
-        }
-        
-        Field {
-            name: "SEQUENCE"
-        }
-        
-        Field {
-            name: "SHOT"
-        }
-        
-        Field {
-            name: "STEP"
-        }
-        
-        Field {
-            name: "TRANSFER"
-            regexp: "20\\d{6}"
-        }
-        
-        Field {
-            name: "VERSION"
-            type: Field.Integer
-            width: 3
-        }
-        
-        Field {
-            name: "VARIATION"
-            values: "main"
-        }
-        
-        Field {
-            name: "USER"
-        }
-
-        Field {
-            name: "FILENAME"
-        }
-        
-        FrameSpecField {
-            name: "FRAME"
-        }
-        
-        Field {
-            name: "EXT"
-        }
+        fields: [
+            Field { name: "ROOT"; values: tmpDir + "shotguntests" },
+            Field { name: "PROJECT" },
+            Field { name: "SEQUENCE" },
+            Field { name: "SHOT" },
+            Field { name: "STEP" },
+            Field { name: "TRANSFER"; regexp: "20\\d{6}" },
+            Field { name: "VERSION"; type: Field.Integer; width: 3 },
+            Field { name: "VARIATION"; values: "main" },
+            Field { name: "USER" },
+            Field { name: "FILENAME" },
+            FrameSpecField { name: "FRAME" },
+            Field { name: "EXT" }
+        ]
         
         Branch {
             id: prod
@@ -202,7 +162,8 @@ PugTestCase {
 
                 ShotgunPublishEvent {
                     project: project
-                    entity { link: transfer; linkType: "Delivery" }
+                    entityType: "Delivery"
+                    entity: transfer
                     user: prod
                     code: "from_client_{TRANSFER}_v{VERSION}"
                 }
@@ -231,13 +192,14 @@ PugTestCase {
                             release: transferRelease
                             user: prod
                             code: "{FILENAME}.{EXT}"   
-                            sourcePathLink: releaseFile           
+                            //sourcePathLink: releaseFile   // TODO:           
                         }
                     }
                     
                     ShotgunVersion {
                         project: project
-                        entity { link: transfer; linkType: "Delivery" }
+                        entityType: "Delivery"
+                        entity: transfer
                         release: transferRelease
                         user: prod
                         code: "from_client_{TRANSFER}_v{VERSION}"
@@ -301,7 +263,8 @@ PugTestCase {
 
                 ShotgunPublishEvent {
                     project: project
-                    entity { link: shot; linkType: "Shot" }
+                    entityType: "Shot"
+                    entity: shot
                     user: prod
                     code: "{SEQUENCE}_{SHOT}_comp_v{VERSION}"
                 }
@@ -314,7 +277,8 @@ PugTestCase {
                 
                     ShotgunVersion {
                         project: project
-                        entity { link: shot; linkType: "Shot" }
+                        entityType: "Shot"
+                        entity: shot
                         release: compRelease
                         user: prod
                         code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"

@@ -4,7 +4,7 @@ var buildArgv, generatePath, parentPath;
 buildArgv = function() {
   var argv, flagPrefix, prop, _i, _len, _ref;
   argv = [this.script];
-  _ref = this.properties;
+  _ref = this.params;
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     prop = _ref[_i];
     if (!prop.input && !prop.output && (this[prop.name] != null)) {

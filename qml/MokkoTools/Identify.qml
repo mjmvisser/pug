@@ -10,6 +10,9 @@ CookQueue {
     property var metadata: {} 
     count: input !== null ? input.elements.length : 0
 
+    inputs: Input { name: "input" }
+    params: Param { name: "metadata" }
+
     component: Component {
         Script {
             property int index
@@ -17,15 +20,12 @@ CookQueue {
             property string format: Identify.buildFormatString(self.metadata)
             property string path: elements[index].paths[0]
 
-            Property {
-                name: "format"
-                property string flagPrefix: "-"
-            }
-
-            Property {
-                name: "path"
-                property bool noFlag: true
-            }
+            params: [
+                Param { name: "format";
+                        property string flagPrefix: "-" },
+                Param { name: "path";
+                        property bool noFlag: true }
+            ]
 
             onCooked: {
                 debug("Identify.onCooked called");
@@ -42,14 +42,5 @@ CookQueue {
                 }
             }
         }
-    }
-
-    Property {
-        input: true
-        name: "input"
-    }
-    
-    Property {
-        name: "metadata"
     }
 }        

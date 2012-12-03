@@ -7,22 +7,22 @@ PugTestCase {
     name: "TestOperationTests"
 
     Root {
-        TestOperation {
-            id: testDependency
-            name: "testDependency"
-        }
-    
-        TestOperation {
-            id: test
-            name: "test"
-            triggers: testTriggered
-            dependencies: testDependency
-        }
-        
-        TestOperation {
-            id: testTriggered
-            name: "testTriggered"
-        }
+        operations: [
+            TestOperation {
+                id: testDependency
+                name: "testDependency"
+            },
+            TestOperation {
+                id: test
+                name: "test"
+                triggers: testTriggered
+                dependencies: testDependency
+            },
+            TestOperation {
+                id: testTriggered
+                name: "testTriggered"
+            }
+        ]
         
         Branch {
             id: branchA

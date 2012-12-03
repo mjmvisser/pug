@@ -17,12 +17,15 @@ class BranchBase : public NodeBase
     Q_PROPERTY(BranchBase *root READ root WRITE setRoot NOTIFY rootChanged)
     Q_PROPERTY(QQmlListProperty<Element> elements READ elements_ NOTIFY elementsChanged)
     Q_PROPERTY(QString pattern READ pattern WRITE setPattern NOTIFY patternChanged)
+    Q_PROPERTY(QQmlListProperty<Field> fields READ fields_)
 public:
     explicit BranchBase(QObject *parent = 0);
 
     BranchBase *root();
     const BranchBase *root() const;
     void setRoot(BranchBase *);
+
+    QQmlListProperty<Field> fields_();
 
     QQmlListProperty<Element> elements_();
 
@@ -47,7 +50,6 @@ public:
     const Field *findField(const QString name) const;
 
     const QList<const Field *> fields(const QStringList fieldNameList = QStringList()) const;
-    const QList<Field *> fields(const QStringList fieldNameList = QStringList());
 
     bool areFieldsComplete(const QString pattern, const QVariantMap fields) const;
 
@@ -75,6 +77,7 @@ private:
     bool containsFields(const QVariantMap& needle, const QVariantMap& haystack) const;
 
     BranchBase *m_root;
+    QList<Field *> m_fields;
     QList<Element *> m_elements;
     QString m_pattern;
     bool m_exactMatchFlag;

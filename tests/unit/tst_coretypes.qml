@@ -6,9 +6,9 @@ TestCase {
     id: self
     name: "CoreTypeTests"
     
-    Property {
-        id: property
-        name: "testProperty"
+    Param {
+        id: param
+        name: "testParam"
         value: "testValue"
         text: "testText"
     }
@@ -22,13 +22,13 @@ TestCase {
         compare(Operation.Error, 5);
     }
     
-    function test_property() {
-        verify(property);
-        verify(property.inherits("Property"));
-        compare(property.className, "Property");
-        compare(property.name, "testProperty");
-        compare(property.value, "testValue");
-        compare(property.text, "testText");
+    function test_param() {
+        verify(param);
+        verify(param.inherits("Param"));
+        compare(param.className, "Param");
+        compare(param.name, "testParam");
+        compare(param.value, "testValue");
+        compare(param.text, "testText");
     }
 
     Node {

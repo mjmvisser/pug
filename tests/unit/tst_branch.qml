@@ -10,9 +10,7 @@ PugTestCase {
         id: branch
         name: "testBranch"
         pattern: "/abc/{TEST}/def"
-        Field {
-            name: "TEST"
-        }
+        fields: Field { name: "TEST" }
     }
     
     function test_branch() {
@@ -28,23 +26,18 @@ PugTestCase {
     Root {
         id: root
         name: "testConfig"
-        Field {
-            name: "FOO"
-        }
         
-        Field {
-            name: "BAZ"
-            type: Field.Integer
-        }
+        fields: [
+            Field { name: "FOO" },
+            Field { name: "BAZ"; type: Field.Integer }
+        ]
         
         Branch {
             id: branch1
             name: "branch1"
             pattern: "/abc/{FOO}/def/{BAR}/"
-            
-            Field {
-                name: "BAR"
-            }
+
+            fields: Field { name: "BAR" }
         }
         
         Branch {

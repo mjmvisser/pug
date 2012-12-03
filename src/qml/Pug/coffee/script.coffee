@@ -1,6 +1,6 @@
 buildArgv = () ->
   argv = [@script]
-  for prop in @properties
+  for prop in @params
     if not prop.input and not prop.output and @[prop.name]?
       if @[prop.name] != false and prop.noFlag != true
         flagPrefix = if !prop.flagPrefix? then "--" else prop.flagPrefix

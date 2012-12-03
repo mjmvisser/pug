@@ -3,7 +3,7 @@ import Pug 1.0
 ShotgunEntity {
     name: "Delivery"
 
-    property alias project: project.link
+    property var project
 
     ShotgunField {
         name: "title"
@@ -11,9 +11,9 @@ ShotgunEntity {
     }
 
     ShotgunField {
-        id: project
         name: "project"
         type: ShotgunField.Link
         linkType: "Project"
+        link: project
     }
 }

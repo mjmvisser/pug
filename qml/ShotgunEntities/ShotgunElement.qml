@@ -5,12 +5,12 @@ import "js/shotgunutils.js" as ShotgunUtils
 ShotgunEntity {
     name: "Element"
 
-    property alias project: projectField.link
-    property alias delivery: deliveryField.link
-    property alias release: releaseField.link
-    property alias code: codeField.pattern
+    property var project
+    property var delivery
+    property var release
+    property string code
     property var user
-    property var sourcePathLink
+    //property var sourcePathLink
 
     property var subdir: {
         var parentDir = ShotgunUtils.safeElementAttribute(parent, "directory");
@@ -26,6 +26,7 @@ ShotgunEntity {
         id: codeField
         name: "code"
         type: ShotgunField.Pattern
+        pattern: code
     }
     
     // doesn't work, sg_source_path is the wrong type (File instead of Entity)
@@ -56,24 +57,24 @@ ShotgunEntity {
     }
     
     ShotgunField {
-        id: deliveryField
         name: "sg_delivery"
         type: ShotgunField.Link
-        linkType: "Delivery"        
+        linkType: "Delivery"
+        link: delivery      
     }
     
     ShotgunField {
-        id: projectField
         name: "project"
         type: ShotgunField.Link
         linkType: "Project"
+        link: project
     }
     
     ShotgunField {
-        id: releaseField
         name: "sg_release"
         type: ShotgunField.Link
         linkType: "PublishEvent"
+        link: release
     }
     
     ShotgunField {

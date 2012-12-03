@@ -4,21 +4,18 @@
 #include <QObject>
 #include <QQmlListProperty>
 
-#include "propertybase.h"
-#include "property.h"
+#include "metaproperty.h"
 
-class Node;
-
-class Array : public PropertyBase
+class Array : public Param
 {
     Q_OBJECT
-    Q_PROPERTY(QQmlListProperty<Property> contents READ contents)
+    Q_PROPERTY(QQmlListProperty<Param> contents READ contents)
     Q_PROPERTY(int index READ index)
     Q_CLASSINFO("DefaultProperty", "contents")
 public:
     explicit Array(QObject *parent = 0);
 
-    QQmlListProperty<Property> contents();
+    QQmlListProperty<Param> contents_();
 
 signals:
 
@@ -27,7 +24,7 @@ public slots:
 private:
     int index() const;
 
-    QList<Property *> m_contents;
+    QList<Param *> m_contents;
 };
 
 #endif // ARRAY_H

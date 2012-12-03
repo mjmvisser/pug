@@ -6,18 +6,18 @@
 #include <QStringList>
 #include <QVariant>
 
-#include "propertybase.h"
+#include "pugitem.h"
 
-class Field : public PropertyBase
+class Field : public PugItem
 {
     Q_OBJECT
-    Q_ENUMS(Type)
     Q_PROPERTY(QString env READ env WRITE setEnv NOTIFY envChanged)
     Q_PROPERTY(QString regexp READ regexp WRITE setRegexp NOTIFY regexpChanged)
     Q_PROPERTY(Type type READ type WRITE setType NOTIFY typeChanged)
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
     Q_PROPERTY(QStringList values READ values WRITE setValues NOTIFY valuesChanged)
     Q_PROPERTY(QString formatSpec READ formatSpec WRITE setFormatSpec NOTIFY formatSpecChanged)
+    Q_ENUMS(Type)
 public:
     enum Type { String, Integer, Date, DateTime };
 

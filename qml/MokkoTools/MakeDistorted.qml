@@ -9,24 +9,18 @@ CookQueue {
     property string outputFormat
     count: input !== null ? input.elements.length : 0
 
-    Property {
-        input: true
-        name: "input"
-    }
-
-    Property {
-        input: true
-        name: "nukeDistortFile"
-    }
+    inputs: [
+        Input { name: "input" },
+        Input { name: "nukeDistortFile" }
+    ]
     
-    Property {
-        name: "outputFormat"
-    }
+    params: Param { name: "outputFormat" }
 
     component: Component {
         Script {
             property int index
             script: Qt.resolvedUrl("scripts/makeDistorted.sh").replace("file://", "")
+
             property var inputsequence: input.elements[index].pattern
             property string outsequence: generatePath(self.name, index, input.elements[index].frameSpec, input.elements[index].extension)
             property real start: input.elements[index].firstFrame
@@ -36,38 +30,17 @@ CookQueue {
             property string __render: "True"
             property string __debug: "True"
 
-            Property {
-                name: "inputsequence"
-                property bool noFlag: true
-            }
-
-            Property {
-                name: "outsequence"
-            }
-
-            Property {
-                name: "start"
-            }
-
-            Property {
-                name: "end"
-            }
-            
-            Property {
-                name: "distortnukefile"
-            }
-
-            Property {
-                name: "outformat"
-            }
-
-            Property {
-                name: "__render"
-            }
-
-            Property {
-                name: "__debug"
-            }
+            params: [
+                Param { name: "inputsequence";
+                        property bool noFlag: true },
+                Param { name: "outsequence" },
+                Param { name: "start" },
+                Param { name: "end" },
+                Param { name: "distortnukefile" },
+                Param { name: "outformat" },
+                Param { name: "__render" },
+                Param { name: "__debug" }
+            ]
 
             onCooked: {
                 debug("onCooked");

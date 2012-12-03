@@ -10,7 +10,6 @@
 
 #include "file.h"
 #include "element.h"
-#include "property.h"
 
 File::File(QObject *parent) :
     BranchBase(parent),
@@ -23,9 +22,7 @@ File::File(QObject *parent) :
     connect(this, &File::update, this, &File::onUpdate);
     connect(this, &File::cook, this, &File::onCook);
 
-    Property *inputProperty = new Property(this);
-    inputProperty->setName("input");
-    inputProperty->setInput(true);
+    addInput("input");
 }
 
 NodeBase *File::input()

@@ -67,7 +67,7 @@ OperationAttached::Status OperationAttached::inputsStatus() const
 {
     OperationAttached::Status status = OperationAttached::Invalid;
 
-    foreach (const NodeBase* input, node()->inputs()) {
+    foreach (const NodeBase* input, node()->upstream()) {
         const OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
         OperationAttached::Status inputsStatus = inputAttached->status();
         if (inputsStatus > status)
@@ -119,7 +119,7 @@ OperationAttached::Status OperationAttached::dependenciesStatus() const
 void OperationAttached::resetInputsStatus()
 {
     // reset inputs
-    foreach (NodeBase* input, node()->inputs()) {
+    foreach (NodeBase* input, node()->upstream()) {
         OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
         inputAttached->resetAllStatus();
     }
@@ -160,7 +160,7 @@ void OperationAttached::resetAllStatus()
 void OperationAttached::resetInputs()
 {
     // reset inputs
-    foreach (NodeBase* input, node()->inputs()) {
+    foreach (NodeBase* input, node()->upstream()) {
         OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
         inputAttached->resetAll();
     }
@@ -308,7 +308,7 @@ void OperationAttached::runInputs()
     debug() << node() << "runInputs";
 
     // run inputs and connect their finished signal to ourself
-    foreach (NodeBase* input, node()->inputs()) {
+    foreach (NodeBase* input, node()->upstream()) {
         debug() << "got" << input;
         OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
 

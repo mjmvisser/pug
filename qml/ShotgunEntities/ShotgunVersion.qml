@@ -5,32 +5,34 @@ import "js/shotgunutils.js" as ShotgunUtils
 ShotgunEntity {
     name: "Version"
 
-    property alias project: projectField.link
-    property alias entity: entityField
-    property alias release: releaseField.link
-    property alias code: codeField.pattern
-    property var thumbnail: null
-    property var filmstrip: null 
+    property var project
+    property string entityType
+    property var entity
+    property var release
+    property string code
+    property var thumbnail
+    property var filmstrip 
     property var user
     
     ShotgunField {
-        id: codeField
         name: "code"
         type: ShotgunField.Pattern
+        pattern: code
     }
 
     ShotgunField {
-        id: projectField
         name: "project"
         type: ShotgunField.Link
         linkType: "Project"
+        link: project
     }
-    
     
     ShotgunField {
         id: entityField
         name: "entity"
         type: ShotgunField.Link
+        linkType: entityType
+        link: entity
     }
 
     ShotgunField {
@@ -43,7 +45,6 @@ ShotgunEntity {
     }
 
     ShotgunField {
-        id: firstFrameField
         name: "sg_first_frame"
         type: ShotgunField.Number
         value: ShotgunUtils.safeElementAttribute(parent, "firstFrame")                         
@@ -51,27 +52,24 @@ ShotgunEntity {
     }
 
     ShotgunField {
-        id: lastFrameField
         name: "sg_last_frame"
         type: ShotgunField.Number
         value: ShotgunUtils.safeElementAttribute(parent, "lastFrame")                         
     }
     
     ShotgunField {
-        id: releaseField
         name: "sg_release"
         type: ShotgunField.Link
         linkType: "PublishEvent"
+        link: release
     }
 
     ShotgunField {
-        id: thumbnailField
         name: "image"
         value: ShotgunUtils.safeElementAttribute(thumbnail, "path")
     }
 
     ShotgunField {
-        id: filmstripField
         name: "filmstrip_image"
         value: ShotgunUtils.safeElementAttribute(filmstrip, "path")
     }

@@ -47,43 +47,24 @@ PugTestCase {
     Root {
         id: root
 
-        UpdateOperation {
-            id: update
-        }
+        operations: [
+            UpdateOperation {
+                id: update
+            },
+            ReleaseOperation {
+                id: release
+                dependencies: update
+            }
+        ]
         
-        ReleaseOperation {
-            id: release
-            dependencies: update
-        }
-        
-        Field {
-            name: "ROOT"
-            regexp: tmpDir
-        }
-        
-        Field {
-            name: "FOO"
-        }
-        
-        Field {
-            name: "BAR"
-        }
-        
-        Field {
-            name: "DAG"
-        }
-        
-        Field {
-            name: "FRAME"
-            regexp: "\\d{4}"
-        }
-        
-        Field {
-            id: version
-            name: "VERSION"
-            type: Field.Integer
-            width: 3
-        }
+        fields: [
+            Field { name: "ROOT"; regexp: tmpDir },
+            Field { name: "FOO" },
+            Field { name: "BAR" },
+            Field { name: "DAG" },
+            Field { name: "FRAME"; regexp: "\\d{4}" },
+            Field { name: "VERSION"; type: Field.Integer; width: 3 }
+        ]
         
         Branch {
             id: abc

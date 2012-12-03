@@ -6,6 +6,8 @@ Node {
     property string pattern
     property var elements: []
     
+    params: Param { name: "pattern" }
+    
     signal update(var env)
     signal updated(int status)
     

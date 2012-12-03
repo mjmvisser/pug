@@ -3,22 +3,23 @@ import Pug 1.0
 ShotgunEntity {
     name: "PublishEvent"
     
-    property alias project: projectField.link
-    property alias entity: entityField
-    property alias code: codeField.pattern 
+    property var project
+    property string entityType
+    property var entity
+    property var code 
     property var user
 
     ShotgunField {
-        id: projectField
         name: "project"
         type: ShotgunField.Link
         linkType: "Project"
+        link: project
     }
 
     ShotgunField {
-        id: codeField
         name: "code"
         type: ShotgunField.Pattern
+        pattern: code
     }
 
     ShotgunField {
@@ -38,10 +39,10 @@ ShotgunEntity {
     }
 
     ShotgunField {
-        id: entityField
         name: "sg_link"
         type: ShotgunField.Link
-        linkType: "Delivery"
+        linkType: entityType
+        link: entity
     }
     
     ShotgunField {

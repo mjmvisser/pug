@@ -1,8 +1,8 @@
 #include "element.h"
 #include "framelist.h"
 #include "root.h"
-#include "property.h"
-#include "array.h"
+#include "param.h"
+#include "input.h"
 #include "node.h"
 #include "field.h"
 #include "branchbase.h"
@@ -41,10 +41,9 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<FrameList>(uri, 1, 0, "FrameList");
     qmlRegisterType<Element>(uri, 1, 0, "Element");
     qmlRegisterType<PugItem>(uri, 1, 0, "PugItem");
-    qmlRegisterType<PropertyBase>();
+    qmlRegisterType<Input>(uri, 1, 0, "Input");
+    qmlRegisterType<Param>(uri, 1, 0, "Param");
     qmlRegisterType<NodeBase>();
-    qmlRegisterType<Property>(uri, 1, 0, "Property");
-    qmlRegisterType<Array>(uri, 1, 0, "Array");
     qmlRegisterType<Node>(uri, 1, 0, "Node");
     qmlRegisterType<Field>(uri, 1, 0, "Field");
     qmlRegisterType<BranchBase>();

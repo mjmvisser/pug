@@ -8,35 +8,30 @@ CookQueue {
     property bool filmstrip: false 
     count: input !== null ? input.elements.length : 0
 
+    inputs: Input { name: "input" }
+    params: [
+        Param { name: "filmstrip" }
+    ]
+
     component: Component {
         Script {
-            property int index
             script: Qt.resolvedUrl("scripts/makeThumbnail.py").replace("file://", "")
+
+            property int index
+
             property string inputPath: input.elements[index].pattern
             property string outputPath: input.elements[index].directory + input.elements[index].baseName + (self.filmstrip ? "_filmstrip.jpg" : "_thumbnail.jpg")
             property real firstFrame: input.elements[index].firstFrame
             property real lastFrame: input.elements[index].lastFrame
             property bool filmstrip: self.filmstrip
 
-            Property {
-                name: "inputPath"
-            }
-
-            Property {
-                name: "outputPath"
-            }
-
-            Property {
-                name: "firstFrame"
-            }
-
-            Property {
-                name: "lastFrame"
-            }
-            
-            Property {
-                name: "filmstrip"
-            }
+            params: [
+                Param { name: "inputPath" },
+                Param { name: "outputPath" },
+                Param { name: "firstFrame" },
+                Param { name: "lastFrame" },
+                Param { name: "filmstrip" }
+            ]
 
             onCooked: {
                 debug("onCooked");
@@ -50,10 +45,5 @@ CookQueue {
                 debug("onCook");
             }
         }
-    }
-
-    Property {
-        input: true
-        name: "input"
     }
 }        

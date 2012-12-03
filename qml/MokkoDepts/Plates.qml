@@ -6,10 +6,7 @@ Branch {
     name: "plate"
     pattern: "2d/plate/"
     
-    Field {
-        name: "EXT"
-        values: "dpx"
-    }
+    fields: Field { name: "EXT"; values: "dpx" }
 
     Branch {
         id: release

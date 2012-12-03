@@ -7,18 +7,19 @@ TestCase {
     id: self
     name: "IdentifyTests"
 
-    UpdateOperation {
-        id: update
-    }
-
-    CookOperation {
-        id: cook
-        dependencies: update
-    }
-    
     property string testImagePath: Qt.resolvedUrl("data/test.png").replace("file://", "")
     
     Root {
+        operations: [
+            UpdateOperation {
+                id: update
+            },
+            CookOperation {
+                id: cook
+                dependencies: update
+            }
+        ]
+        
         FileRef {
             id: file
             pattern: testImagePath

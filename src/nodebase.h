@@ -6,24 +6,23 @@
 #include <QStringList>
 
 #include "pugitem.h"
-#include "propertybase.h"
+#include "param.h"
+#include "input.h"
 #include "operation.h"
 
 class NodeBase : public PugItem
 {
     Q_OBJECT
-    Q_PROPERTY(QQmlListProperty<PropertyBase> properties READ properties_ NOTIFY propertiesChanged)
+    Q_PROPERTY(QQmlListProperty<Param> params READ params_ NOTIFY paramsChanged)
+    Q_PROPERTY(QQmlListProperty<Input> inputs READ inputs_ NOTIFY inputsChanged)
     Q_PROPERTY(QQmlListProperty<NodeBase> children READ nodes_ NOTIFY nodesChanged)
-    Q_PROPERTY(QQmlListProperty<NodeBase> inputs READ inputs_ NOTIFY inputsChanged)
-    Q_PROPERTY(QQmlListProperty<Operation> operations READ operations_ NOTIFY operationsChanged)
     Q_PROPERTY(bool output READ isOutput WRITE setOutput NOTIFY outputChanged)
 public:
     explicit NodeBase(QObject *parent = 0);
 
+    QQmlListProperty<Input> inputs_();
+    QQmlListProperty<Param> params_();
     QQmlListProperty<NodeBase> nodes_();
-    QQmlListProperty<PropertyBase> properties_();
-    QQmlListProperty<NodeBase> inputs_();
-    QQmlListProperty<Operation> operations_();
 
     bool isOutput() const;
     void setOutput(bool o);
@@ -31,8 +30,8 @@ public:
     Q_INVOKABLE NodeBase* node(const QString node);
     const NodeBase* node(const QString node) const;
 
-    const QList<NodeBase *> inputs(); // TODO: rename to upstream?
-    const QList<const NodeBase *> inputs() const;
+    const QList<NodeBase *> upstream();
+    const QList<const NodeBase *> upstream() const;
 
     const QList<NodeBase *> downstream();
     const QList<const NodeBase *> downstream() const;
@@ -44,11 +43,14 @@ public:
     NodeBase *rootBranch();
 
 signals:
-    void propertiesChanged();
+    void paramsChanged();
     void nodesChanged();
     void inputsChanged();
-    void operationsChanged();
     void outputChanged(bool output);
+
+protected:
+    void addInput(const QString name);
+    void addParam(const QString name);
 
 private:
     const NodeBase *nodeInChildren(const QString n) const;
@@ -63,27 +65,23 @@ private:
     // children property
     static void nodes_append(QQmlListProperty<NodeBase> *, NodeBase *);
     static int nodes_count(QQmlListProperty<NodeBase> *);
-    static NodeBase *nodes_at(QQmlListProperty<NodeBase> *, int);
+    static NodeBase *node_at(QQmlListProperty<NodeBase> *, int);
     static void nodes_clear(QQmlListProperty<NodeBase> *);
 
-    // properties property
-    static void properties_append(QQmlListProperty<PropertyBase> *, PropertyBase *);
-    static int properties_count(QQmlListProperty<PropertyBase> *);
-    static PropertyBase *properties_at(QQmlListProperty<PropertyBase> *, int);
-    static void properties_clear(QQmlListProperty<PropertyBase> *);
+    // params property
+    static void params_append(QQmlListProperty<Param> *, Param *);
+    static int params_count(QQmlListProperty<Param> *);
+    static Param *param_at(QQmlListProperty<Param> *, int);
+    static void params_clear(QQmlListProperty<Param> *);
 
     // inputs property
-    static void inputs_append(QQmlListProperty<NodeBase> *, NodeBase *);
-    static int inputs_count(QQmlListProperty<NodeBase> *);
-    static NodeBase *inputs_at(QQmlListProperty<NodeBase> *, int);
-    static void inputs_clear(QQmlListProperty<NodeBase> *);
+    static void inputs_append(QQmlListProperty<Input> *, Input *);
+    static int inputs_count(QQmlListProperty<Input> *);
+    static Input *input_at(QQmlListProperty<Input> *, int);
+    static void inputs_clear(QQmlListProperty<Input> *);
 
-    // operations property
-    static void operations_append(QQmlListProperty<Operation> *, Operation *);
-    static int operations_count(QQmlListProperty<Operation> *);
-    static Operation *operations_at(QQmlListProperty<Operation> *, int);
-    static void operations_clear(QQmlListProperty<Operation> *);
-
+    QList<Param *> m_params;
+    QList<Input *> m_inputs;
     bool m_outputFlag;
 };
 

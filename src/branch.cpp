@@ -4,7 +4,6 @@
 #include "branch.h"
 #include "root.h"
 #include "field.h"
-#include "property.h"
 
 Branch::Branch(QObject *parent) :
     BranchBase(parent)

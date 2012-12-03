@@ -3,9 +3,9 @@ import Pug 1.0
 ShotgunEntity {
     name: "Shot"
 
-    property alias project: projectField.link
-    property alias scene: sceneField.link
-    property alias sequence: sequenceField.link
+    property var project
+    property var scene
+    property var sequence
     
     ShotgunField {
         name: "code"
@@ -13,24 +13,24 @@ ShotgunEntity {
     }
     
     ShotgunField {
-        id: sceneField
         name: "sg_scene"
         type: ShotgunField.Link
         linkType: "Scene"
+        link: scene
     }
     
     ShotgunField {
-        id: sequenceField
         name: "sg_sequence"
         type: ShotgunField.Link
         linkType: "Sequence"
+        link: sequence
     }
     
     ShotgunField {
-        id: projectField
         name: "project"
         type: ShotgunField.Link
         linkType: "Project"
+        link: project
     }
     
     ShotgunField {

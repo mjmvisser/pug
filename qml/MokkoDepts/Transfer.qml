@@ -6,14 +6,10 @@ Branch {
     id: transfer
     pattern: "transfer/from_client/{TRANSFER}/"
 
-    Field {
-        name: "TRANSFER"
-        regexp: "20\\d{6}"
-    }
-
-    Field {
-        name: "FILENAME"
-    }
+    fields: [
+        Field { name: "TRANSFER"; regexp: "20\\d{6}" },
+        Field { name: "FILENAME" }
+    ]
     
     ShotgunDelivery {
         project: node("/project")

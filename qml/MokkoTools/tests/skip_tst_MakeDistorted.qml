@@ -3,19 +3,20 @@ import Pug 1.0
 import MokkoTools 1.0
 
 TestCase {
-    UpdateOperation {
-        id: update
-    }
-    
-    CookOperation {
-        id: cook
-        dependencies: update
-    }
-    
     property string testSequencePath: Qt.resolvedUrl("data/testSequence.%04d.exr").replace("file://", "")
     property string testNukeDist: Qt.resolvedUrl("data/testNukeDist.nk").replace("file://", "")
     
     Root {
+        operations: [
+            UpdateOperation {
+                id: update
+            },
+            CookOperation {
+                id: cook
+                dependencies: update
+            }
+        ]
+        
         Branch {
             name: "mokkotoolstests"
             pattern: "/usr/tmp/mokkotoolstests"

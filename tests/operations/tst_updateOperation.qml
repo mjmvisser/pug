@@ -23,33 +23,21 @@ PugTestCase {
     }
     
     Root {
-        UpdateOperation {
-            id: update
-        }
-     
         id: root
         name: "testRoot"
         
-        Field {
-            name: "FOO"
+        operations: UpdateOperation {
+            id: update
         }
-        
-        Field {
-            name: "BAZ"
-            type: Field.Integer
-        }
-        
-        Field {
-            name: "FILENAME"
-            values: "somefile"
-        }
-        
-        Field {
-            name: "FRAME"
-            type: Field.Integer
-            regexp: "\\d{4}"
-        }
-        
+
+        fields: [     
+            Field { name: "FOO" },
+            Field { name: "BAR" },
+            Field { name: "BAZ"; type: Field.Integer },
+            Field { name: "FILENAME"; values: "somefile" },
+            FrameSpecField { name: "FRAME" }
+        ]
+                
         Branch {
             id: branch1
             name: "branch1"

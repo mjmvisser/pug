@@ -4,7 +4,7 @@
 #include "field.h"
 
 Field::Field(QObject *parent) :
-    PropertyBase(parent),
+    PugItem(parent),
     m_regexp("\\w+"),
     m_width(0),
     m_type(Field::String)
