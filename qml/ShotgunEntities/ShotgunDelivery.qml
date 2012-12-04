@@ -5,6 +5,8 @@ ShotgunEntity {
 
     property var project
 
+    inputs: Input { name: "project" }
+
     ShotgunField {
         name: "title"
         field: "TRANSFER"

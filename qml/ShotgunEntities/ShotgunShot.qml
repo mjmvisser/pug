@@ -4,8 +4,14 @@ ShotgunEntity {
     name: "Shot"
 
     property var project
-    property var scene
-    property var sequence
+    property var scene: null
+    property var sequence: null
+    
+    inputs: [
+        Input { name: "project" },
+        Input { name: "scene" },
+        Input { name: "sequence" }
+    ]
     
     ShotgunField {
         name: "code"

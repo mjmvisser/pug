@@ -12,94 +12,54 @@ Root {
         scriptName: "test"
     }
     
-    UpdateOperation {
-        id: update
-        name: "update"
-    }
+    operations: [
+        UpdateOperation {
+            id: update
+            name: "update"
+        },
+        ShotgunOperation {
+            id: shotgunPull
+            name: "shotgunPull"
+            mode: ShotgunOperation.Pull
+            shotgun: shotgun
+            dependencies: update
+        },
+        ListOperation {
+            id: ls
+            name: "ls"
+            dependencies: shotgunPull
+        },
+        CookOperation {
+            id: cook
+            name: "cook"
+            dependencies: shotgunPull
+        },
+        ReleaseOperation {
+            id: release
+            name: "release"
+            dependencies: cook
+            triggers: shotgunPush
+        },
+        ShotgunOperation {
+            id: shotgunPush
+            name: "shotgunPush"
+            mode: ShotgunOperation.Push
+            shotgun: shotgun
+        }
+    ]
 
-    ShotgunOperation {
-        id: shotgunPull
-        name: "shotgunPull"
-        mode: ShotgunOperation.Pull
-        shotgun: shotgun
-        dependencies: update
-    }
-
-    ListOperation {
-        id: ls
-        name: "ls"
-        dependencies: shotgunPull
-    }
-    
-    CookOperation {
-        id: cook
-        name: "cook"
-        dependencies: shotgunPull
-    }
-    
-    ReleaseOperation {
-        id: release
-        name: "release"
-        dependencies: cook
-        triggers: shotgunPush
-    }
-    
-    ShotgunOperation {
-        id: shotgunPush
-        name: "shotgunPush"
-        mode: ShotgunOperation.Push
-        shotgun: shotgun
-    }
-
-    Field {
-       name: "PROJECT"
-       env: "MOKKO_PROJECT_ID"
-       regexp: "[0-9]{3}_[a-z]+"
-    }
-       
-    Field {
-        name: "SCENE"
-        env: "MOKKO_SEQUENCE"
-    }
-
-    Field {
-        name: "SHOT"
-        env: "MOKKO_SHOT" 
-    }
-
-    Field {
-        name: "DEPARTMENT"
-        env: "MOKKO_DEPARTMENT"
-    }
-
-    Field {
-        name: "USER"
-        env: "USER"
-    }
-
-    Field {
-        name: "VARIATION"
-        env: "MOKKO_VARIATION"
-    }
-        
-    FrameSpecField {
-        name: "FRAME"
-    }
-    
-    Field {
-        id: version
-        name: "VERSION"
-        type: Field.Integer
-        width: 3
-    }
-    
-    Field {
-        name: "FORMAT"
-    }
-    
-    Field {
-        name: "EXT"
-    }
+    fields: [
+        Field { name: "PROJECT"; env: "MOKKO_PROJECT_ID"; regexp: "[0-9]{3}_[a-z]+" },
+        Field { name: "SCENE"; env: "MOKKO_SEQUENCE" },
+        Field { name: "SHOT"; env: "MOKKO_SHOT" },
+        Field { name: "DEPARTMENT"; env: "MOKKO_DEPARTMENT" },
+        Field { name: "USER"; env: "USER" },
+        Field { name: "VARIATION"; env: "MOKKO_VARIATION" },
+        FrameSpecField { name: "FRAME" },
+        Field { name: "VERSION"; type: Field.Integer; width: 3 },
+        Field { name: "FORMAT" },
+        Field { name: "EXT" }
+    ]
     
     Branch {
         id: prod

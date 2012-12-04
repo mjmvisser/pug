@@ -8,11 +8,21 @@ ShotgunEntity {
     property var project
     property var delivery
     property var release
-    property string code
     property var user
-    //property var sourcePathLink
 
-    property var subdir: {
+    property string code
+    //property var sourcePathLink
+    
+    inputs: [
+        Input { name: "project" },
+        Input { name: "delivery" },
+        Input { name: "release" },
+        Input { name: "user" }
+    ]
+    
+    params: Param { name: "code" }
+    
+    property var __subdir: {
         var parentDir = ShotgunUtils.safeElementAttribute(parent, "directory");
         var grandparentDir =  ShotgunUtils.safeElementAttribute(parent.node(".."), "directory");
         if (parentDir && grandparentDir) {
@@ -39,7 +49,7 @@ ShotgunEntity {
     
     ShotgunField {
         name: "sg_subdir"
-        value: subdir 
+        value: __subdir 
     }
 
     ShotgunField {

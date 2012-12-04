@@ -29,7 +29,8 @@ Branch {
         ShotgunOperation.action: ShotgunOperation.Create
 
         ShotgunPublishEvent {
-            entity { link: transfer; linkType: "Delivery" }
+            entityType: "Delivery"
+            entity: transfer
             project: node("/project")
             user: node("/prod")
             code: "from_client_{TRANSFER}_v{VERSION}"

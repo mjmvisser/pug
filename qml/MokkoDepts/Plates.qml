@@ -17,7 +17,8 @@ Branch {
 
         ShotgunPublishEvent {
             project: node("/project")
-            entity { link: node("/shot"); linkType: "Shot" }
+            entityType: "Shot"
+            entity: node("/shot")
             user: node("/prod")
             code: "{SEQUENCE}_{SHOT}_comp_v{VERSION}"
         }
@@ -30,7 +31,8 @@ Branch {
 
             ShotgunVersion {
                 project: node("/project")
-                entity { link: node("/shot"); linkType: "Shot" }
+                entityType: "Shot"
+                entity: node("/shot")
                 release: release
                 user: node("/prod")
                 code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"

@@ -11,6 +11,14 @@ ShotgunEntity {
     property var filmstrip
     property var user
 
+    inputs: [
+        Input { name: "project" },
+        Input { name: "release" },
+        Input { name: "thumbnail" },
+        Input { name: "filmstrip" },
+        Input { name: "user" }
+    ]
+
     ShotgunUrlField {
         id: thisFileField
         name: "this_file"

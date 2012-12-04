@@ -13,6 +13,20 @@ ShotgunEntity {
     property var thumbnail
     property var filmstrip 
     property var user
+
+    inputs: [
+        Input { name: "project" },
+        Input { name: "entity" },
+        Input { name: "release" },
+        Input { name: "thumbnail" },
+        Input { name: "filmstrip" },
+        Input { name: "user" }
+    ]
+
+    params: [
+        Param { name: "entityType" },
+        Param { name: "code" }
+    ]
     
     ShotgunField {
         name: "code"

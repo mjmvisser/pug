@@ -6,8 +6,19 @@ ShotgunEntity {
     property var project
     property string entityType
     property var entity
-    property var code 
+    property string code 
     property var user
+
+    inputs: [
+        Input { name: "project" },
+        Input { name: "entity" },
+        Input { name: "user" }
+    ]
+    
+    params: [
+        Param { name: "entityType" },
+        Param { name: "code" }
+    ]
 
     ShotgunField {
         name: "project"

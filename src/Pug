@@ -1,5 +1,5 @@
-#include "property.h"
-#include "array.h"
+#include "param.h"
+#include "input.h"
 #include "node.h"
 #include "root.h"
 #include "branch.h"
