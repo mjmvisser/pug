@@ -15,9 +15,9 @@
     \qmltype Element
     \instantiates Element
     \inqmlmodule Pug
-    \brief Elements encapsulate the path of a directory, a file, or a sequence of files, and related data.
+    \brief Elements encapsulate the path of a directory, a file, or a sequence of files.
 
-    Elements encapsulate the path of a directory, a file, or a sequence of files, and related data.
+    Elements encapsulate the path of a directory, a file, or a sequence of files.
     BranchBase-derived classes contain a list of elements, each which is an instance of Element.
     Elements have convenience read-only properties that return the directory, baseName, frameSpec and extension
     of their path. They also store a FrameList object and corresponding read-only frames convenience property.
@@ -201,22 +201,6 @@ bool Element::hasFrames() const
         return false;
 }
 
-const QVariant Element::data() const
-{
-    return m_data;
-}
-
-void Element::setData(const QVariant d)
-{
-    if (!d.isValid())
-        debug() << "OK";
-
-    if (m_data != d) {
-        m_data = d;
-        emit dataChanged(m_data);
-    }
-}
-
 bool Element::matches(const QString path) const
 {
     return m_patternRegExp.match(path).hasMatch();
@@ -270,7 +254,7 @@ void Element::scan()
 const QString Element::toString() const
 {
     if (hasFrames()) {
-        return QString("%s [%s]").arg(m_pattern).arg(m_frameList->toString());
+        return m_pattern + " [" + m_frameList->toString() + "]";
     } else {
         return m_pattern;
     }

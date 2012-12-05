@@ -13,8 +13,10 @@ void ListOperationAttached::run()
     BranchBase *branch = qobject_cast<BranchBase *>(node());
 
     if (branch) {
-        foreach (const Element *element, branch->elements()) {
-            std::cout << element->toString().toUtf8().constData() << std::endl;
+        foreach (const QVariant detail, branch->details()) {
+            Element *e = detail.toMap().value("element").value<Element *>();
+            if (e)
+                std::cout << e->toString().toUtf8().constData() << std::endl;
         }
     }
 

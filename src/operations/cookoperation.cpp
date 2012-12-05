@@ -13,6 +13,13 @@ CookOperationAttached::CookOperationAttached(QObject *parent) :
         connect(node(), SIGNAL(cooked(int)),
                 this, SLOT(onCooked(int)));
         m_cookableFlag = true;
+        debug() << node() << "is cookable";
+    } else if (node()->hasSignal(SIGNAL(cook(const QVariant))) ||
+               node()->hasSignal(SIGNAL(cooked(int))))
+    {
+        error() << node() << "is missing the cook or cooked signal";
+    } else {
+        debug() << node() << "is not cookable";
     }
 }
 

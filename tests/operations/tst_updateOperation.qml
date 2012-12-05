@@ -75,8 +75,8 @@ PugTestCase {
         compare(branch1.UpdateOperation.status, Operation.Finished);
         compare(branch2.UpdateOperation.status, Operation.Finished);
         compare(file1.UpdateOperation.status, Operation.Finished);
-        compare(branch1.elements[0].path, tmpDir + "updatetests/abc/foo/def/bar/");
-        compare(branch2.elements[0].path, tmpDir + "updatetests/abc/foo/def/bar/ghi/18/");
-        compare(file1.elements[0].pattern, tmpDir + "updatetests/abc/foo/def/bar/ghi/18/somefile.%04d.ext");
+        compare(branch1.details[0].element.path, tmpDir + "updatetests/abc/foo/def/bar/");
+        compare(branch2.details[0].element.path, tmpDir + "updatetests/abc/foo/def/bar/ghi/18/");
+        compare(file1.details[0].element.pattern, tmpDir + "updatetests/abc/foo/def/bar/ghi/18/somefile.%04d.ext");
     }
 }

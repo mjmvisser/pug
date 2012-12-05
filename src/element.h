@@ -3,9 +3,9 @@
 
 #include <QRegularExpression>
 #include <QStringList>
-#include "pugitem.h"
 
-class FrameList;
+#include "pugitem.h"
+#include "framelist.h"
 
 class Element : public PugItem
 {
@@ -21,7 +21,6 @@ class Element : public PugItem
     Q_PROPERTY(QString baseName READ baseName NOTIFY elementChanged)
     Q_PROPERTY(QString frameSpec READ frameSpec NOTIFY elementChanged)
     Q_PROPERTY(QString extension READ extension NOTIFY elementChanged)
-    Q_PROPERTY(QVariant data READ data WRITE setData NOTIFY dataChanged)
 public:
     explicit Element(QObject *parent = 0);
 
@@ -48,9 +47,6 @@ public:
     const QString extension() const;
     bool hasFrames() const;
 
-    const QVariant data() const;
-    void setData(const QVariant);
-
     const QString path(QVariant frame) const;
     const QVariant frame(const QString path) const;
 
@@ -62,7 +58,6 @@ public:
 
 signals:
     void elementChanged();
-    void dataChanged(const QVariant data);
 
 private:
     static const QString patternFromPath(const QString path);
@@ -71,7 +66,7 @@ private:
     QString m_pattern;
     QRegularExpression m_patternRegExp;
     FrameList *m_frameList;
-    QVariant m_data;
 };
+Q_DECLARE_METATYPE(Element*) // makes available to QVariant
 
 #endif

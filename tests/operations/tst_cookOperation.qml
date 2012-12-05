@@ -69,23 +69,17 @@ PugTestCase {
                 root: foo
                 
                 File {
-                    //logLevel: Log.Debug
-                    //UpdateOperation.logLevel: Log.Error
                     id: workFile
                     name: "workFile"
                     pattern: "{FILENAME}"
                 }
 
                 CookQueue {
-                    //logLevel: Log.Debug
-                    //UpdateOperation.logLevel: Log.Error
-                    //CookOperation.logLevel: Log.Error
                     id: copier
                     name: "copier"
-                    count: input ? input.elements.length : 0
+                    count: input ? input.details.length : 0
                     
                     property File input: workFile
-                    property var elements: []
 
                     inputs: Input { name: "input" }
 
@@ -102,19 +96,29 @@ PugTestCase {
                                 
                                 debug("input is " + copier.input);
                                 debug("index is " + index);
-                                debug("input.elements[index] is " + copier.input.elements[index]);
-                                debug("input.elements[index].path is " + copier.input.elements[index].path);
-                                var inputPath = copier.input.elements[index].path;
-                                var outputDir = copier.input.elements[index].directory + "temp/";
-                                var outputPath = outputDir + "temp_" + copier.input.elements[index].baseName + "." + copier.input.elements[index].extension;
+                                debug("input.details[index].element is " + copier.input.details[index].element);
+                                debug("input.details[index].element.path is " + copier.input.details[index].element.path);
+                                debug("input.details[index].env " + JSON.stringify(copier.input.details[index].env));
+                                var inputPath = copier.input.details[index].element.path;
+                                var outputDir = copier.input.details[index].element.directory + "temp/";
+                                var outputPath = outputDir + "temp_" + copier.input.details[index].element.baseName + "." + copier.input.details[index].element.extension;
     
                                 debug("--- creating " + outputPath + " from " + inputPath);
                                 if (!Util.exists(outputDir))
                                     Util.mkpath(outputDir);
                                 Util.copy(inputPath, outputPath);
                                 
-                                var newElement = Util.createElement(copier, {pattern: outputPath, data: copier.input.elements[index].data});
-                                copier.elements.push(newElement);
+                                var newElement = Util.createElement(copier, {pattern: outputPath});
+                                
+                                var d = copier.details;
+                                
+                                for (var i = d.length; i <= index; i++) {
+                                    d.push(null);
+                                }
+                                
+                                d[index] = {"element": newElement, "env": copier.input.details[index].env};
+                                debug("new element with env: " + JSON.stringify(d[index].env));
+                                copier.details = d;
                                 debug(item + " sending cooked(" + Operation.Finished + ")");
                                 item.cooked(Operation.Finished);
                             }
@@ -123,8 +127,6 @@ PugTestCase {
                 }
                 
                 File {
-                    //logLevel: Log.Debug
-                    //UpdateOperation.logLevel: Log.Error
                     id: cookFile
                     name: "cookFile"
                     pattern: "cooked/{FILENAME}"
@@ -157,23 +159,25 @@ PugTestCase {
 
         update.run(cookFile, env);
         updateSpy.wait(500);
+        compare(update.status, Operation.Finished);
         compare(workFile.UpdateOperation.status, Operation.Finished);
         compare(cookFile.UpdateOperation.status, Operation.Finished);
-        compare(workFile.elements[0].path, workPaths[0]);
-        compare(workFile.elements[1].path, workPaths[1]);
-        compare(workFile.elements[2].path, workPaths[2]);
+        compare(workFile.details[0].element.path, workPaths[0]);
+        compare(workFile.details[1].element.path, workPaths[1]);
+        compare(workFile.details[2].element.path, workPaths[2]);
         
         cook.run(cookFile, env);
         cookSpy.wait(1000);
+        compare(cook.status, Operation.Finished);
         compare(cookFile.count, workFile.count);
         compare(workFile.CookOperation.status, Operation.Finished);
         compare(copier.CookOperation.status, Operation.Finished);
         compare(cookFile.CookOperation.status, Operation.Finished);
         compare(workFile.CookOperation.status, Operation.Finished);
-        compare(cookFile.elements.length, 3);
-        compare(cookFile.elements.length, 3);
-        compare(cookFile.elements[0].path, cookPaths[0]);
-        compare(cookFile.elements[1].path, cookPaths[1]);
-        compare(cookFile.elements[2].path, cookPaths[2]);
+        compare(cookFile.details.length, 3);
+        compare(cookFile.details.length, 3);
+        compare(cookFile.details[0].element.path, cookPaths[0]);
+        compare(cookFile.details[1].element.path, cookPaths[1]);
+        compare(cookFile.details[2].element.path, cookPaths[2]);
     }
 }

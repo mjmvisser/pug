@@ -17,8 +17,8 @@ parentPath = () ->
   while branch?.parent?.className? != "Branch"
     branch = branch.parent
     
-  if branch?.elements.length > 0
-    return branch.elements[0].path
+  if branch?.details.length > 0
+    return branch.details[0].element.path
   else
     return ""
 

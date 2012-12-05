@@ -77,7 +77,7 @@ void ShotgunOperationAttached::run()
     BranchBase *branch = firstParent<BranchBase>();
 
     if (branch && !branch->isRoot()) {
-        int count = branch->elements().count();
+        int count = branch->details().count();
 
         // needed for lastVersion
         // TODO: find a way to drop this dependency
@@ -89,19 +89,29 @@ void ShotgunOperationAttached::run()
             if (sge) {
                 if (sgop->mode() == ShotgunOperation::Pull && m_action == ShotgunOperationAttached::Find) {
                     if (count == 1) {
-                        QVariant fields = branch->parse(branch->elements().at(0)->path());
-                        readEntity(sge, fields.toMap());
+                        QVariantMap fields = branch->envAt(0);
+                        readEntity(sge, updateFieldsWithEnv(fields));
                     } else {
-                        error() << node() << "Can't do a Shotgun Find of" << branch->elements().count() << "elements";
+                        error() << node() << "Can't do a Shotgun Find of" << branch->details().count() << "elements";
                     }
                 } else if (sgop->mode() == ShotgunOperation::Push && m_action == ShotgunOperationAttached::Create) {
                     if (count == 1) {
                         setIndex(0);
                         debug() << "set ShotgunOperation.index to" << m_index;
-                        QVariant fields = branch->parse(branch->elements().at(0)->path());
-                        createEntity(sge, fields.toMap());
+                        QVariantMap fields = branch->envAt(0);
+                        createEntity(sge, updateFieldsWithEnv(fields));
                     } else if (count) {
-                        batchCreateEntities(sge);
+                        QVariantList fieldsList;
+                        for (int i = 0; i < branch->details().count(); i++) {
+                            setIndex(i);
+                            debug() << "set ShotgunOperation.index to" << m_index;
+
+                            QVariantMap fields = branch->envAt(i);
+
+                            fieldsList.append(updateFieldsWithEnv(fields));
+                        }
+
+                        batchCreateEntities(sge, fieldsList);
                     } else {
                         error() << node() << "Can't do a Shotgun Create with no elements";
                     }
@@ -117,6 +127,17 @@ void ShotgunOperationAttached::run()
 
 }
 
+const QVariantMap ShotgunOperationAttached::updateFieldsWithEnv(const QVariantMap fields) const
+{
+    // add data from env that is not in fields
+    QVariantMap d = env();
+    for (QVariantMap::const_iterator i = fields.constBegin(); i != fields.constEnd(); ++i) {
+        d.insert(i.key(), i.value());
+    }
+
+    return d;
+}
+
 void ShotgunOperationAttached::readEntity(const ShotgunEntity* sge, const QVariantMap fields)
 {
     m_pendingTransactions++;
@@ -124,12 +145,7 @@ void ShotgunOperationAttached::readEntity(const ShotgunEntity* sge, const QVaria
     ShotgunOperation *sgop = operation<ShotgunOperation>();
     Q_ASSERT(sgop);
 
-    QVariantMap d = env();
-    for (QVariantMap::const_iterator i = fields.constBegin(); i != fields.constEnd(); ++i) {
-        d.insert(i.key(), i.value());
-    }
-
-    QVariantList filters = sge->buildFilters(d);
+    QVariantList filters = sge->buildFilters(fields);
 
     debug() << node() << operation() << ".readEntity" << sge;
     debug() << "--type" << sge->name() << "filters" << QJsonDocument::fromVariant(filters);
@@ -147,12 +163,7 @@ void ShotgunOperationAttached::createEntity(const ShotgunEntity* sge, const QVar
     ShotgunOperation *sgop = qobject_cast<ShotgunOperation *>(operation());
     Q_ASSERT(sgop);
 
-    QVariantMap d = env();
-    for (QVariantMap::const_iterator i = fields.constBegin(); i != fields.constEnd(); ++i) {
-        d.insert(i.key(), i.value());
-    }
-
-    QVariantMap data = sge->buildData(d);
+    QVariantMap data = sge->buildData(fields);
 
     debug() << node() << operation() << ".createEntity" << sge;
     debug() << "--type" << sge->name() << "data" << QJsonDocument::fromVariant(data);
@@ -163,7 +174,7 @@ void ShotgunOperationAttached::createEntity(const ShotgunEntity* sge, const QVar
             this, &ShotgunOperationAttached::onShotgunError);
 }
 
-void ShotgunOperationAttached::batchCreateEntities(ShotgunEntity *sge)
+void ShotgunOperationAttached::batchCreateEntities(ShotgunEntity *sge, const QVariantList fieldsList)
 {
     m_pendingTransactions++;
 
@@ -172,25 +183,12 @@ void ShotgunOperationAttached::batchCreateEntities(ShotgunEntity *sge)
 
     QVariantList batchRequests;
 
-    BranchBase *branch = firstParent<BranchBase>();
-    Q_ASSERT(branch);
-
-    for (int i = 0; i < branch->elements().count(); i++) {
-        setIndex(i);
-        debug() << "set ShotgunOperation.index to" << m_index;
-
-        QVariantMap fields = branch->parse(branch->elements().at(i)->path()).toMap();
-
-        QVariantMap d = env();
-        for (QVariantMap::const_iterator it = fields.constBegin(); it != fields.constEnd(); ++it) {
-            d.insert(it.key(), it.value());
-        }
-
+    foreach (const QVariant fields, fieldsList) {
         QVariantMap batchRequest;
 
         batchRequest["request_type"] = "create";
         batchRequest["entity_type"] = sge->name();
-        batchRequest["data"] = sge->buildData(d);
+        batchRequest["data"] = sge->buildData(fields.toMap());
         QStringList returnFields = sge->buildFields();
         if (returnFields.length() > 0)
             batchRequest["return_fields"] = returnFields;

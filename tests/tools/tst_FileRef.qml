@@ -28,8 +28,8 @@ TestCase {
         update.run(seq, {});
         spy.wait();
         
-        compare(seq.elements[0].pattern, testSequencePath);
-        compare(seq.elements[0].firstFrame, 1);
-        compare(seq.elements[0].lastFrame, 10);
+        compare(seq.details[0].element.pattern, testSequencePath);
+        compare(seq.details[0].element.firstFrame, 1);
+        compare(seq.details[0].element.lastFrame, 10);
     }
 }

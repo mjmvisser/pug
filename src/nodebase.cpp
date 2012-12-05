@@ -162,6 +162,44 @@ void NodeBase::setOutput(bool o)
     }
 }
 
+const QVariantList NodeBase::details() const
+{
+    return m_details;
+}
+
+void NodeBase::setDetails(const QVariantList details)
+{
+    if (m_details != details) {
+        m_details = details;
+        emit detailsChanged();
+    }
+}
+
+void NodeBase::addDetail(const QVariantMap detail, bool notify)
+{
+    m_details.append(detail);
+    if (notify)
+        emit detailsChanged();
+}
+
+void NodeBase::setDetail(int index, const QVariantMap detail, bool notify)
+{
+    if (index < m_details.length()) {
+        m_details.replace(index, detail);
+        if (notify)
+            emit detailsChanged();
+    } else {
+        error() << "setDetail, index out of range";
+    }
+}
+
+void NodeBase::clearDetails(bool notify)
+{
+    if (notify && m_details.length() > 0) {
+        m_details.clear();
+        emit detailsChanged();
+    }
+}
 
 NodeBase *NodeBase::firstNamedParent()
 {

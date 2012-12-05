@@ -147,17 +147,17 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
         }
 
     } else if (m_type == ShotgunField::Path) {
-        if (branch->elements().length() > 0) {
+        if (branch->details().length() > 0) {
             int index = branch->property("ShotgunOperation.index").toInt();
-            result = branch->elements().at(index)->path();
+            result = branch->elementAt(index)->path();
         } else {
             error() << "on" << branch<< "specifies a type of Path but" << branch << ".elements has no entries";
         }
 
     } else if (m_type == ShotgunField::Pattern) {
-        if (branch->elements().length() > 0) {
+        if (branch->details().length() > 0) {
             int index = branch->property("ShotgunOperation.index").toInt();
-            QVariantMap data = branch->elements().at(index)->data().toMap();
+            QVariantMap data = branch->envAt(index);
             for (QVariantMap::const_iterator i = fields.constBegin(); i != fields.constEnd(); ++i) {
                 if (!data.contains(i.key()))
                     data.insert(i.key(), i.value());
@@ -165,6 +165,8 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
             if (branch->areFieldsComplete(m_pattern, data)) {
                 result = branch->formatFields(m_pattern, data);
             } else {
+                // run it anyway, so we can log the errors
+                branch->formatFields(m_pattern, data);
                 error() << branch << "missing fields for" << m_pattern;
             }
         } else {
@@ -173,15 +175,15 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
 
     } else if (m_type == ShotgunField::Link) {
         // this field is an entity link
-        if (m_links.length() == 1 && m_linkTypes.length() == 1) {
-            const ShotgunOperationAttached *linkAttached = qobject_cast<const ShotgunOperationAttached *>(qmlAttachedPropertiesObject<ShotgunOperation>(link(), false));
+        if (link() && !linkType().isEmpty()) {
+            const ShotgunOperationAttached *linkAttached = qobject_cast<const ShotgunOperationAttached *>(qmlAttachedPropertiesObject<ShotgunOperation>(m_links.at(0), false));
             Q_ASSERT(linkAttached);
 
-            if (linkAttached->entities().contains(linkType()) &&
-                    linkAttached->entities()[linkType()].toMap().contains("id")) {
+            if (linkAttached->entities().contains(m_linkTypes.at(0)) &&
+                    linkAttached->entities()[m_linkTypes.at(0)].toMap().contains("id")) {
                 QVariantMap link;
                 link["type"] = linkType();
-                link["id"] = linkAttached->entities()[linkType()].toMap()["id"];
+                link["id"] = linkAttached->entities()[m_linkTypes.at(0)].toMap()["id"];
                 result = link;
             } else {
                 error() << "on" << branch << link() << "has no entity of type" << linkType();
@@ -192,16 +194,18 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
         if (m_links.length() == m_linkTypes.length()) {
             QVariantList links;
             for (int i = 0; i < m_links.length(); i++) {
-                const ShotgunOperationAttached *linkAttached = qobject_cast<const ShotgunOperationAttached *>(qmlAttachedPropertiesObject<ShotgunOperation>(m_links.at(i), false));
-                Q_ASSERT(linkAttached);
+                if (m_links.at(i) && !m_linkTypes.at(i).isEmpty()) {
+                    const ShotgunOperationAttached *linkAttached = qobject_cast<const ShotgunOperationAttached *>(qmlAttachedPropertiesObject<ShotgunOperation>(m_links.at(i), false));
+                    Q_ASSERT(linkAttached);
 
-                if (linkAttached->entities().contains(m_linkTypes.at(i))) {
-                    QVariantMap link;
-                    link["type"] = m_linkTypes.at(i);
-                    link["id"] = linkAttached->entities()[m_linkTypes.at(i)].toMap()["id"];
-                    links.append(link);
-                } else {
-                    error() << "on" << branch<< linkAttached << "has no entity of type" << m_linkTypes.at(i);
+                    if (linkAttached->entities().contains(m_linkTypes.at(i))) {
+                        QVariantMap link;
+                        link["type"] = m_linkTypes.at(i);
+                        link["id"] = linkAttached->entities()[m_linkTypes.at(i)].toMap()["id"];
+                        links.append(link);
+                    } else {
+                        error() << "on" << branch<< linkAttached << "has no entity of type" << m_linkTypes.at(i);
+                    }
                 }
             }
             result = links;
@@ -283,10 +287,10 @@ const QVariant ShotgunUrlField::buildValue(const BranchBase *branch, const QVari
 
     QString localPath;
     if ((m_linkType == ShotgunUrlField::Local || m_linkType == ShotgunUrlField::Upload) &&
-            branch->elements().length() > 0)
+            branch->details().length() > 0)
     {
         int index = branch->property("ShotgunOperation.index").toInt();
-        localPath = branch->elements().at(index)->path();
+        localPath = branch->elementAt(index)->path();
     } else {
         error() << "specifies a Url field but" << branch << ".elements has no entries";
         return QVariant();

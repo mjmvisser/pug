@@ -4,9 +4,8 @@ import Pug 1.0
 CookQueue {
     id: self
     property var input
-    property var elements: []
     property bool filmstrip: false 
-    count: input !== null ? input.elements.length : 0
+    count: input !== null ? input.details.length : 0
 
     inputs: Input { name: "input" }
     params: [
@@ -19,10 +18,10 @@ CookQueue {
 
             property int index
 
-            property string inputPath: input.elements[index].pattern
-            property string outputPath: input.elements[index].directory + input.elements[index].baseName + (self.filmstrip ? "_filmstrip.jpg" : "_thumbnail.jpg")
-            property real firstFrame: input.elements[index].firstFrame
-            property real lastFrame: input.elements[index].lastFrame
+            property string inputPath: input.details[index].element.pattern
+            property string outputPath: input.details[index].element.directory + input.details[index].element.baseName + (self.filmstrip ? "_filmstrip.jpg" : "_thumbnail.jpg")
+            property real firstFrame: input.details[index].element.firstFrame
+            property real lastFrame: input.details[index].element.lastFrame
             property bool filmstrip: self.filmstrip
 
             params: [
@@ -35,8 +34,8 @@ CookQueue {
 
             onCooked: {
                 debug("onCooked");
-                var newElement = Util.createElement(self, {pattern: outputPath, data: input.elements[index].data});
-                elements.push(newElement);
+                var newElement = Util.createElement(self, {pattern: outputPath});
+                self.details.push({"element": newElement, "env": input.details[index].env});
                 
                 debug("new element " + newElement.pattern);
             }

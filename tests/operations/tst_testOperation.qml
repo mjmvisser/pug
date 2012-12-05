@@ -51,6 +51,8 @@ PugTestCase {
     function test_depsAndTrigs() {
         test.run(branchC, {});
         spy.wait(1000);
+
+        compare(test.status, Operation.Finished);
         
         compare(branchA.TestOperation.status, Operation.Finished);
         compare(branchB.TestOperation.status, Operation.Finished);
@@ -63,6 +65,25 @@ PugTestCase {
         compare(branchA.TestOperation.status, Operation.Finished);
         compare(branchB.TestOperation.status, Operation.Finished);
         compare(branchC.TestOperation.status, Operation.Finished);
+    }
+    
+    function test_errors() {
+        test.run(branchC, {"error": true});
+        spy.wait(1000);
+
+        compare(test.status, Operation.Error);
+        
+        compare(branchA.TestOperation.status, Operation.Error);
+        compare(branchB.TestOperation.status, Operation.Error);
+        compare(branchC.TestOperation.status, Operation.Error);
+
+        compare(branchA.TestOperation.status, Operation.Error);
+        compare(branchB.TestOperation.status, Operation.Error);
+        compare(branchC.TestOperation.status, Operation.Error);
+        
+        compare(branchA.TestOperation.status, Operation.Error);
+        compare(branchB.TestOperation.status, Operation.Error);
+        compare(branchC.TestOperation.status, Operation.Error);
     }
 }
                     

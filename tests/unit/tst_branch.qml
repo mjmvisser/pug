@@ -9,17 +9,21 @@ PugTestCase {
     Branch {
         id: branch
         name: "testBranch"
-        pattern: "/abc/{TEST}/def"
-        fields: Field { name: "TEST" }
+        pattern: "{ROOT}/abc/{TEST}/def/{FOO}/"
+        fields: [
+            Field { name: "ROOT"; values: "/root"; defaultValue: "/root" },
+            Field { name: "TEST" },
+            Field { name: "FOO"; defaultValue: "foo" }
+        ]
     }
     
     function test_branch() {
         verify(branch.inherits("Branch"));
         compare(branch.className.indexOf("Branch"), 0);
         verify(branch.node);
-        compare(branch.pattern, "/abc/{TEST}/def");
-        compare(JSON.stringify(branch.parse("/abc/foo/def")), JSON.stringify({TEST: "foo"}));
-        compare(branch.map({TEST: "foo"}), "/abc/foo/def");
+        compare(branch.pattern, "{ROOT}/abc/{TEST}/def/{FOO}/");
+        compare(branch.parse("/root/abc/foo/def/foo/"), {ROOT: "/root", TEST: "foo", FOO: "foo"});
+        compare(branch.map({TEST: "foo"}), "/root/abc/foo/def/foo/");
         compare(branch.map({}), "");
     }
     

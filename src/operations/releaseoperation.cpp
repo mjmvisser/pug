@@ -118,22 +118,27 @@ int ReleaseOperationAttached::findLastVersion(const QVariant data) const
     }
 
     if (branchAttached && versionField) {
-        QStringList releasedPaths = branch->listMatchingPaths(data);
+        debug() << "findLastVersion got field" << versionField;
+        debug() << "findLastVersion got branch" << branch;
+
+        QStringList releasedPaths = branch->listMatchingPaths(data.toMap());
+
+        debug() << "matched paths" << releasedPaths;
 
         int lastVersion = 0;
 
         foreach (QString path, releasedPaths) {
-            QVariant data = branch->parse(path);
-            if (data.isValid() && data.type() == QVariant::Map &&
-                    data.toMap().contains(versionField->name()) &&
-                    data.toMap().value(versionField->name()).canConvert<int>())
+            QVariant releaseEnv = branch->parse(path);
+            copious() << "parse got" << releaseEnv;
+            if (releaseEnv.isValid() && releaseEnv.toMap().contains(versionField->name()))
             {
-                int version = data.toMap().value(versionField->name()).toInt();
+                int version = versionField->get(releaseEnv.toMap()).toInt();
+                copious() << "got version" << version;
                 if (version > lastVersion) {
                     lastVersion = version;
                 }
             } else {
-                error() << this << "for node" << node() << "can't parse" << path;
+                error() << branch << "can't parse" << path;
             }
         }
 
@@ -158,28 +163,23 @@ void ReleaseOperationAttached::run()
         const QString versionFieldName = targetAttached->findVersionFieldName();
         int nextVersion = targetAttached->findLastVersion(env()) + 1;
 
-        foreach (const Element *srcFile, branch->elements()) {
-            if (srcFile->frameList()) {
-                foreach (QString srcPath, srcFile->paths()) {
-                    const QString destPath = release(srcPath, versionFieldName, nextVersion);
-                    if (!destPath.isEmpty())
-                        destPaths << destPath;
-                }
-            } else {
-                const QString destPath = release(srcFile->path(), versionFieldName, nextVersion);
-                if (!destPath.isEmpty())
-                    destPaths << destPath;
-            }
+        m_target->clearDetails();
+
+        for (int i = 0; i < branch->details().length(); i++) {
+            const Element *srcElement = branch->elementAt(i);
+            QVariantMap srcEnv = branch->envAt(i);
+
+            srcEnv[versionFieldName] = nextVersion;
+
+            Element *destElement = new Element(m_target);
+            destElement->setPattern(m_target->map(srcEnv));
+            destElement->setFrames(srcElement->frames());
+
+            releaseElement(srcElement, destElement);
+
+            m_target->addDetail(destElement, srcEnv);
+
         }
-
-        // stash the destination path
-        m_target->setPaths(destPaths);
-
-        debug() << node() << ".run set paths on" << m_target << "to" << destPaths;
-
-        debug() << node() << "elements.length is" << m_target->elements().length();
-        debug() << node() << "firstFrame is" << m_target->elements().at(0)->firstFrame();
-        debug() << node() << "lastFrame is" << m_target->elements().at(0)->lastFrame();
 
         m_queue->run(env());
 
@@ -193,53 +193,46 @@ void ReleaseOperationAttached::run()
     }
 }
 
-const QString ReleaseOperationAttached::release(const QString srcPath, const QString versionFieldName, int nextVersion)
+void ReleaseOperationAttached::releaseElement(const Element *srcElement, const Element *destElement)
 {
-    const BranchBase *branch = qobject_cast<const BranchBase *>(node());
+    if (srcElement->frameList()) {
+        const QStringList srcPaths = srcElement->paths();
+        const QStringList destPaths = destElement->paths();
 
-    QVariant srcData = branch->parse(srcPath);
+        Q_ASSERT(srcPaths.length() == destPaths.length());
 
-    if (srcData.isValid()) {
-        // create a new env based off our default
-        QVariantMap destData(env());
+        for (int i = 0; i < srcPaths.length(); i++) {
+            const QString srcPath = srcPaths.at(i);
+            const QString destPath = destPaths.at(i);
 
-        // merge srcData
-        QMapIterator<QString, QVariant> i(srcData.toMap());
-        while (i.hasNext()) {
-            i.next();
-            // don't overwrite
-            destData.insert(i.key(), i.value());
+            releaseFile(srcPath, destPath);
         }
+    } else {
+        releaseFile(srcElement->path(), destElement->path());
+    }
+}
 
-        // add our next version
-        destData[versionFieldName] = nextVersion;
+void ReleaseOperationAttached::releaseFile(const QString srcPath, const QString destPath)
+{
+    if (!destPath.isEmpty()) {
+        QFileInfo destInfo(destPath);
+        if (!destInfo.absoluteDir().exists())
+            m_queue->mkdir(destInfo.absoluteDir().absolutePath());
 
-        QString destPath = m_target->map(destData);
+        switch (m_mode) {
+        case ReleaseOperationAttached::Copy:
+            m_queue->copy(srcPath, destPath);
+            break;
 
-        if (!destPath.isEmpty()) {
-            QFileInfo destInfo(destPath);
-            if (!destInfo.absoluteDir().exists())
-                m_queue->mkdir(destInfo.absoluteDir().absolutePath());
+        case ReleaseOperationAttached::Move:
+            m_queue->move(srcPath, destPath);
+            break;
 
-            switch (m_mode) {
-            case ReleaseOperationAttached::Copy:
-                m_queue->copy(srcPath, destPath);
-                break;
-
-            case ReleaseOperationAttached::Move:
-                m_queue->move(srcPath, destPath);
-                break;
-
-            default:
-                error() << this << "unknown file mode " << m_mode;
-                break;
-            }
-
-            return destPath;
+        default:
+            error() << this << "unknown file mode " << m_mode;
+            break;
         }
     }
-
-    return QString();
 }
 
 void ReleaseOperationAttached::onFileOpQueueFinished()
@@ -249,15 +242,20 @@ void ReleaseOperationAttached::onFileOpQueueFinished()
     const QString versionFieldName = targetAttached->findVersionFieldName();
     int version = targetAttached->findLastVersion(env());
 
-    QVariantMap fields = env();
-    fields[versionFieldName] = version;
+    QVariantMap targetEnv = env();
+    targetEnv[versionFieldName] = version;
 
-    // make sure parents are updated
+    // update the parents
     BranchBase *p = m_target->firstParent<BranchBase>();
     while (p && !p->isRoot()) {
-        emit p->update(fields);
+        debug() << "updating" << p;
+        debug() << "target env is" << targetEnv;
+        QStringList paths = p->listMatchingPaths(targetEnv);
+        debug() << "got paths" << paths;
+        p->setPaths(paths, targetEnv);
+
         p = p->firstParent<BranchBase>();
-    }
+   }
 
     setStatus(OperationAttached::Finished);
     continueRunning();

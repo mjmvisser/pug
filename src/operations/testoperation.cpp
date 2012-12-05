@@ -8,8 +8,14 @@ TestOperationAttached::TestOperationAttached(QObject *parent) :
 void TestOperationAttached::run()
 {
     debug() << this << node() << operation() << ".run";
-    debug() << "finished!";
-    setStatus(OperationAttached::Finished);
+    if (env().value("error").toBool()) {
+        error() << "intentionally generating an error for test purposes";
+        setStatus(OperationAttached::Error);
+    } else {
+        debug() << "finished";
+        setStatus(OperationAttached::Finished);
+    }
+
     continueRunning();
 }
 

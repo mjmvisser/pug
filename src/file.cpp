@@ -57,11 +57,14 @@ void File::setLinkType(File::LinkType lt)
 
 void File::onUpdate(const QVariant env)
 {
-    QStringList paths = listMatchingPaths(env);
+    QStringList paths = listMatchingPaths(env.toMap());
 
-    setPaths(paths);
+    setPaths(paths, env.toMap());
 
     debug() << "onUpdate set paths" << paths;
+
+    if (paths.length() == 0)
+        warning() << "no paths matched";
 
     emit updated(OperationAttached::Finished);
 }
@@ -73,114 +76,99 @@ void File::onCook(const QVariant env)
     if (m_input) {
         copious() << "has input" << m_input;
         // hard link to input, pass data along
-        clearElements();
+        clearDetails();
 
-        QList<Element *> inputElements;
-        // QML isn't quite production-ready when it comes to treating both QList<Element *> and
-        // javascript lists of QVariant-wrapped-Element* the same
-        if (qobject_cast<BranchBase *>(m_input)) {
-            BranchBase *inputBranch = qobject_cast<BranchBase *>(m_input);
-            foreach (Element *element, inputBranch->elements()) {
-                inputElements.append(element);
-            }
-        } else {
-            QQmlProperty inputElementsProperty(m_input, "elements");
+        QVariantList inputDetails = m_input->details();
 
-            if (!inputElementsProperty.isValid()) {
-                error() << "input does not have an elements property";
-                emit cooked(OperationAttached::Error);
-                return;
-            } else if (inputElementsProperty.propertyTypeCategory() != QQmlProperty::List &&
-                       (inputElementsProperty.propertyTypeCategory() != QQmlProperty::Normal ||
-                               !inputElementsProperty.read().canConvert<QVariantList>()))
-            {
-                error() << "input.elements is not a list";
-                emit cooked(OperationAttached::Error);
-                return;
-            }
+        debug() << "input" << m_input;
+        debug() << "input details" << inputDetails;
 
-            foreach (const QVariant v, inputElementsProperty.read().toList()) {
-                if (!v.canConvert<Element *>()) {
-                    error() << "item in elements is not an Element: " << v;
-                    emit cooked(OperationAttached::Error);
-                    return;
-                }
-                inputElements.append(v.value<Element *>());
-            }
+        if (inputDetails.length() == 0) {
+            warning() << "no input details";
         }
 
-        copious() << "passed sanity checks";
+        for (int i=0; i < inputDetails.length(); i++) {
+            if (inputDetails.at(i).canConvert<QVariantMap>()) {
+                QVariantMap inputDetail = inputDetails.at(i).toMap();
 
-        foreach (const Element *srcElement, inputElements) {
-            Element *destElement = new Element(this);
+                debug() << "cooking index" << i;
 
-            copious() << "got" << srcElement;
+                if (inputDetail.contains("element") && inputDetail.contains("env")) {
+                    const Element *inputElement = inputDetail.value("element").value<Element *>();
+                    const QVariantMap inputEnv = inputDetail.value("env").value<QVariantMap>();
 
-            // create a new env based off our default
-            QVariantMap destData(env.toMap());
+                    debug() << "input env" << inputEnv;
 
-            // merge srcData
-            QMapIterator<QString, QVariant> i(srcElement->data().toMap());
-            while (i.hasNext()) {
-                i.next();
-                // don't overwrite
-                destData.insert(i.key(), i.value());
-            }
+                    Element *destElement = new Element(this);
 
+                    destElement->setPattern(map(inputEnv));
+                    destElement->setFrames(inputElement->frames());
 
-            destElement->setData(destData);
-            destElement->setPattern(map(srcElement->data()));
-            destElement->setFrames(srcElement->frames());
+                    // create a new env based off our default
+                    QVariantMap destEnv(env.toMap());
 
-            addElement(destElement);
+                    debug() << "dest env" << destEnv;
 
-            debug() << srcElement->data();
+                    debug() << "dest element" << destElement->toString();
 
-            foreach (const QString srcPath, srcElement->paths()) {
-                debug() << "cooking" << srcPath;
+                    // merge input env
+                    QMapIterator<QString, QVariant> i(inputEnv);
+                    while (i.hasNext()) {
+                        i.next();
+                        // don't overwrite
+                        destEnv.insert(i.key(), i.value());
+                    }
 
-                QVariant srcFrame = srcElement->frame(srcPath);
-                QString destPath = destElement->path(srcFrame);
+                    foreach (const QString inputPath, inputElement->paths()) {
+                        QVariant srcFrame = inputElement->frame(inputPath);
+                        QString destPath = destElement->path(srcFrame);
 
-                if (!destPath.isEmpty()) {
-                    QFileInfo destInfo(destPath);
-                    destInfo.absoluteDir().mkpath(".");
+                        debug() << "cooking" << inputPath << "->" << destPath;
 
-                    QFile destFile(destPath);
-                    if (destFile.exists())
-                        destFile.remove();
+                        if (!destPath.isEmpty()) {
+                            QFileInfo destInfo(destPath);
+                            destInfo.absoluteDir().mkpath(".");
 
-                    copious() << "linking" << srcPath << "to" << destPath;
+                            QFile destFile(destPath);
+                            if (destFile.exists())
+                                destFile.remove();
 
-                    if (m_linkType == File::Hard) {
-                        // META TODO: no cross-platform hardlink support in Qt
-                        if (link(srcPath.toUtf8().constData(), destPath.toUtf8().constData()) != 0) {
-                            error() << "link failed:" << srcPath.toUtf8().constData() << "->" << destPath.toUtf8().constData();
-                            error() << "error is:" << strerror(errno);
+                            copious() << "linking" << inputPath << "to" << destPath;
 
-                            emit cooked(OperationAttached::Error);
-                            return;
-                        }
-                    } else {
-                        if (symlink(srcPath.toUtf8().constData(), destPath.toUtf8().constData()) != 0) {
-                            error() << "symlink failed:" << srcPath.toUtf8().constData() << "->" << destPath.toUtf8().constData();
-                            error() << "error is:" << strerror(errno);
+                            if (m_linkType == File::Hard) {
+                                // META TODO: no cross-platform hardlink support in Qt
+                                if (link(inputPath.toUtf8().constData(), destPath.toUtf8().constData()) != 0) {
+                                    error() << "link failed:" << inputPath.toUtf8().constData() << "->" << destPath.toUtf8().constData();
+                                    error() << "error is:" << strerror(errno);
 
-                            emit cooked(OperationAttached::Error);
-                            return;
+                                    emit cooked(OperationAttached::Error);
+                                    return;
+                                }
+                            } else {
+                                if (symlink(inputPath.toUtf8().constData(), destPath.toUtf8().constData()) != 0) {
+                                    error() << "symlink failed:" << inputPath.toUtf8().constData() << "->" << destPath.toUtf8().constData();
+                                    error() << "error is:" << strerror(errno);
+
+                                    emit cooked(OperationAttached::Error);
+                                    return;
+                                }
+                            }
                         }
                     }
+
+                    addDetail(destElement, destEnv, false);
+
+                } else if (!inputDetail.contains("element")) {
+                    error() << "input.details[" << i << "].element does not exist";
+                } else if (!inputDetail.contains("env")) {
+                    error() << "input.details[" << i << "].env does not exist";
                 }
+            } else {
+                error() << "input.details[" << i << "] is not a map";
             }
+
         }
-    } else {
-        // otherwise just set the data
-        foreach (Element *element, elements()) {
-            debug() << "pattern" << element->pattern();
-            QVariant data = parse(element->pattern());
-            debug() << "data" << data;
-            element->setData(data);
-        }
+
     }
 
     emit cooked(OperationAttached::Finished);

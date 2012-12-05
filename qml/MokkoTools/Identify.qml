@@ -6,9 +6,9 @@ import "js/identify.js" as Identify
 CookQueue {
     id: self
     property var input
-    property var elements: input.elements
+    details: input.details
     property var metadata: {} 
-    count: input !== null ? input.elements.length : 0
+    count: input !== null ? input.details.length : 0
 
     inputs: Input { name: "input" }
     params: Param { name: "metadata" }
@@ -18,7 +18,7 @@ CookQueue {
             property int index
             script: "identify"
             property string format: Identify.buildFormatString(self.metadata)
-            property string path: elements[index].paths[0]
+            property string path: details[index].element.paths[0]
 
             params: [
                 Param { name: "format";
@@ -34,11 +34,11 @@ CookQueue {
                 for (var i = 0; i < lines.length; i++) {
                     var tokens = lines[i].split("=");
                     debug("tokens is " + JSON.stringify(tokens));
-                    var data = input.elements[index].data;
+                    var data = input.details[index].element.data;
                     if (typeof data === "undefined")
                         data = {};
                     data[tokens[0]] = tokens[1]; 
-                    input.elements[index].data = data;
+                    input.details[index].element.data = data;
                 }
             }
         }

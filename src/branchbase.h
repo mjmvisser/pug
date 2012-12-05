@@ -15,7 +15,6 @@ class BranchBase : public NodeBase
 {
     Q_OBJECT
     Q_PROPERTY(BranchBase *root READ root WRITE setRoot NOTIFY rootChanged)
-    Q_PROPERTY(QQmlListProperty<Element> elements READ elements_ NOTIFY elementsChanged)
     Q_PROPERTY(QString pattern READ pattern WRITE setPattern NOTIFY patternChanged)
     Q_PROPERTY(QQmlListProperty<Field> fields READ fields_)
 public:
@@ -25,23 +24,10 @@ public:
     const BranchBase *root() const;
     void setRoot(BranchBase *);
 
-    QQmlListProperty<Field> fields_();
-
-    QQmlListProperty<Element> elements_();
-
-    QList<Element *>& elements();
-    const QList<const Element *>& elements() const;
-
-    void clearElements();
-    void addElement(Element *);
-
-    void setPaths(const QStringList);
-
     const QString pattern() const;
     void setPattern(const QString);
 
-    bool exactMatch() const;
-    void setExactMatch(bool f);
+    QQmlListProperty<Field> fields_();
 
     BranchBase *parentBranch();
     const BranchBase *parentBranch() const;
@@ -62,15 +48,27 @@ public:
     Q_INVOKABLE const QVariant parse(const QString path) const;
     Q_INVOKABLE const QString map(const QVariant fields) const;
 
-    Q_INVOKABLE const QStringList listMatchingPaths(const QVariant data) const;
+    Q_INVOKABLE const QStringList listMatchingPaths(const QVariantMap env) const;
+    Q_INVOKABLE void setPaths(const QStringList paths, const QVariantMap env);
+
+    const Element *elementAt(int index) const;
+    Element *elementAt(int index);
+    const QVariantMap envAt(int index) const;
+
+    void addDetail(Element *element, const QVariantMap env, bool notify=true);
 
 signals:
     void update(const QVariant env);
     void updated(int status);
 
     void rootChanged(BranchBase *root);
-    void elementsChanged();
     void patternChanged(const QString pattern);
+
+protected:
+    bool exactMatch() const;
+    void setExactMatch(bool f);
+
+    void setEnvAt(int index, const QVariantMap env);
 
 private:
     const QStringList listMatchingPathsHelper(const QDir parentDir, const QVariantMap fields) const;
@@ -78,7 +76,6 @@ private:
 
     BranchBase *m_root;
     QList<Field *> m_fields;
-    QList<Element *> m_elements;
     QString m_pattern;
     bool m_exactMatchFlag;
 };

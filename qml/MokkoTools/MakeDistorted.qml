@@ -4,10 +4,9 @@ import Pug 1.0
 CookQueue {
     id: self
     property var input
-    property var elements: []
     property var nukeDistortFile
     property string outputFormat
-    count: input !== null ? input.elements.length : 0
+    count: input !== null ? input.details.length : 0
 
     inputs: [
         Input { name: "input" },
@@ -21,11 +20,11 @@ CookQueue {
             property int index
             script: Qt.resolvedUrl("scripts/makeDistorted.sh").replace("file://", "")
 
-            property var inputsequence: input.elements[index].pattern
-            property string outsequence: generatePath(self.name, index, input.elements[index].frameSpec, input.elements[index].extension)
-            property real start: input.elements[index].firstFrame
-            property real end: input.elements[index].lastFrame
-            property string distortnukefile: nukeDistortFile.elements[0].path
+            property var inputsequence: input.details[index].element.pattern
+            property string outsequence: generatePath(self.name, index, input.details[index].element.frameSpec, input.details[index].element.extension)
+            property real start: input.details[index].element.firstFrame
+            property real end: input.details[index].element.lastFrame
+            property string distortnukefile: nukeDistortFile.details[0].element.path
             property string outformat: outputFormat
             property string __render: "True"
             property string __debug: "True"
@@ -44,8 +43,8 @@ CookQueue {
 
             onCooked: {
                 debug("onCooked");
-                var newElement = Util.createElement(self, {pattern: inputsequence, data: input.elements[index].data});
-                elements.push(newElement);
+                var newElement = Util.createElement(self, {pattern: inputsequence});
+                self.details.push({"element": newElement, "env": input.details[index].env});
                 
                 debug("new element " + newElement.pattern);
             }

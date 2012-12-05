@@ -55,8 +55,8 @@ TestCase {
         cook.run(makeDist, {});
         spy.wait(25000);
 
-        verify(seq.elements.length == 1);
-        verify(makeDist.elements.length == 1);
+        verify(seq.details.length == 1);
+        verify(makeDist.details.length == 1);
         
     }
 }

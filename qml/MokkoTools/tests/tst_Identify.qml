@@ -45,9 +45,9 @@ TestCase {
         cook.run(identify, {});
         spy.wait(500);
         
-        compare(file.elements.length, 1);
+        compare(file.details.length, 1);
         compare(identify.CookOperation.status, Operation.Finished);
-        compare(identify.elements[0].pattern, testImagePath);
-        compare(identify.elements[0].data.FORMAT, "82x104");
+        compare(identify.details[0].element.pattern, testImagePath);
+        compare(identify.details[0].element.data.FORMAT, "82x104");
     }
 }

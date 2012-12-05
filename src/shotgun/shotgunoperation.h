@@ -47,7 +47,7 @@ protected:
 
     void readEntity(const ShotgunEntity *, const QVariantMap);
     void createEntity(const ShotgunEntity *, const QVariantMap);
-    void batchCreateEntities(ShotgunEntity *);
+    void batchCreateEntities(ShotgunEntity *, const QVariantList);
 
 protected slots:
     void onReadCreateEntityFinished(const QVariant);
@@ -55,6 +55,8 @@ protected slots:
     void onShotgunError();
 
 private:
+    const QVariantMap updateFieldsWithEnv(const QVariantMap fields) const;
+
     QVariantMap m_entities;
     Action m_action;
     int m_pendingTransactions;

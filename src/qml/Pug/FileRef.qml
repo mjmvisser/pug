@@ -4,7 +4,6 @@ import Pug 1.0
 Node {
     id: self
     property string pattern
-    property var elements: []
     
     params: Param { name: "pattern" }
     
@@ -13,13 +12,12 @@ Node {
     
     onUpdate: {
         debug(".onUpdate");
-        elements = [];
         var newElement = Util.createElement(self, {pattern: self.pattern});
         newElement.scan();
-        elements.push(newElement);
-        elementsChanged();  // force any bindings to update
+        self.details.push({"element": newElement, "env": {}});
+        self.detailsChanged();
         debug("added " + newElement.pattern);
-        debug("elements length is now " + elements.length);
+        debug("details length is now " + self.details.length);
         updated(Operation.Finished);
     }
 }

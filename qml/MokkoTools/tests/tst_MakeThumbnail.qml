@@ -50,8 +50,8 @@ TestCase {
         spy.wait(25000);
 
         compare(cook.status, Operation.Finished)        
-        verify(seq.elements.length == 1);
-        verify(makeThumbnail.elements.length == 1);
+        verify(seq.details.length == 1);
+        verify(makeThumbnail.details.length == 1);
     }
     
     function test_makeFilmstrip() {
@@ -59,8 +59,8 @@ TestCase {
         spy.wait(25000);
 
         compare(cook.status, Operation.Finished)        
-        verify(seq.elements.length == 1);
-        verify(makeFilmstrip.elements.length == 1);
+        compare(seq.details.length, 1);
+        compare(makeFilmstrip.details.length, 1);
     }
     
 }

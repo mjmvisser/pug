@@ -4,7 +4,6 @@
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
 #include <QDir>
-#include <QSet>
 
 #include "branchbase.h"
 #include "root.h"
@@ -123,65 +122,89 @@ void BranchBase::setRoot(BranchBase *branch)
     }
 }
 
-QQmlListProperty<Element> BranchBase::elements_()
-{
-    return QQmlListProperty<Element>(this, m_elements);
-}
-
-const QList<const Element *>& BranchBase::elements() const
-{
-    // hard to believe you have to do this in modern C++
-    return reinterpret_cast<const QList<const Element *> &>(m_elements);
-}
-
-QList<Element *>& BranchBase::elements()
-{
-    return m_elements;
-}
-
 QQmlListProperty<Field> BranchBase::fields_()
 {
     return QQmlListProperty<Field>(this, m_fields);
 }
 
-void BranchBase::clearElements()
+void BranchBase::addDetail(Element *element, const QVariantMap env, bool notify)
 {
-    if (!m_elements.isEmpty()) {
-        while (!m_elements.isEmpty())
-            m_elements.takeFirst()->deleteLater();
-        emit elementsChanged();
+    QVariantMap detail;
+    detail.insert("element", QVariant::fromValue(element));
+    detail.insert("env", env);
+    NodeBase::addDetail(detail, notify);
+    debug() << "added detail:" << element << env;
+}
+
+const Element *BranchBase::elementAt(int index) const
+{
+    if (index < details().length())
+        return details().at(index).toMap().value("element").value<Element *>();
+    else
+        return 0;
+}
+
+Element *BranchBase::elementAt(int index)
+{
+    if (index < details().length())
+        return details().at(index).toMap().value("element").value<Element *>();
+    else
+        return 0;
+}
+
+const QVariantMap BranchBase::envAt(int index) const
+{
+    if (index < details().length())
+        return details().at(index).toMap().value("env").value<QVariantMap>();
+    else
+        return QVariantMap();
+}
+
+void BranchBase::setEnvAt(int index, const QVariantMap env)
+{
+    if (index < details().length()) {
+        QVariantMap detail = details().at(index).toMap();
+        detail.insert("env", env);
+        setDetail(index, detail);
     }
 }
 
-void BranchBase::addElement(Element *e)
+void BranchBase::setPaths(const QStringList paths, const QVariantMap env)
 {
-    m_elements.append(e);
-    emit elementsChanged();
-}
-
-void BranchBase::setPaths(const QStringList paths)
-{
-    m_elements.clear();
+    clearDetails();
 
     foreach (const QString path, paths) {
         bool found = false;
-        foreach (Element *element, m_elements) {
+
+        for (int i = 0; i < details().count(); i++) {
+            Element *element = elementAt(i);
             if (element->matches(path)) {
                 element->append(path);
                 found = true;
                 break;
             }
         }
+
         if (!found) {
             Element *element = new Element(this);
             element->setPattern(path);
             if (element->hasFrames())
                 element->append(path);
-            m_elements.append(element);
+            QVariantMap elementEnv = parse(element->pattern()).toMap();
+
+            // merge input env
+            QMapIterator<QString, QVariant> i(env);
+            while (i.hasNext()) {
+                i.next();
+                // don't overwrite
+                if (!elementEnv.contains(i.key()))
+                    elementEnv.insert(i.key(), i.value());
+            }
+
+            addDetail(element, elementEnv, false);
         }
     }
-
-    emit elementsChanged();
+    emit detailsChanged();
 }
 
 const QString BranchBase::pattern() const
@@ -303,16 +326,10 @@ const QVariant BranchBase::match(const QString pattern, const QString path, bool
             matchRegexpStr += "(?<";
             matchRegexpStr += fieldName;
             matchRegexpStr += ">";
-            if (f->values().length() == 1) {
-                // exactly one value -- only match that
-                matchRegexpStr += QRegularExpression::escape(f->values().at(0));
-            } else {
-                // substitute the field's regexp
-                matchRegexpStr += f->regexp();
-            }
+            matchRegexpStr += f->regexp();
             matchRegexpStr += ")";
         } else {
-            qWarning() << ".match couldn't find field " << fieldName;
+            warning() << ".match couldn't find field " << fieldName;
         }
 
         lastEnd = match.capturedEnd();
@@ -326,7 +343,7 @@ const QVariant BranchBase::match(const QString pattern, const QString path, bool
     if (exact)
         matchRegexpStr += "$";
 
-    copious() << ".match with" << matchRegexpStr;
+    debug() << ".match" << path << "with" << matchRegexpStr;
 
     QRegularExpression matchRegexp(matchRegexpStr);
 
@@ -374,6 +391,7 @@ const QVariant BranchBase::match(const QString pattern, const QString path) cons
 
 const QString BranchBase::formatFields(const QString pattern, const QVariant data) const
 {
+    copious() << ".formatFields(" << pattern << ", " << data << ")";
     QVariantMap fields;
     if (data.isValid() && data.type() == QVariant::Map)
         fields = data.toMap();
@@ -463,13 +481,15 @@ bool BranchBase::areFieldsComplete(const QString pattern, const QVariantMap fiel
     foreach (const QString fieldName, fieldNames(pattern)) {
         const Field *field = findField(fieldName);
         if (!field) {
-            error() << "can't find field" << fieldName;
+            debug() << "can't find field" << fieldName;
             return false;
         }
 
         QVariant value = field->get(fields);
-        if (!value.isValid())
+        if (!value.isValid()) {
+            debug() << "field is not valid" << fieldName;
             return false;
+        }
     }
 
     return true;
@@ -478,7 +498,7 @@ bool BranchBase::areFieldsComplete(const QString pattern, const QVariantMap fiel
 const QString BranchBase::map(const QVariant fields) const
 {
     copious() << ".map" << fields;
-    if (fields.isValid() && fields.type() == QVariant::Map && areFieldsComplete(m_pattern, fields.toMap())) {
+    if (fields.isValid() && fields.canConvert<QVariantMap>() && areFieldsComplete(m_pattern, fields.toMap())) {
         QString mappedParent;
         const BranchBase *rootBranch = qobject_cast<const BranchBase *>(root());
         // recurse
@@ -491,12 +511,12 @@ const QString BranchBase::map(const QVariant fields) const
     return QString();
 }
 
-const QStringList BranchBase::listMatchingPaths(const QVariant data) const
+const QStringList BranchBase::listMatchingPaths(const QVariantMap env) const
 {
-    copious() << ".listMatchingPaths" << QJsonDocument::fromVariant(data);
+    copious() << ".listMatchingPaths" << QJsonDocument::fromVariant(env);
     QStringList result;
 
-    QString path = map(data);
+    QString path = map(env);
 
     if (!path.isEmpty()) {
         QFileInfo pathInfo(path);
@@ -510,12 +530,12 @@ const QStringList BranchBase::listMatchingPaths(const QVariant data) const
     }
 
     if (root()) {
-        QString parentPath = root()->map(data);
+        QString parentPath = root()->map(env);
 
         if (!parentPath.isEmpty()) {
             QDir parentDir(parentPath);
             if (parentDir.isAbsolute()) {
-                result = listMatchingPathsHelper(parentDir, data.toMap());
+                result = listMatchingPathsHelper(parentDir, env);
             } else {
                 warning() << ".map returned a relative path" << parentPath;
             }

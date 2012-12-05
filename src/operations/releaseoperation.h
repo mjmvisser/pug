@@ -50,7 +50,8 @@ signals:
     void pathsChanged(QString paths);
 
 protected:
-    const QString release(const QString srcPath, const QString versionFieldName, int nextVersion);
+    void releaseElement(const Element *srcElement, const Element *destElement);
+    void releaseFile(const QString srcPath, const QString destPath);
 
     virtual const QMetaObject *operationMetaObject() const;
 

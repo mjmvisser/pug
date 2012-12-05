@@ -62,7 +62,7 @@ PugTestCase {
             Field { name: "FOO" },
             Field { name: "BAR" },
             Field { name: "DAG" },
-            Field { name: "FRAME"; regexp: "\\d{4}" },
+            FrameSpecField { name: "FRAME" },
             Field { name: "VERSION"; type: Field.Integer; width: 3 }
         ]
         
@@ -80,7 +80,7 @@ PugTestCase {
             
             Branch {
                 id: releaseBranch
-                name: "release"
+                name: "releaseBranch"
                 pattern: "release/main/v{VERSION}/"
                 root: foo
                 ReleaseOperation.versionField: "VERSION"
@@ -102,7 +102,7 @@ PugTestCase {
             
             Branch {
                 id: workBranch
-                name: "work"
+                name: "workBranch"
                 pattern: "work/"
                 root: foo
                 
@@ -152,15 +152,21 @@ PugTestCase {
         
         release.run(workFile, env);
         releaseSpy.wait(500);
-        compare(workFile.elements[0].path, workPath);
+        compare(release.status, Operation.Finished);
+        compare(workFile.details.length, 1);
+        compare(workFile.details[0].element.path, workPath);
         compare(workFile.ReleaseOperation.status, Operation.Finished);
-        compare(releaseFile.elements[0].path, releasePath_v003);
+        compare(releaseFile.details[0].element.path, releasePath_v003);
+        compare(releaseFile.details.length, 1);
         verify(Util.exists(releasePath_v003));
         
         release.run(workFile, env);
         releaseSpy.wait(500);
+        compare(release.status, Operation.Finished);
         compare(workFile.ReleaseOperation.status, Operation.Finished);
-        compare(releaseFile.elements[0].path, releasePath_v004);
+        compare(workFile.details.length, 1);
+        compare(releaseFile.details.length, 1);
+        compare(releaseFile.details[0].element.path, releasePath_v004);
         verify(Util.exists(releasePath_v004));
     }
     
@@ -181,12 +187,14 @@ PugTestCase {
         releaseSpy.wait(500);
         
         var releasePath = tmpDir + "releasetests/abc/foo/release/main/v003/dag.%04d.txt";
-        compare(releaseSeq.elements[0].pattern, releasePath);
-        compare(releaseBranch.elements[0].path, tmpDir + "releasetests/abc/foo/release/main/v003/");
+        compare(workSeq.details.length, 1);
+        compare(releaseSeq.details.length, 1);
+        compare(releaseSeq.details[0].element.pattern, releasePath);
+        compare(releaseBranch.details[0].element.path, tmpDir + "releasetests/abc/foo/release/main/v003/");
         
         for (var frame = 1; frame <= 4; frame++) {
             var framePath = releasePath.replace("%04d", zeroFill(frame, 4));
-            verify(Util.exists(framePath));
+            verify(Util.exists(framePath), framePath);
         }
     }
 }

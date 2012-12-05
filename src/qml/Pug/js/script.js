@@ -26,8 +26,8 @@ parentPath = function() {
   while (((branch != null ? (_ref = branch.parent) != null ? _ref.className : void 0 : void 0) != null) !== "Branch") {
     branch = branch.parent;
   }
-  if ((branch != null ? branch.elements.length : void 0) > 0) {
-    return branch.elements[0].path;
+  if ((branch != null ? branch.details.length : void 0) > 0) {
+    return branch.details[0].element.path;
   } else {
     return "";
   }

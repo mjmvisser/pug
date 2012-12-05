@@ -55,11 +55,13 @@ NodeBase* OperationAttached::node()
 
 void OperationAttached::resetStatus()
 {
+    debug() << "resetting status to" << OperationAttached::None;
     setStatus(OperationAttached::None);
 }
 
 void OperationAttached::reset()
 {
+    debug() << "resetting status to" << OperationAttached::None;
     setStatus(OperationAttached::None);
 }
 
@@ -208,6 +210,7 @@ void OperationAttached::run(Operation *op, const QVariant env)
     //   - Idle: run already called by another dependency
     //   - Finished: finished by another index
     Q_ASSERT(status() == OperationAttached::None || status() == OperationAttached::Idle || status() == OperationAttached::Finished);
+    debug() << "setting status to" << OperationAttached::Idle;
     setStatus(OperationAttached::Idle);
 
     setEnv(env.toMap());
@@ -257,6 +260,7 @@ void OperationAttached::continueRunning()
             break;
 
         case OperationAttached::Idle:
+            debug() << "setting status to" << OperationAttached::Running;
             setStatus(OperationAttached::Running);
             debug() << node() << "calling run()";
             run();
@@ -264,6 +268,7 @@ void OperationAttached::continueRunning()
 
         case OperationAttached::Error:
             debug() << node() << ".continueRunning, status is error, emitting finished";
+            setStatus(OperationAttached::Error);
             emit finished(this);
             break;
 
@@ -287,6 +292,7 @@ void OperationAttached::continueRunning()
             case OperationAttached::Invalid:
             case OperationAttached::Finished:
                 debug() << node() << ".continueRunning, OK, emitting finished";
+                setStatus(OperationAttached::Finished);
                 emit finished(this);
                 break;
             }
@@ -596,6 +602,7 @@ void Operation::continueRunning()
         m_runningNode = 0;
         m_runningEnv.clear();
         debug() << "depStatus is error, emitting finished";
+        setStatus(OperationAttached::Error);
         emit finished(OperationAttached::Error);
         break;
 
@@ -612,7 +619,7 @@ void Operation::continueRunning()
 
         case OperationAttached::None:
             // run this operation
-            debug() << "running" << attached;
+            debug() << "setting status to running" << attached;
             setStatus(OperationAttached::Running);
 
             // reset the attachment statuses
@@ -668,6 +675,7 @@ void Operation::continueRunning()
                 m_runningNode = 0;
                 m_runningEnv.clear();
                 debug() << "trigStatus is" << trigStatus << "emitting finished";
+                setStatus(OperationAttached::Finished);
                 emit finished(OperationAttached::Finished);
                 break;
             }
@@ -711,6 +719,7 @@ void Operation::onFinished(OperationAttached *attached)
     disconnect(attached, SIGNAL(finished(OperationAttached*)),
                this, SLOT(onFinished(OperationAttached*)));
 
+    debug() << "onFinished, setting status to" << attached->status();
     setStatus(attached->status());
 
     continueRunning();

@@ -3,9 +3,11 @@
 #include <QProcessEnvironment>
 #include "field.h"
 
+static const QString DEFAULT_REGEXP("\\w+");
+
 Field::Field(QObject *parent) :
     PugItem(parent),
-    m_regexp("\\w+"),
+    m_regexp(DEFAULT_REGEXP),
     m_width(0),
     m_type(Field::String)
 {
@@ -27,13 +29,20 @@ void Field::setEnv(const QString v)
 const QString Field::regexp() const
 {
     return m_regexp;
+
 }
 
-void Field::setRegexp(const QString re)
+void Field::setRegexp(const QString regexp)
 {
-    if (m_regexp != re) {
-        m_regexp = re;
-        emit regexpChanged(m_regexp);
+    if (m_regexp != regexp) {
+        if (!QRegularExpression(regexp).isValid()) {
+            error() << "regexp" << regexp << "is not a valid regular expression";
+            return;
+        }
+
+        m_regexp = regexp;
+        copious() << "regexp set to" << regexp;
+        emit regexpChanged(regexp);
     }
 }
 
@@ -46,6 +55,7 @@ void Field::setType(Field::Type t)
 {
     if (m_type != t) {
         m_type = t;
+        copious() << "type set to" << t;
         emit typeChanged(m_type);
     }
 }
@@ -55,10 +65,16 @@ int Field::width() const
     return m_width;
 }
 
-void Field::setWidth(int w)
+void Field::setWidth(int width)
 {
-    if (m_width != w) {
-        m_width = w;
+    if (m_width != width) {
+        if (width < 1) {
+            error() << "invalid width" << width;
+            return;
+        }
+
+        m_width = width;
+        copious() << "width set to" << width;
         emit widthChanged(m_width);
     }
 }
@@ -68,11 +84,56 @@ const QStringList Field::values() const
     return m_values;
 }
 
-void Field::setValues(const QStringList v)
+void Field::setValues(const QStringList values)
 {
-    if (m_values != v) {
-        m_values = v;
-        emit valuesChanged(m_values);
+    if (m_values != values) {
+        if (values.isEmpty()) {
+            // reset our regular expression
+            setRegexp(DEFAULT_REGEXP);
+            m_values = values;
+            copious() << "values set to" << values;
+            emit valuesChanged(values);
+        } else {
+            // if we have a default value, it better be in the new values
+            if (!m_defaultValue.isEmpty() && !values.contains(m_defaultValue)) {
+                error() << "defaultValue doesn't match values";
+                return;
+            }
+
+            // build the new regular expression
+            QStringList regexpParts;
+            foreach (const QString value, values) {
+                copious() << "escaped" << value << "is" << QRegularExpression::escape(value);
+                regexpParts << ("(?:" + QRegularExpression::escape(value) + ")");
+            }
+            setRegexp(regexpParts.join("|"));
+
+            m_values = values;
+            copious() << "values set to" << values;
+            emit valuesChanged(m_values);
+        }
+    }
+}
+
+const QString Field::defaultValue() const
+{
+    return m_defaultValue;
+}
+
+void Field::setDefaultValue(const QString defaultValue)
+{
+    if (m_defaultValue != defaultValue) {
+        // TODO: can't do this here, since values may be set AFTER defaultValue
+//        // it better match our regexp
+//        QRegularExpression regexp("^" + m_regexp + "$");
+//        if (!regexp.match(defaultValue).hasMatch()) {
+//            error() << "defaultValue" << defaultValue << "does not match regexp " << regexp;
+//            return;
+//        }
+
+        copious() << "defaultValue set to" << defaultValue;
+        m_defaultValue = defaultValue;
+        emit defaultValueChanged(defaultValue);
     }
 }
 
@@ -85,6 +146,7 @@ void Field::setFormatSpec(const QString spec)
 {
     if (m_formatSpec != spec) {
         m_formatSpec = spec;
+        copious() << "formatSpec to" << spec;
         emit formatSpecChanged(m_formatSpec);
     }
 }
@@ -124,8 +186,8 @@ const QVariant Field::get(const QVariantMap data) const
         value = data.value(name());
     } else if (!m_env.isEmpty() && QProcessEnvironment::systemEnvironment().contains(m_env)) {
         value = parse(QProcessEnvironment::systemEnvironment().value(m_env));
-    } else if (m_values.length() == 1) {
-        value = m_values.at(0);
+    } else if (!m_defaultValue.isEmpty()) {
+        value = m_defaultValue;
     }
 
     return value;

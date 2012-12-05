@@ -16,6 +16,7 @@ class Field : public PugItem
     Q_PROPERTY(Type type READ type WRITE setType NOTIFY typeChanged)
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
     Q_PROPERTY(QStringList values READ values WRITE setValues NOTIFY valuesChanged)
+    Q_PROPERTY(QString defaultValue READ defaultValue WRITE setDefaultValue NOTIFY defaultValueChanged)
     Q_PROPERTY(QString formatSpec READ formatSpec WRITE setFormatSpec NOTIFY formatSpecChanged)
     Q_ENUMS(Type)
 public:
@@ -38,6 +39,9 @@ public:
     const QStringList values() const;
     void setValues(const QStringList);
 
+    const QString defaultValue() const;
+    void setDefaultValue(const QString);
+
     const QString formatSpec() const;
     void setFormatSpec(const QString);
 
@@ -51,6 +55,7 @@ signals:
     void typeChanged(Type type);
     void widthChanged(int width);
     void valuesChanged(const QStringList values);
+    void defaultValueChanged(const QString defaultValue);
     void formatSpecChanged(const QString formatSpec);
 
 private:
@@ -59,6 +64,7 @@ private:
     int m_width;
     Type m_type;
     QStringList m_values;
+    QString m_defaultValue;
     QString m_formatSpec;
 };
 Q_DECLARE_METATYPE(Field*)

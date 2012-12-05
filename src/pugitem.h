@@ -4,7 +4,7 @@
 #include <QtQml>
 #include <QQmlParserStatus>
 #include <QQmlListProperty>
-
+#include <QMetaType>
 #include <QObject>
 
 #include "logger.h"

@@ -16,10 +16,10 @@ Branch::Branch(QObject *parent) :
 
 void Branch::onUpdate(const QVariant env)
 {
-    QStringList paths = listMatchingPaths(env);
+    QStringList paths = listMatchingPaths(env.toMap());
 
     copious() << this << "onUpdate got" << paths;
 
-    setPaths(paths);
+    setPaths(paths, env.toMap());
     emit updated(OperationAttached::Finished);
 }
