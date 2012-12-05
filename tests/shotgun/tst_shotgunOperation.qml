@@ -270,7 +270,6 @@ PugTestCase {
                 }
                 
                 File {
-                    logLevel: Log.Debug
                     id: releaseSeq
                     name: "releaseSeq"
                     pattern: "render/jpg/{SEQUENCE}_{SHOT}_{STEP}.{FRAME}.{EXT}"
@@ -303,7 +302,6 @@ PugTestCase {
                 pattern: "work/{USER}/"
                 
                 File {
-                    logLevel: Log.Debug
                     id: workSeq
                     name: "workSeq"
                     pattern: "images/{FILENAME}.{FRAME}.{EXT}"

@@ -286,8 +286,12 @@ const QVariant ShotgunUrlField::buildValue(const BranchBase *branch, const QVari
     if ((m_linkType == ShotgunUrlField::Local || m_linkType == ShotgunUrlField::Upload) &&
             branch->details().length() > 0)
     {
-        int index = branch->property("ShotgunOperation.index").toInt();
-        localPath = branch->elementAt(index)->path();
+        localPath = branch->elementAt(branch->index())->pattern();
+
+        if (localPath.isEmpty()) {
+            error() << branch << "has no element path at index" << branch->index();
+            return QVariant();
+        }
     } else {
         error() << "specifies a Url field but" << branch << ".elements has no entries";
         return QVariant();
