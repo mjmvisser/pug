@@ -528,14 +528,14 @@ ShotgunReply *Shotgun::callRpc(const QString method, const QVariant params, bool
 
     const QVariant newParams = transformOutbound(params);
 
-    PugItem::info() << newParams;
+    debug() << "transformed params" << newParams;
 
     if (!buildPayload(payload, method, QJsonDocument::fromVariant(newParams), includeScriptName))
         return false;
 
     QByteArray encodedPayload = QJsonDocument(payload).toJson();
 
-    //debug() << "callRpc" << payload;
+    debug() << "callRpc" << payload;
 
     QNetworkRequest req;
     req.setUrl(m_config.apiUrl);
