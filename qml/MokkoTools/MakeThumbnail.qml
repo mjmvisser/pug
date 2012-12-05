@@ -8,15 +8,12 @@ CookQueue {
     count: input !== null ? input.details.length : 0
 
     inputs: Input { name: "input" }
-    params: [
-        Param { name: "filmstrip" }
-    ]
+    params: Param { name: "filmstrip" }
 
     component: Component {
         Script {
-            script: Qt.resolvedUrl("scripts/makeThumbnail.py").replace("file://", "")
-
             property int index
+            script: Qt.resolvedUrl("scripts/makeThumbnail.py").replace("file://", "")
 
             property string inputPath: input.details[index].element.pattern
             property string outputPath: input.details[index].element.directory + input.details[index].element.baseName + (self.filmstrip ? "_filmstrip.jpg" : "_thumbnail.jpg")
@@ -33,9 +30,10 @@ CookQueue {
             ]
 
             onCooked: {
-                debug("onCooked");
+                debug("MakeThumbnail.onCooked");
                 var newElement = Util.createElement(self, {pattern: outputPath});
-                self.details.push({"element": newElement, "env": input.details[index].env});
+                self.setDetail(index, "element", newElement);
+                self.setDetail(index, "env", input.details[index].env);
                 
                 debug("new element " + newElement.pattern);
             }

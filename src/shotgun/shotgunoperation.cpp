@@ -185,13 +185,10 @@ void ShotgunOperationAttached::addDetail(const QVariantMap entity)
     QVariantList details = branch->details();
     Q_ASSERT(branch->index() >= 0 && branch->index() < details.length());
 
-    QVariantMap detail = details[branch->index()].toMap();
-    QVariantMap entities = detail.value("entities", QVariantMap()).toMap();
+    QVariantMap entities = branch->details().at(branch->index()).toMap().value("entities", QVariantMap()).toMap();
     entities.insert(entity.value("type").toString(), entity);
-    detail.insert("entities", entities);
-    details[branch->index()] = detail;
 
-    branch->setDetails(details);
+    branch->setDetail(branch->index(), "entities", entities);
 }
 
 void ShotgunOperationAttached::onReadCreateEntityFinished(const QVariant result)

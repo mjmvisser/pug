@@ -176,40 +176,34 @@ void NodeBase::setDetails(const QVariantList details)
     }
 }
 
-int NodeBase::index() const
+void NodeBase::setDetail(int index, const QVariantMap value)
 {
-    return m_index;
-}
-
-void NodeBase::setIndex(int i)
-{
-    if (m_index != i) {
-        m_index = i;
-        emit indexChanged(m_index);
+    for (int i = m_details.length(); i <= index; i++) {
+        m_details.append(QVariantMap());
     }
+
+    m_details[index] = value;
+    emit detailsChanged();
 }
 
-void NodeBase::addDetail(const QVariantMap detail, bool notify)
+void NodeBase::setDetail(int index, const QString key, const QVariant value)
 {
-    m_details.append(detail);
-    if (notify)
-        emit detailsChanged();
-}
-
-void NodeBase::setDetail(int index, const QVariantMap detail, bool notify)
-{
-    if (index < m_details.length()) {
-        m_details.replace(index, detail);
-        if (notify)
-            emit detailsChanged();
-    } else {
-        error() << "setDetail, index out of range";
+    for (int i = m_details.length(); i <= index; i++) {
+        m_details.append(QVariantMap());
     }
+
+    Q_ASSERT(index < m_details.length());
+
+    QVariantMap detail = m_details[index].toMap();
+    detail[key] = value;
+
+    m_details[index] = detail;
+    emit detailsChanged();
 }
 
-void NodeBase::clearDetails(bool notify)
+void NodeBase::clearDetails()
 {
-    if (notify && m_details.length() > 0) {
+    if (m_details.length() > 0) {
         m_details.clear();
         emit detailsChanged();
     }
@@ -440,6 +434,19 @@ const QList<const NodeBase *> NodeBase::downstream() const
 bool NodeBase::isRoot() const
 {
     return false;
+}
+
+int NodeBase::index() const
+{
+    return m_index;
+}
+
+void NodeBase::setIndex(int index)
+{
+    if (m_index != index) {
+        m_index = index;
+        emit indexChanged(index);
+    }
 }
 
 const NodeBase *NodeBase::rootBranch() const

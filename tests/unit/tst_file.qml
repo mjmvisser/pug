@@ -57,7 +57,13 @@ PugTestCase {
             input: file
             pattern: "def/{FOO}.{BAR}.{BAZ}"
             linkType: File.Symbolic
-        }    
+        }
+        
+        File {
+            id: absFile
+            name: "absFile"
+            pattern: tmpDir + "filetests/abc/foo.{BAR}.baz"
+        }
     }
     
     SignalSpy {
@@ -72,7 +78,7 @@ PugTestCase {
         signalName: "finished"
     }
     
-    function skip_test_file() {
+    function test_file() {
         compare(file.pattern, "abc/{FOO}.{BAR}.{BAZ}");
         
         update.run(file, {FOO: "foo", BAR: "0001", BAZ: "baz"});
@@ -89,5 +95,16 @@ PugTestCase {
         cookSpy.wait(500);
         
         verify(Util.exists(tmpDir + "filetests/def/foo.0001.baz"));
+    }
+    
+    function test_absFile() {
+        verify(Util.exists(tmpDir + "filetests/abc/foo.0001.baz"));
+
+        update.run(absFile, {BAR: "0001"});
+        updateSpy.wait(500);
+        
+        compare(absFile.UpdateOperation.status, Operation.Finished);
+        compare(absFile.details[0].element.pattern, tmpDir + "filetests/abc/foo.%04d.baz");
+        compare(absFile.details[0].element.paths[0], tmpDir + "filetests/abc/foo.0001.baz");
     }
 }    

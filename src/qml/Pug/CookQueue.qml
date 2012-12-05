@@ -5,9 +5,11 @@ Repeater {
     id: self
     
     property int __limit: 4 // TODO: provide a Util.idealThreadCount or something
+    property var __cooked
     property var __cooking
     property var __pending
     property var __env
+    property var __cookStatus
 
     signal cook(var env)
     signal cooked(int status)
@@ -16,7 +18,12 @@ Repeater {
     onItemCooked: {
         debug(sender() + " itemCooked " + status);
         // remove the item
-        __cooking.splice(__cooking.indexOf(sender()), 1);
+        var item = __cooking.splice(__cooking.indexOf(sender()), 1);
+        __cooked.push(item);
+
+        if (status > __cookStatus)
+            __cookStatus = status;
+        
         self.continueRunning();          
     }   
     
@@ -34,6 +41,8 @@ Repeater {
         __env = env;
         __pending = [];
         __cooking = [];
+        __cooked = [];
+        __cookStatus = Operation.Invalid
         for (var i = 0; i < self.count; i++) {
             __pending.push(itemAt(i));
         }
@@ -45,13 +54,16 @@ Repeater {
         debug("continueRunning status=" + self.CookOperation.status + " __pending: " + __pending + " __cooking: " + __cooking);
         if (self.CookOperation.status != Operation.Error) {
             while (__pending.length > 0 && __cooking.length < __limit) {
-                var process = __pending.shift();
-                __cooking.push(process);
-                process.cook(__env);
+                var item = __pending.shift();
+                __cooking.push(item);
+                debug("cooking " + item);
+                item.cook(__env);
             }
             
-            if (__cooking.length === 0 && __pending.length == 0)
-                self.cooked(Operation.Finished);
+            if (__cooking.length === 0 && __pending.length === 0) {
+                debug("cooked with status " + __cookStatus);
+                self.cooked(__cookStatus != Operation.Invalid ? __cookStatus : Operation.Error);
+            }
         }
     }
 } 

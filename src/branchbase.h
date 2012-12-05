@@ -55,8 +55,6 @@ public:
     Element *elementAt(int index);
     const QVariantMap envAt(int index) const;
 
-    void addDetail(Element *element, const QVariantMap env, bool notify=true);
-
 signals:
     void update(const QVariant env);
     void updated(int status);

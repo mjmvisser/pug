@@ -11,8 +11,6 @@ TestCase {
     property string testSequencePath: Qt.resolvedUrl("data/testSequence.%04d.exr").replace("file://", "") 
     
     FileRef {
-        logLevel: Log.Debug
-        UpdateOperation.logLevel: Log.Debug
         id: seq
         name: "testSequence"
         pattern: testSequencePath

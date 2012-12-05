@@ -127,15 +127,6 @@ QQmlListProperty<Field> BranchBase::fields_()
     return QQmlListProperty<Field>(this, m_fields);
 }
 
-void BranchBase::addDetail(Element *element, const QVariantMap env, bool notify)
-{
-    QVariantMap detail;
-    detail.insert("element", QVariant::fromValue(element));
-    detail.insert("env", env);
-    NodeBase::addDetail(detail, notify);
-    debug() << "added detail:" << element << env;
-}
-
 const Element *BranchBase::elementAt(int index) const
 {
     if (index < details().length())
@@ -173,6 +164,7 @@ void BranchBase::setPaths(const QStringList paths, const QVariantMap env)
 {
     clearDetails();
 
+    int index = 0;
     foreach (const QString path, paths) {
         bool found = false;
 
@@ -201,7 +193,9 @@ void BranchBase::setPaths(const QStringList paths, const QVariantMap env)
                     elementEnv.insert(i.key(), i.value());
             }
 
-            addDetail(element, elementEnv, false);
+            setDetail(index, "element", QVariant::fromValue(element));
+            setDetail(index, "env", elementEnv);
+            index++;
         }
     }
     emit detailsChanged();
@@ -301,6 +295,7 @@ static const QString escapeSpecialCharacters(const QString r)
 
 const QVariant BranchBase::match(const QString pattern, const QString path, bool exact) const
 {
+    debug() << "matching" << path << "against" << pattern << "(exact is" << exact << ")";
     static const QRegularExpression replaceFieldsRegexp("\\{(\\w+)\\}");
 
     const QString escapedPattern = escapeSpecialCharacters(pattern);
@@ -349,7 +344,7 @@ const QVariant BranchBase::match(const QString pattern, const QString path, bool
 
     QRegularExpressionMatch match = matchRegexp.match(path);
 
-    copious() << ".match got" << match;
+    debug() << ".match got" << match;
 
     if (match.hasMatch()) {
         QVariantMap fields;
@@ -440,7 +435,12 @@ const QString BranchBase::formatFields(const QString pattern, const QVariant dat
 const QVariant BranchBase::parse(const QString path) const
 {
     copious() << "parse" << path;
-    const BranchBase *rootBranch = qobject_cast<const BranchBase *>(root());
+    const BranchBase *rootBranch = 0;
+    if (m_pattern.length() == 0 || m_pattern[0] != '/') {
+        // not absolute;
+        rootBranch = qobject_cast<const BranchBase *>(root());
+    }
+
     if (rootBranch) {
         // recurse
         QVariant data = rootBranch->parse(path);
@@ -500,11 +500,14 @@ const QString BranchBase::map(const QVariant fields) const
     copious() << ".map" << fields;
     if (fields.isValid() && fields.canConvert<QVariantMap>() && areFieldsComplete(m_pattern, fields.toMap())) {
         QString mappedParent;
-        const BranchBase *rootBranch = qobject_cast<const BranchBase *>(root());
-        // recurse
-        if (rootBranch)
-            mappedParent = rootBranch->map(fields);
-
+        if (m_pattern.length() == 0 || m_pattern[0] != '/') {
+            // not absolute
+            const BranchBase *rootBranch = qobject_cast<const BranchBase *>(root());
+            copious() << "root" << rootBranch;
+            // recurse
+            if (rootBranch)
+                mappedParent = rootBranch->map(fields);
+        }
         return mappedParent + formatFields(m_pattern, fields.toMap());
     }
 
@@ -518,18 +521,31 @@ const QStringList BranchBase::listMatchingPaths(const QVariantMap env) const
 
     QString path = map(env);
 
+    copious() << "initial map got" << path;
+
     if (!path.isEmpty()) {
         QFileInfo pathInfo(path);
+        copious() << "hidden:" << pathInfo.isHidden();
+        copious() << "dir:" << pathInfo.isDir();
+        copious() << "file:" << pathInfo.isFile();
+        copious() << "exists:" << pathInfo.exists();
+        copious() << "m_exactMatchFlag:" << m_exactMatchFlag;
         if (!pathInfo.isHidden()) {
             if ((pathInfo.isDir() && !m_exactMatchFlag) ||
                 (pathInfo.isFile() && m_exactMatchFlag)) {
                 result << path;
+                copious() << "returning" << result;
                 return result;
             }
         }
     }
 
-    if (root()) {
+    if (m_pattern.length() > 0 && m_pattern[0] == '/') {
+        // absolute
+        copious() << "absolute file path detected";
+        QFileInfo pathInfo(path);
+        result = listMatchingPathsHelper(pathInfo.absoluteDir(), env);
+    } else if (root()) {
         QString parentPath = root()->map(env);
 
         if (!parentPath.isEmpty()) {
@@ -575,6 +591,7 @@ const QStringList BranchBase::listMatchingPathsHelper(const QDir parentDir, cons
                     QVariant entryFields = parse(entry.absoluteFilePath() + "/");
                     // if we've got an exact match, the "_" entry will be invalid
                     if (entryFields.isValid() && containsFields(fields, entryFields.toMap()) && !entryFields.toMap()["_"].isValid()) {
+                        copious() << "found" << entry.absoluteFilePath();
                         result.append(entry.absoluteFilePath() + "/");
                     }
                 }
@@ -583,11 +600,13 @@ const QStringList BranchBase::listMatchingPathsHelper(const QDir parentDir, cons
             } else if (m_exactMatchFlag) {
                 QVariant entryFields = parse(entry.absoluteFilePath());
                 if (entryFields.isValid() && containsFields(fields, entryFields.toMap())) {
+                    copious() << "found" << entry.absoluteFilePath();
                     result.append(entry.absoluteFilePath());
                 }
             }
         }
     }
 
+    copious() << "got" << result;
     return result;
 }

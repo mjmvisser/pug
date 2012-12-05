@@ -3,7 +3,7 @@ import Pug 1.0
 import MokkoTools 1.0
 
 TestCase {
-    property string testSequencePath: Qt.resolvedUrl("data/testSequence.%04d.exr").replace("file://", "")
+    property string testSequencePath: Qt.resolvedUrl("data/testSequence.{FRAME}.exr").replace("file://", "")
     
     Root {
         operations: [
@@ -16,22 +16,26 @@ TestCase {
             }
         ]
         
+        fields: FrameSpecField { name: "FRAME" }
+        
         Branch {
             name: "mokkotoolstests"
             pattern: "/usr/tmp/mokkotoolstests"
 
-            FileRef {
+            File {
                 id: seq
                 name: "seq"
                 pattern: testSequencePath
             }
     
             MakeThumbnail {
+                name: "makeThumbnail"
                 id: makeThumbnail
                 input: seq
             }
             
             MakeThumbnail {
+                name: "makeFilmstrip"
                 id: makeFilmstrip
                 input: seq
                 filmstrip: true

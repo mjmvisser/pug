@@ -8,7 +8,7 @@ buildArgv = function() {
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     prop = _ref[_i];
     if (!prop.input && !prop.output && (this[prop.name] != null)) {
-      if (this[prop.name] !== false && prop.noFlag !== true) {
+      if (this[prop.name] !== false && prop.arg !== true) {
         flagPrefix = prop.flagPrefix == null ? "--" : prop.flagPrefix;
         argv.push("" + flagPrefix + (prop.objectName.replace(/^__/, "")));
       }

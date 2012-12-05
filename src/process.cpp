@@ -59,13 +59,18 @@ void Process::onCook(const QVariant env)
         QString program = args.takeFirst();
 
         m_process->start(program, args);
-    }
 
-    // TODO: what do on fail?
+        // close stdin so we don't hang indefinitely
+        m_process->closeWriteChannel();
+    } else {
+        error() << "Process has no args";
+        emit cooked(OperationAttached::Error);
+    }
 }
 
 void Process::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    debug() << "process finished with exit code" << exitCode << "exit status" << exitStatus;
     m_stdout = m_process->readAllStandardOutput();
     emit stdoutChanged(m_stdout);
     if (exitStatus == QProcess::CrashExit || exitCode != 0) {
@@ -77,9 +82,9 @@ void Process::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 
 void Process::onProcessError(QProcess::ProcessError err)
 {
+    debug() << "process error" << m_process->errorString();
     m_stdout = m_process->readAllStandardOutput();
     emit stdoutChanged(m_stdout);
-    debug() << "process error" << m_process->errorString();
     emit cooked(OperationAttached::Error);
 }
 

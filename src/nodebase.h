@@ -46,9 +46,10 @@ public:
 
     const QVariantList details() const;
     void setDetails(const QVariantList);
-    void addDetail(const QVariantMap detail, bool notify=true);
-    void setDetail(int index, const QVariantMap detail, bool notify=true);
-    void clearDetails(bool notify=true);
+
+    Q_INVOKABLE void setDetail(int index, const QVariantMap value);
+    Q_INVOKABLE void setDetail(int index, const QString key, const QVariant value);
+    Q_INVOKABLE void clearDetails();
 
     const NodeBase *rootBranch() const;
     NodeBase *rootBranch();

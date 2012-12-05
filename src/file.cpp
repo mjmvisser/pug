@@ -87,11 +87,11 @@ void File::onCook(const QVariant env)
             warning() << "no input details";
         }
 
-        for (int i=0; i < inputDetails.length(); i++) {
-            if (inputDetails.at(i).canConvert<QVariantMap>()) {
-                QVariantMap inputDetail = inputDetails.at(i).toMap();
+        for (int index=0; index < inputDetails.length(); index++) {
+            if (inputDetails[index].canConvert<QVariantMap>()) {
+                QVariantMap inputDetail = inputDetails[index].toMap();
 
-                debug() << "cooking index" << i;
+                debug() << "cooking index" << index;
 
                 if (inputDetail.contains("element") && inputDetail.contains("env")) {
                     const Element *inputElement = inputDetail.value("element").value<Element *>();
@@ -156,15 +156,16 @@ void File::onCook(const QVariant env)
                         }
                     }
 
-                    addDetail(destElement, destEnv, false);
+                    setDetail(index, "element", QVariant::fromValue(destElement));
+                    setDetail(index, "env", destEnv);
 
                 } else if (!inputDetail.contains("element")) {
-                    error() << "input.details[" << i << "].element does not exist";
+                    error() << "input.details[" << index << "].element does not exist";
                 } else if (!inputDetail.contains("env")) {
-                    error() << "input.details[" << i << "].env does not exist";
+                    error() << "input.details[" << index << "].env does not exist";
                 }
             } else {
-                error() << "input.details[" << i << "] is not a map";
+                error() << "input.details[" << index << "] is not a map";
             }
 
         }

@@ -11,10 +11,12 @@ Node {
     signal itemRemoved(int index, var item)
     
     onCountChanged: {
+        copious("onCountChanged");
         __regenerate();
     }
     
     onComponentChanged: {
+        copious("onComponentChanged");
         for (var i = count; i < __items.length; i++) {
             itemRemoved(i, __items[i]);
             __items[i].destroy();

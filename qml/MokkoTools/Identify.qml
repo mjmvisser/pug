@@ -5,8 +5,8 @@ import "js/identify.js" as Identify
 
 CookQueue {
     id: self
-    property var input
     details: input.details
+    property var input
     property var metadata: {} 
     count: input !== null ? input.details.length : 0
 
@@ -17,29 +17,34 @@ CookQueue {
         Script {
             property int index
             script: "identify"
+            
             property string format: Identify.buildFormatString(self.metadata)
-            property string path: details[index].element.paths[0]
+            property string path: input.details[index].element.paths[0]
 
             params: [
                 Param { name: "format";
                         property string flagPrefix: "-" },
                 Param { name: "path";
-                        property bool noFlag: true }
+                        property bool arg: true }
             ]
 
             onCooked: {
-                debug("Identify.onCooked called");
-                var lines = stdout.replace(/\n$/, "").split("\n");
-                debug("lines is " + JSON.stringify(lines));
-                for (var i = 0; i < lines.length; i++) {
-                    var tokens = lines[i].split("=");
-                    debug("tokens is " + JSON.stringify(tokens));
-                    var data = input.details[index].element.data;
-                    if (typeof data === "undefined")
-                        data = {};
-                    data[tokens[0]] = tokens[1]; 
-                    input.details[index].element.data = data;
+                debug("Identify.onCooked " + status);
+                if (status == Operation.Finished) {
+                    var lines = stdout.replace(/\n$/, "").split("\n");
+                    var data = {};
+                    debug("lines is " + JSON.stringify(lines));
+                    for (var i = 0; i < lines.length; i++) {
+                        var tokens = lines[i].split("=");
+                        debug("tokens is " + JSON.stringify(tokens));
+                        data[tokens[0]] = tokens[1];
+                    }
+                    self.setDetail(index, "identify", data);
                 }
+            }
+            
+            onCook: {
+                debug("onCook");
             }
         }
     }

@@ -1,6 +1,5 @@
 module Pug
 Script 1.0 Script.qml
-FileRef 1.0 FileRef.qml
 FrameSpecField 1.0 FrameSpecField.qml
 Repeater 1.0 Repeater.qml
 CookQueue 1.0 CookQueue.qml

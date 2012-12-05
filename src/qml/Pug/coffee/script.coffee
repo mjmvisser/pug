@@ -2,7 +2,7 @@ buildArgv = () ->
   argv = [@script]
   for prop in @params
     if not prop.input and not prop.output and @[prop.name]?
-      if @[prop.name] != false and prop.noFlag != true
+      if @[prop.name] != false and prop.arg != true
         flagPrefix = if !prop.flagPrefix? then "--" else prop.flagPrefix
         argv.push "#{flagPrefix}#{prop.objectName.replace(/^__/, "")}";
       if @[prop.name] != true and @[prop.name] != false        

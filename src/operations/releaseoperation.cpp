@@ -165,9 +165,9 @@ void ReleaseOperationAttached::run()
 
         m_target->clearDetails();
 
-        for (int i = 0; i < branch->details().length(); i++) {
-            const Element *srcElement = branch->elementAt(i);
-            QVariantMap srcEnv = branch->envAt(i);
+        for (int index = 0; index < branch->details().length(); index++) {
+            const Element *srcElement = branch->elementAt(index);
+            QVariantMap srcEnv = branch->envAt(index);
 
             srcEnv[versionFieldName] = nextVersion;
 
@@ -177,8 +177,8 @@ void ReleaseOperationAttached::run()
 
             releaseElement(srcElement, destElement);
 
-            m_target->addDetail(destElement, srcEnv);
-
+            m_target->setDetail(index, "element", QVariant::fromValue(destElement));
+            m_target->setDetail(index, "env", srcEnv);
         }
 
         m_queue->run(env());
