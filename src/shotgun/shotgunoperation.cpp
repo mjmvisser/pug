@@ -15,32 +15,6 @@ ShotgunOperationAttached::ShotgunOperationAttached(QObject *object) :
 {
 }
 
-const QVariantMap ShotgunOperationAttached::entities() const
-{
-    return m_entities;
-}
-
-void ShotgunOperationAttached::setEntities(const QVariantMap e)
-{
-    if (m_entities != e) {
-        m_entities = e;
-        emit entitiesChanged();
-    }
-}
-
-int ShotgunOperationAttached::index() const
-{
-    return m_index;
-}
-
-void ShotgunOperationAttached::setIndex(int i)
-{
-    if (m_index != i) {
-        m_index = i;
-        emit indexChanged(m_index);
-    }
-}
-
 ShotgunOperationAttached::Action ShotgunOperationAttached::action() const
 {
     return m_action;
@@ -57,7 +31,6 @@ void ShotgunOperationAttached::setAction(ShotgunOperationAttached::Action a)
 void ShotgunOperationAttached::reset()
 {
     OperationAttached::reset();
-    setEntities(QVariantMap());
     m_pendingTransactions = 0;
 }
 
@@ -89,6 +62,7 @@ void ShotgunOperationAttached::run()
             if (sge) {
                 if (sgop->mode() == ShotgunOperation::Pull && m_action == ShotgunOperationAttached::Find) {
                     if (count == 1) {
+                        branch->setIndex(0);
                         QVariantMap fields = branch->envAt(0);
                         readEntity(sge, updateFieldsWithEnv(fields));
                     } else {
@@ -96,15 +70,13 @@ void ShotgunOperationAttached::run()
                     }
                 } else if (sgop->mode() == ShotgunOperation::Push && m_action == ShotgunOperationAttached::Create) {
                     if (count == 1) {
-                        setIndex(0);
-                        debug() << "set ShotgunOperation.index to" << m_index;
+                        branch->setIndex(0);
                         QVariantMap fields = branch->envAt(0);
                         createEntity(sge, updateFieldsWithEnv(fields));
                     } else if (count) {
                         QVariantList fieldsList;
                         for (int i = 0; i < branch->details().count(); i++) {
-                            setIndex(i);
-                            debug() << "set ShotgunOperation.index to" << m_index;
+                            branch->setIndex(i);
 
                             QVariantMap fields = branch->envAt(i);
 
@@ -205,10 +177,26 @@ void ShotgunOperationAttached::batchCreateEntities(ShotgunEntity *sge, const QVa
             this, &ShotgunOperationAttached::onShotgunError);
 }
 
+void ShotgunOperationAttached::addDetail(const QVariantMap entity)
+{
+    BranchBase *branch = firstParent<BranchBase>();
+    Q_ASSERT(branch);
+
+    QVariantList details = branch->details();
+    Q_ASSERT(branch->index() >= 0 && branch->index() < details.length());
+
+    QVariantMap detail = details[branch->index()].toMap();
+    QVariantMap entities = detail.value("entities", QVariantMap()).toMap();
+    entities.insert(entity.value("type").toString(), entity);
+    detail.insert("entities", entities);
+    details[branch->index()] = detail;
+
+    branch->setDetails(details);
+}
+
 void ShotgunOperationAttached::onReadCreateEntityFinished(const QVariant result)
 {
-    m_entities.insert(result.toMap().value("type").toString(), result);
-    emit entitiesChanged();
+    addDetail(result.toMap());
 
     QObject::sender()->deleteLater();
 
@@ -226,8 +214,13 @@ void ShotgunOperationAttached::onReadCreateEntityFinished(const QVariant result)
 
 void ShotgunOperationAttached::onBatchCreateEntitiesFinished(const QVariant result)
 {
-    m_entities.insert(result.toList().at(0).toMap().value("type").toString(), result);
-    emit entitiesChanged();
+    BranchBase *branch = firstParent<BranchBase>();
+    Q_ASSERT(branch);
+
+    for (int i = 0; i < result.toList().length(); i++) {
+        branch->setIndex(i);
+        addDetail(result.toList().at(i).toMap());
+    }
 
     QObject::sender()->deleteLater();
 

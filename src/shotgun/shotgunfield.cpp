@@ -176,17 +176,15 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
     } else if (m_type == ShotgunField::Link) {
         // this field is an entity link
         if (link() && !linkType().isEmpty()) {
-            const ShotgunOperationAttached *linkAttached = qobject_cast<const ShotgunOperationAttached *>(qmlAttachedPropertiesObject<ShotgunOperation>(m_links.at(0), false));
-            Q_ASSERT(linkAttached);
+            QVariantMap entities = link()->details().at(branch->index()).toMap().value("entities").toMap();
 
-            if (linkAttached->entities().contains(m_linkTypes.at(0)) &&
-                    linkAttached->entities()[m_linkTypes.at(0)].toMap().contains("id")) {
+            if (entities.contains(m_linkTypes.at(0)) && entities[m_linkTypes.at(0)].toMap().contains("id")) {
                 QVariantMap link;
                 link["type"] = linkType();
-                link["id"] = linkAttached->entities()[m_linkTypes.at(0)].toMap()["id"];
+                link["id"] = entities[m_linkTypes.at(0)].toMap()["id"];
                 result = link;
             } else {
-                error() << "on" << branch << link() << "has no entity of type" << linkType();
+                error() << branch << "link" << link() << "has no entity of type" << linkType();
             }
         }
     } else if (m_type == ShotgunField::MultiLink) {
@@ -194,17 +192,16 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
         if (m_links.length() == m_linkTypes.length()) {
             QVariantList links;
             for (int i = 0; i < m_links.length(); i++) {
-                if (m_links.at(i) && !m_linkTypes.at(i).isEmpty()) {
-                    const ShotgunOperationAttached *linkAttached = qobject_cast<const ShotgunOperationAttached *>(qmlAttachedPropertiesObject<ShotgunOperation>(m_links.at(i), false));
-                    Q_ASSERT(linkAttached);
+                if (m_links[i] && !m_linkTypes[i].isEmpty()) {
+                    QVariantMap entities = m_links[i]->details().at(branch->index()).toMap().value("entities").toMap();
 
-                    if (linkAttached->entities().contains(m_linkTypes.at(i))) {
+                    if (entities.contains(m_linkTypes[i])) {
                         QVariantMap link;
-                        link["type"] = m_linkTypes.at(i);
-                        link["id"] = linkAttached->entities()[m_linkTypes.at(i)].toMap()["id"];
+                        link["type"] = m_linkTypes[i];
+                        link["id"] = entities[m_linkTypes[i]].toMap()["id"];
                         links.append(link);
                     } else {
-                        error() << "on" << branch<< linkAttached << "has no entity of type" << m_linkTypes.at(i);
+                        error() << branch << "link" << m_links[i] << "has no entity of type" << m_linkTypes[i];
                     }
                 }
             }

@@ -7,7 +7,8 @@
 
 NodeBase::NodeBase(QObject *parent) :
     PugItem(parent),
-    m_outputFlag(false)
+    m_outputFlag(false),
+    m_index(-1)
 {
 }
 
@@ -172,6 +173,19 @@ void NodeBase::setDetails(const QVariantList details)
     if (m_details != details) {
         m_details = details;
         emit detailsChanged();
+    }
+}
+
+int NodeBase::index() const
+{
+    return m_index;
+}
+
+void NodeBase::setIndex(int i)
+{
+    if (m_index != i) {
+        m_index = i;
+        emit indexChanged(m_index);
     }
 }
 

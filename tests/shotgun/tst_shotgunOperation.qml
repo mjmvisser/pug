@@ -434,7 +434,7 @@ PugTestCase {
         shotgunPull.run(shot, env);
         pullSpy.wait(5000);
         
-        compare(shot.ShotgunOperation.entities.Shot.sg_head_in, 1);                
-        compare(shot.ShotgunOperation.entities.Shot.sg_tail_out, 100);                
+        compare(shot.details[0].entities.Shot.sg_head_in, 1);                
+        compare(shot.details[0].entities.Shot.sg_tail_out, 100);                
     }
 }

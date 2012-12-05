@@ -11,31 +11,20 @@ class ShotgunOperationAttached : public OperationAttached
 {
     Q_OBJECT
     Q_ENUMS(Action)
-    // entities stored as "EntityName": {"type": "EntityName", "id": id}
-    Q_PROPERTY(QVariantMap entities READ entities WRITE setEntities NOTIFY entitiesChanged)
     Q_PROPERTY(Action action READ action WRITE setAction NOTIFY actionChanged)
-    Q_PROPERTY(int index READ index WRITE setIndex NOTIFY indexChanged)
 public:
     enum Action { Find, Create };
 
     explicit ShotgunOperationAttached(QObject *object);
 
-    const QVariantMap entities() const;
-    void setEntities(const QVariantMap);
-
     Action action() const;
     void setAction(Action);
-
-    int index() const;
-    void setIndex(int);
 
     virtual void reset();
     virtual void run();
 
 signals:
-    void entitiesChanged();
     void actionChanged(Action action);
-    void indexChanged(int index);
 
 protected:
     virtual OperationAttached::Status extraStatus() const;
@@ -49,6 +38,8 @@ protected:
     void createEntity(const ShotgunEntity *, const QVariantMap);
     void batchCreateEntities(ShotgunEntity *, const QVariantList);
 
+    void addDetail(const QVariantMap entity);
+
 protected slots:
     void onReadCreateEntityFinished(const QVariant);
     void onBatchCreateEntitiesFinished(const QVariant);
@@ -57,10 +48,8 @@ protected slots:
 private:
     const QVariantMap updateFieldsWithEnv(const QVariantMap fields) const;
 
-    QVariantMap m_entities;
     Action m_action;
     int m_pendingTransactions;
-    int m_index;
 };
 
 class ShotgunOperation : public Operation

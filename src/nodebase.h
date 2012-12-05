@@ -18,6 +18,7 @@ class NodeBase : public PugItem
     Q_PROPERTY(QQmlListProperty<NodeBase> children READ nodes_ NOTIFY nodesChanged)
     Q_PROPERTY(bool output READ isOutput WRITE setOutput NOTIFY outputChanged)
     Q_PROPERTY(QVariantList details READ details WRITE setDetails NOTIFY detailsChanged)
+    Q_PROPERTY(int index READ index WRITE setIndex NOTIFY indexChanged)
 public:
     explicit NodeBase(QObject *parent = 0);
 
@@ -40,6 +41,9 @@ public:
     // TODO: not sure if this is the best way
     virtual bool isRoot() const;
 
+    int index() const;
+    void setIndex(int);
+
     const QVariantList details() const;
     void setDetails(const QVariantList);
     void addDetail(const QVariantMap detail, bool notify=true);
@@ -55,6 +59,7 @@ signals:
     void inputsChanged();
     void outputChanged(bool output);
     void detailsChanged();
+    void indexChanged(int index);
 
 protected:
     void addInput(const QString name);
@@ -92,6 +97,7 @@ private:
     QList<Input *> m_inputs;
     bool m_outputFlag;
     QVariantList m_details;
+    int m_index;
 };
 
 Q_DECLARE_METATYPE(NodeBase*) // makes available to QVariant
