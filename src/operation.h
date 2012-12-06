@@ -91,6 +91,21 @@ private:
     Operation *m_operation;
 };
 
+class OperationStatusList : public QList<OperationAttached::Status>
+{
+public:
+    OperationAttached::Status status() const
+    {
+        OperationAttached::Status result = OperationAttached::Invalid;
+        foreach (const OperationAttached::Status s, *this) {
+            if (s > result)
+                result = s;
+        }
+        return result;
+    }
+};
+
+
 class Operation : public PugItem
 {
     Q_OBJECT

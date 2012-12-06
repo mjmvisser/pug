@@ -1,6 +1,3 @@
 module Pug
-Script 1.0 Script.qml
 FrameSpecField 1.0 FrameSpecField.qml
-Repeater 1.0 Repeater.qml
-CookQueue 1.0 CookQueue.qml
 plugin pugplugin

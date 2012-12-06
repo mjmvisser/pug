@@ -4,6 +4,7 @@
 #include <QVariant>
 #include <QString>
 #include <QProcess>
+#include <QVector>
 
 #include "node.h"
 #include "operation.h"
@@ -12,31 +13,34 @@ class Process : public NodeBase
 {
     Q_OBJECT
     Q_PROPERTY(QStringList argv READ argv WRITE setArgv)
-    Q_PROPERTY(QString stdout READ stdout NOTIFY stdoutChanged)
+    Q_PROPERTY(bool ignoreExitCode READ ignoreExitCode WRITE setIgnoreExitCode NOTIFY ignoreExitCodeChanged)
 public:
     explicit Process(QObject *parent = 0);
     
     QStringList argv();
     void setArgv(QStringList);
 
-    const QString stdout() const;
+    bool ignoreExitCode() const;
+    void setIgnoreExitCode(bool);
 
 signals:
     void argvChanged(const QStringList argv);
-    void cook(const QVariant env);
-    void cooked(int status);
-    void stdoutChanged(const QString stdout);
+    void ignoreExitCodeChanged(bool ignoreExitCodeChanged);
+    void cookAtIndex(int index, const QVariant env);
+    void cookedAtIndex(int index, int status);
 
 protected slots:
-    void onCook(const QVariant env);
+    void onCookAtIndex(int index, const QVariant env);
     void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onProcessError(QProcess::ProcessError);
     void onReadyReadStandardError();
 
+    void handleFinishedProcess(QProcess *process, OperationAttached::Status status);
+
 private:
     QStringList m_argv;
-    QProcess* m_process;
-    QString m_stdout;
+    bool m_ignoreExitCode;
+    QVector<QProcess *> m_processes;
 };
 //Q_DECLARE_METATYPE(Node*) // makes available to QVariant
 

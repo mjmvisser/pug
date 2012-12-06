@@ -12,48 +12,48 @@ PugTestCase {
     property string testImage: Qt.resolvedUrl("SMPTE_Color_Bars_16x9.png").replace("file://", "")
 
     function init() {
-        Util.mkpath(tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/work/mvisser");
-        Util.touch(tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/work/mvisser/somefile.txt");
-        Util.mkpath(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/work/mvisser/images");
+        Util.mkpath(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work/mvisser");
+        Util.touch(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work/mvisser/somefile.txt");
+        Util.mkpath(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images");
         for (var frame=1; frame <= 100; frame++) {
-            var framePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/work/mvisser/images/somefile.%04d.jpg", frame);
+            var framePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images/somefile.%04d.jpg", frame);
             Util.copy(testImage, framePath);
         }
     }
 
     function cleanup() {
-        Util.remove(tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/release/main/v001/somefile.txt");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/release/main/v001");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/release/main");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/release");
-        Util.remove(tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/work/mvisser/somefile.txt");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/work/mvisser");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/work");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/transfer/from_client/20121018");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/transfer/from_client");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/transfer");
+        Util.remove(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001/somefile.txt");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release");
+        Util.remove(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work/mvisser/somefile.txt");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work/mvisser");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer");
         for (var frame=1; frame <= 100; frame++) {
-            var workFramePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/work/mvisser/images/somefile.%04d.jpg", frame);
+            var workFramePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images/somefile.%04d.jpg", frame);
             Util.remove(workFramePath);
-            var releaseFramePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/release/main/v001/render/jpg/DEV_001_comp.%04d.jpg", frame);
+            var releaseFramePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release/main/v001/render/jpg/DEV_001_comp.%04d.jpg", frame);
             Util.remove(releaseFramePath);
         }
-        Util.remove(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/work/mvisser/images/somefile_thumbnail.jpg");
-        Util.remove(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/work/mvisser/images/somefile_filmstrip.jpg");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/work/mvisser/images");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/work/mvisser");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/work");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/release/main/v001/render/jpg");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/release/main/v001/render");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/release/main/v001");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/release/main");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/release");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/shots/DEV/001/comp");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/shots/DEV/001");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/shots/DEV");
-        Util.rmdir(tmpDir + "shotguntests/projects/test/shots");
-        Util.rmdir(tmpDir + "shotguntests/projects/test");
-        Util.rmdir(tmpDir + "shotguntests/projects/test");
+        Util.remove(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images/somefile_thumbnail.jpg");
+        Util.remove(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images/somefile_filmstrip.jpg");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release/main/v001/render/jpg");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release/main/v001/render");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release/main/v001");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release/main");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test");
         Util.rmdir(tmpDir + "shotguntests/projects");
         Util.rmdir(tmpDir + "shotguntests");
     }
@@ -347,20 +347,20 @@ PugTestCase {
     }
 
     function test_releaseFile() {
-        var env = {PROJECT: "test",
+        var env = {PROJECT: "888_test",
                    TRANSFER: "20121018",
                    USER: "mvisser",
                    FILENAME: "somefile",
                    EXT: "txt"};
-        var workPath = tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/work/mvisser/somefile.txt";
-        var releasePath = tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/release/main/v001/somefile.txt";
+        var workPath = tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work/mvisser/somefile.txt";
+        var releasePath = tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001/somefile.txt";
 
         var env2 = env;
         env2.VERSION = 1;
 
         // compare(releaseFile.root, transferRelease);
-        // compare(transferRelease.map(env2), tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/release/main/v001/");
-        verify(transferRelease.parse(tmpDir + "shotguntests/projects/test/transfer/from_client/20121018/release/main/v001/"));
+        // compare(transferRelease.map(env2), tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001/");
+        verify(transferRelease.parse(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001/"));
 
         return;
 
@@ -397,7 +397,7 @@ PugTestCase {
 
     function test_releaseSeq() {
         var env = {ROOT: tmpDir + "shotguntests",
-                   PROJECT: "test",
+                   PROJECT: "888_test",
                    SEQUENCE: "DEV",
                    SHOT: "001",
                    STEP: "comp",
@@ -406,8 +406,8 @@ PugTestCase {
                    EXT: "jpg"};
         var startFrame = 1;
         var endFrame = 100;
-        var workPath = tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/work/mvisser/images/somefile.%04d.jpg";
-        var releasePath = tmpDir + "shotguntests/projects/test/shots/DEV/001/comp/release/main/v001/render/jpg/DEV_001_comp.%04d.jpg";
+        var workPath = tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images/somefile.%04d.jpg";
+        var releasePath = tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release/main/v001/render/jpg/DEV_001_comp.%04d.jpg";
 
         for (var frame = startFrame; frame <= endFrame; frame++) {
             var framePath = Sprintf.sprintf(workPath, frame);
@@ -427,7 +427,7 @@ PugTestCase {
     
     function test_pullFields() {
         var env = {ROOT: tmpDir + "shotguntests",
-                   PROJECT: "test",
+                   PROJECT: "888_test",
                    SEQUENCE: "DEV",
                    SHOT: "001",
                    USER: "mvisser"};

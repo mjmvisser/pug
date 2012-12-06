@@ -3,31 +3,56 @@
 
 #include "operation.h"
 
+#include <QList>
+
 class CookOperationAttached : public OperationAttached
 {
     Q_OBJECT
-    Q_PROPERTY(bool cookable READ isCookable WRITE setCookable NOTIFY cookableChanged)
+    Q_PROPERTY(Mode mode READ mode CONSTANT)
+    Q_ENUMS(Mode)
 public:
+    enum Mode { Skip, Cook, CookAtIndex };
     explicit CookOperationAttached(QObject *parent = 0);
 
-    bool isCookable() const;
-    void setCookable(bool);
+    Mode mode() const;
 
     Q_INVOKABLE virtual void run();
 
 signals:
     void cook(const QVariant env);
-    void cookableChanged(bool cookable);
+    void cookAtIndex(int index, const QVariant env);
 
 protected:
     virtual const QMetaObject *operationMetaObject() const;
 
 private slots:
     void onCooked(int);
+    void onCookedAtIndex(int, int);
 
 private:
-    bool m_cookableFlag;
+    Mode m_mode;
+    OperationStatusList m_indexStatus;
 };
+
+inline QDebug operator<<(QDebug dbg, CookOperationAttached::Mode m)
+{
+    switch (m) {
+    case CookOperationAttached::Skip:
+        dbg.nospace() << "Skip";
+        break;
+    case CookOperationAttached::Cook:
+        dbg.nospace() << "Cook";
+        break;
+    case CookOperationAttached::CookAtIndex:
+        dbg.nospace() << "CookAtIndex";
+        break;
+    default:
+        dbg.nospace() << "Unknown!";
+        break;
+    }
+
+    return dbg.space();
+}
 
 class CookOperation : public Operation
 {

@@ -1,20 +1,15 @@
 #include <QProcessEnvironment>
 #include <QProcess>
 #include <QDebug>
+#include <QSignalMapper>
 
 #include "process.h"
 
 Process::Process(QObject *parent) :
-    NodeBase(parent)
+    NodeBase(parent),
+    m_ignoreExitCode(false)
 {
-    m_process = new QProcess(this);
-
-    connect(m_process, &QProcess::readyReadStandardError, this, &Process::onReadyReadStandardError);
-    connect(m_process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-            this, &Process::onProcessFinished);
-    connect(m_process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error),
-            this, &Process::onProcessError);
-    connect(this, &Process::cook, this, &Process::onCook);
+    connect(this, &Process::cookAtIndex, this, &Process::onCookAtIndex);
 }
 
 QStringList Process::argv()
@@ -30,26 +25,45 @@ void Process::setArgv(QStringList a)
     }
 }
 
-const QString Process::stdout() const
+bool Process::ignoreExitCode() const
 {
-    return m_stdout;
+    return m_ignoreExitCode;
 }
 
-void Process::onCook(const QVariant env)
+void Process::setIgnoreExitCode(bool flag)
 {
-    debug() << "Process::onCook";
-    m_stdout.clear();
+    if (m_ignoreExitCode != flag) {
+        m_ignoreExitCode = flag;
+        emit ignoreExitCodeChanged(flag);
+    }
+}
 
-    // TODO: at some point, we'll need to load these from a file instead of using the system environment
+void Process::onCookAtIndex(int i, const QVariant env)
+{
+    debug() << "Process::onCookAtIndex(" << i << "," << env << ")";
+
+    setIndex(i);
+
+    if (m_processes.size() != count())
+        m_processes.resize(count());
+
     QProcessEnvironment processEnv = QProcessEnvironment::systemEnvironment();
 
     // add our env
-    for (QVariantMap::const_iterator i = env.toMap().constBegin(); i != env.toMap().constEnd(); ++i) {
-        if (i.value().canConvert<QString>())
-            processEnv.insert(i.key(), i.value().toString());
+    for (QVariantMap::const_iterator it = env.toMap().constBegin(); it != env.toMap().constEnd(); ++it) {
+        if (it.value().canConvert<QString>())
+            processEnv.insert(it.key(), it.value().toString());
     }
 
-    m_process->setProcessEnvironment(processEnv);
+    m_processes[i] = new QProcess(this);
+
+    connect(m_processes[i], &QProcess::readyReadStandardError, this, &Process::onReadyReadStandardError);
+    connect(m_processes[i], static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+            this, &Process::onProcessFinished);
+    connect(m_processes[i], static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error),
+            this, &Process::onProcessError);
+
+    m_processes[i]->setProcessEnvironment(processEnv);
 
     QStringList args = m_argv;
 
@@ -58,37 +72,57 @@ void Process::onCook(const QVariant env)
     if (args.length() > 0) {
         QString program = args.takeFirst();
 
-        m_process->start(program, args);
+        m_processes[i]->start(program, args);
 
         // close stdin so we don't hang indefinitely
-        m_process->closeWriteChannel();
+        m_processes[i]->closeWriteChannel();
     } else {
         error() << "Process has no args";
-        emit cooked(OperationAttached::Error);
+        emit cookedAtIndex(i, OperationAttached::Error);
     }
+}
+
+void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status status)
+{
+    Q_ASSERT(process);
+
+    int i = m_processes.indexOf(process);
+    Q_ASSERT(i >= 0);
+
+    QString stdout = process->readAllStandardOutput();
+    setDetail(i, "process", "stdout", stdout);
+    setDetail(i, "process", "exitCode", process->exitCode());
+
+    m_processes[i] = 0;
+    process->deleteLater();
+
+    emit cookedAtIndex(i, status);
 }
 
 void Process::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
     debug() << "process finished with exit code" << exitCode << "exit status" << exitStatus;
-    m_stdout = m_process->readAllStandardOutput();
-    emit stdoutChanged(m_stdout);
-    if (exitStatus == QProcess::CrashExit || exitCode != 0) {
-        emit cooked(OperationAttached::Error);
+
+    if (exitStatus == QProcess::CrashExit || (!m_ignoreExitCode && exitCode != 0)) {
+        handleFinishedProcess(process, OperationAttached::Error);
     } else {
-        emit cooked(OperationAttached::Finished);
+        handleFinishedProcess(process, OperationAttached::Finished);
     }
 }
 
 void Process::onProcessError(QProcess::ProcessError err)
 {
-    debug() << "process error" << m_process->errorString();
-    m_stdout = m_process->readAllStandardOutput();
-    emit stdoutChanged(m_stdout);
-    emit cooked(OperationAttached::Error);
+    Q_UNUSED(err);
+
+    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
+    debug() << "process error" << process->errorString();
+
+    handleFinishedProcess(process, OperationAttached::Error);
 }
 
 void Process::onReadyReadStandardError()
 {
-    error() << m_process->readAllStandardError();
+    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
+    error() << process->readAllStandardError();
 }

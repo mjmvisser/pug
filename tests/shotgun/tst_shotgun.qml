@@ -27,7 +27,7 @@ TestCase {
     }
     
     function test_shotgunFindOne() {
-        var reply = shotgun.findOne("Project", [["name", "is", "test"]]);
+        var reply = shotgun.findOne("Project", [["name", "is", "888_test"]]);
         spy.target = reply;
         spy.signalName = "finished";
         spy.wait(5000);
@@ -63,7 +63,7 @@ TestCase {
     
     function test_shotgunCreate() {
         var reply;
-        reply = shotgun.findOne("Project", [["name", "is", "test"]]);
+        reply = shotgun.findOne("Project", [["name", "is", "888_test"]]);
         spy.target = reply;
         spy.signalName = "finished";
         spy.wait(5000);
@@ -96,7 +96,7 @@ TestCase {
 
     function test_shotgunBatchCreate() {
         var reply;
-        reply = shotgun.findOne("Project", [["name", "is", "test"]]);
+        reply = shotgun.findOne("Project", [["name", "is", "888_test"]]);
         spy.target = reply;
         spy.signalName = "finished";
         spy.wait(5000);

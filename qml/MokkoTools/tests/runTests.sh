@@ -1,2 +1,2 @@
 #!/bin/bash
-qmltestrunner -import ../../../imports -import ../..
+qmltestrunner -import ../../../imports -import ../.. "$@"

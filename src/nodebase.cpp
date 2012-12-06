@@ -8,6 +8,7 @@
 NodeBase::NodeBase(QObject *parent) :
     PugItem(parent),
     m_outputFlag(false),
+    m_count(0),
     m_index(-1)
 {
 }
@@ -174,6 +175,8 @@ void NodeBase::setDetails(const QVariantList details)
         m_details = details;
         emit detailsChanged();
     }
+
+    setCount(details.length());
 }
 
 void NodeBase::setDetail(int index, const QVariantMap value)
@@ -184,6 +187,8 @@ void NodeBase::setDetail(int index, const QVariantMap value)
 
     m_details[index] = value;
     emit detailsChanged();
+
+    setCount(m_details.length());
 }
 
 void NodeBase::setDetail(int index, const QString key, const QVariant value)
@@ -199,6 +204,28 @@ void NodeBase::setDetail(int index, const QString key, const QVariant value)
 
     m_details[index] = detail;
     emit detailsChanged();
+
+    setCount(m_details.length());
+}
+
+void NodeBase::setDetail(int index, const QString key1, const QString key2, const QVariant value)
+{
+    copious() << ".setDetail(" << index << "," << key1 << "," << key2 << "," << value << ")";
+    for (int i = m_details.length(); i <= index; i++) {
+        m_details.append(QVariantMap());
+    }
+
+    Q_ASSERT(index < m_details.length());
+    Q_ASSERT(index < m_count);
+
+    QVariantMap detail1 = m_details[index].toMap();
+    QVariantMap detail2 = detail1[key1].toMap();
+    detail2[key2] = value;
+    detail1[key1] = detail2;
+    m_details[index] = detail1;
+    emit detailsChanged();
+
+    setCount(m_details.length());
 }
 
 void NodeBase::clearDetails()
@@ -207,6 +234,8 @@ void NodeBase::clearDetails()
         m_details.clear();
         emit detailsChanged();
     }
+
+    setCount(m_details.length());
 }
 
 NodeBase *NodeBase::firstNamedParent()
@@ -436,6 +465,19 @@ bool NodeBase::isRoot() const
     return false;
 }
 
+int NodeBase::count() const
+{
+    return m_count;
+}
+
+void NodeBase::setCount(int count)
+{
+    if (m_count != count) {
+        m_count = count;
+        emit countChanged(count);
+    }
+}
+
 int NodeBase::index() const
 {
     return m_index;
@@ -443,6 +485,8 @@ int NodeBase::index() const
 
 void NodeBase::setIndex(int index)
 {
+    Q_ASSERT(index < count());
+
     if (m_index != index) {
         m_index = index;
         emit indexChanged(index);

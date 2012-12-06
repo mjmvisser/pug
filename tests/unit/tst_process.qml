@@ -7,21 +7,18 @@ TestCase {
     name: "ProcessTests"
     
     Process {
-        logLevel: Log.Warning
         id: trueProcess
+        count: 1
         argv: ["true"]
-        CookOperation.cookable: true
     }   
     
     Process {
-        logLevel: Log.Warning
         id: falseProcess
+        count: 1
         argv: ["false"]
-        CookOperation.cookable: true
     }
      
     CookOperation {
-        logLevel: Log.Warning
         id: cook
     }
     
@@ -32,30 +29,18 @@ TestCase {
     }
 
     function test_processSuccess() {
-        verify(trueProcess);
-        verify(trueProcess.inherits("Process"));
-        compare(trueProcess.className, "Process");
         spy.clear();
-        compare(spy.count, 0);
         cook.run(trueProcess, {});
-        verify(trueProcess.CookOperation.status == Operation.Idle || 
-               trueProcess.CookOperation.status == Operation.Running);
         spy.wait(500);
-        compare(spy.count, 1);
         compare(trueProcess.CookOperation.status, Operation.Finished);
+        compare(trueProcess.details[0].process.exitCode, 0);
     }
 
     function test_processFailure() {
-        verify(falseProcess);
-        verify(falseProcess.inherits("Process"));
-        compare(falseProcess.className, "Process");
         spy.clear();
-        compare(spy.count, 0);
         cook.run(falseProcess, {});
-        verify(falseProcess.CookOperation.status == Operation.Idle || 
-               falseProcess.CookOperation.status == Operation.Running);
         spy.wait(500);
-        compare(spy.count, 1);
         compare(falseProcess.CookOperation.status, Operation.Error);
+        compare(falseProcess.details[0].process.exitCode, 1);
     }
 }
