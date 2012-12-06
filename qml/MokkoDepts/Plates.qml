@@ -26,7 +26,7 @@ Branch {
         Sequence {
             id: releaseSeq
             name: "releaseSeq"
-            pattern: "render/{FORMAT}/{EXT}/{SCENE}_{SHOT}_{DEPARTMENT}_{VARIATION}_v{VERSION}_{FORMAT}.{FRAME}.{EXT}"
+            pattern: "render/{FORMAT}/{EXT}/{SEQUENCE}_{SHOT}_{DEPARTMENT}_{VARIATION}_v{VERSION}_{FORMAT}.{FRAME}.{EXT}"
             ShotgunOperation.action: ShotgunOperation.Create
 
             ShotgunVersion {
@@ -58,7 +58,7 @@ Branch {
         Sequence {
             id: workSeq
             name: "workSeq"
-            pattern: "images/{SCENE}_{SHOT}_{DEPARTMENT}.{FRAME}.{EXT}"
+            pattern: "images/{SEQUENCE}_{SHOT}_{DEPARTMENT}.{FRAME}.{EXT}"
             ReleaseOperation.releasable: true
             ReleaseOperation.target: releaseSeq
             output: true
