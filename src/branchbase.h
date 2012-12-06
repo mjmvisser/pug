@@ -37,7 +37,7 @@ public:
 
     const QList<const Field *> fields(const QStringList fieldNameList = QStringList()) const;
 
-    bool areFieldsComplete(const QString pattern, const QVariantMap fields) const;
+    bool fieldsComplete(const QString pattern, const QVariantMap fields) const;
 
     Q_INVOKABLE const QVariant match(const QString pattern, const QString path, bool exact) const;
     Q_INVOKABLE const QVariant match(const QString pattern, const QString path) const;

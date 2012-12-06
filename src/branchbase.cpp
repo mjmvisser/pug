@@ -476,7 +476,7 @@ const QVariant BranchBase::parse(const QString path) const
     return QVariant();
 }
 
-bool BranchBase::areFieldsComplete(const QString pattern, const QVariantMap fields) const
+bool BranchBase::fieldsComplete(const QString pattern, const QVariantMap fields) const
 {
     foreach (const QString fieldName, fieldNames(pattern)) {
         const Field *field = findField(fieldName);
@@ -498,7 +498,7 @@ bool BranchBase::areFieldsComplete(const QString pattern, const QVariantMap fiel
 const QString BranchBase::map(const QVariant fields) const
 {
     copious() << ".map" << fields;
-    if (fields.isValid() && fields.canConvert<QVariantMap>() && areFieldsComplete(m_pattern, fields.toMap())) {
+    if (fields.isValid() && fields.canConvert<QVariantMap>() && fieldsComplete(m_pattern, fields.toMap())) {
         QString mappedParent;
         if (m_pattern.length() == 0 || m_pattern[0] != '/') {
             // not absolute

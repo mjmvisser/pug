@@ -162,7 +162,7 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
                 if (!data.contains(i.key()))
                     data.insert(i.key(), i.value());
             }
-            if (branch->areFieldsComplete(m_pattern, data)) {
+            if (branch->fieldsComplete(m_pattern, data)) {
                 result = branch->formatFields(m_pattern, data);
             } else {
                 // run it anyway, so we can log the errors
