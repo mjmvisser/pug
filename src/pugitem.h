@@ -48,6 +48,7 @@ public:
 
     Q_INVOKABLE bool inherits(const QString) const;
 
+    bool hasMethod(const char *) const;
     bool hasSignal(const char *) const;
     bool hasProperty(const char *) const;
 

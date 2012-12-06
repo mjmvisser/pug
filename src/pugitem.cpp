@@ -124,6 +124,16 @@ const Log *PugItem::log() const
     return m_log;
 }
 
+bool PugItem::hasMethod(const char *method) const
+{
+    Q_ASSERT(method[0] == '0');
+    // the +1 is to skip the code prepended by the METHOD macro
+    if (metaObject()->indexOfMethod(QMetaObject::normalizedSignature(method+1)) >= 0)
+        return true;
+    else
+        return false;
+}
+
 bool PugItem::hasSignal(const char *signal) const
 {
     Q_ASSERT(signal[0] == '2');
