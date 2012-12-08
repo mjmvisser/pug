@@ -51,10 +51,6 @@ public:
     Q_INVOKABLE const QStringList listMatchingPaths(const QVariantMap env) const;
     Q_INVOKABLE void setPaths(const QStringList paths, const QVariantMap env);
 
-    const Element *elementAt(int index) const;
-    Element *elementAt(int index);
-    const QVariantMap envAt(int index) const;
-
 signals:
     void update(const QVariant env);
     void updated(int status);
@@ -65,8 +61,6 @@ signals:
 protected:
     bool exactMatch() const;
     void setExactMatch(bool f);
-
-    void setEnvAt(int index, const QVariantMap env);
 
 private:
     const QStringList listMatchingPathsHelper(const QDir parentDir, const QVariantMap fields) const;

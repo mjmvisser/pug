@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QQmlListProperty>
 #include <QStringList>
+#include <QJSValue>
 
 #include "pugitem.h"
 #include "param.h"
@@ -17,7 +18,7 @@ class NodeBase : public PugItem
     Q_PROPERTY(QQmlListProperty<Input> inputs READ inputs_ NOTIFY inputsChanged)
     Q_PROPERTY(QQmlListProperty<NodeBase> children READ nodes_ NOTIFY nodesChanged)
     Q_PROPERTY(bool output READ isOutput WRITE setOutput NOTIFY outputChanged)
-    Q_PROPERTY(QVariantList details READ details WRITE setDetails NOTIFY detailsChanged)
+    Q_PROPERTY(QJSValue details READ details NOTIFY detailsChanged)
     Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(int index READ index WRITE setIndex NOTIFY indexChanged)
 public:
@@ -48,13 +49,8 @@ public:
     int index() const;
     void setIndex(int);
 
-    const QVariantList details() const;
-    void setDetails(const QVariantList);
-
-    Q_INVOKABLE void setDetail(int index, const QVariantMap value);
-    Q_INVOKABLE void setDetail(int index, const QString key, const QVariant value);
-    Q_INVOKABLE void setDetail(int index, const QString key1, const QString key2, const QVariant value);
-    Q_INVOKABLE void clearDetails();
+    QJSValue details();
+    const QJSValue details() const;
 
     const NodeBase *rootBranch() const;
     NodeBase *rootBranch();
@@ -103,7 +99,7 @@ private:
     QList<Param *> m_params;
     QList<Input *> m_inputs;
     bool m_outputFlag;
-    QVariantList m_details;
+    QJSValue m_details;
     int m_count;
     int m_index;
 };

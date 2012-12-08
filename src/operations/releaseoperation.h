@@ -3,6 +3,7 @@
 
 #include <QProcess>
 #include <QQueue>
+#include <QJSValue>
 
 #include "operation.h"
 #include "branchbase.h"
@@ -16,6 +17,7 @@ class ReleaseOperationAttached : public OperationAttached
     Q_PROPERTY(bool releasable READ isReleasable WRITE setReleasable NOTIFY releasableChanged)
     Q_PROPERTY(BranchBase *target READ target WRITE setTarget NOTIFY targetChanged)
     Q_PROPERTY(QString versionField READ versionFieldName WRITE setVersionFieldName NOTIFY versionFieldChanged)
+    Q_PROPERTY(QJSValue details READ details NOTIFY detailsChanged)
     Q_PROPERTY(Mode mode READ mode WRITE setMode NOTIFY modeChanged)
 public:
     enum Mode { Copy, Move };
@@ -34,7 +36,9 @@ public:
 
     Mode mode() const;
     void setMode(Mode);
-    QString modeString() const;
+
+    const QJSValue details() const;
+    QJSValue details();
 
     Q_INVOKABLE virtual void reset();
     Q_INVOKABLE virtual void run();
@@ -46,6 +50,7 @@ signals:
     void releasableChanged(bool releasable);
     void targetChanged(BranchBase *target);
     void versionFieldChanged(const QString versionField);
+    void detailsChanged();
     void modeChanged(Mode mode);
     void pathsChanged(QString paths);
 
@@ -59,12 +64,14 @@ private slots:
     void onFileOpQueueFinished();
     void onFileOpQueueError();
 
+    void regenerateDetails();
+
 private:
     bool m_releasableFlag;
     BranchBase *m_target;
     QString m_versionFieldName;
+    QJSValue m_details;
     Mode m_mode;
-    QStringList m_paths;
     FileOpQueue* m_queue;
 };
 

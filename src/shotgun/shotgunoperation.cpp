@@ -50,7 +50,7 @@ void ShotgunOperationAttached::run()
     BranchBase *branch = firstParent<BranchBase>();
 
     if (branch && !branch->isRoot()) {
-        int count = branch->details().count();
+        int count = branch->details().property("length").toInt();
 
         // needed for lastVersion
         // TODO: find a way to drop this dependency
@@ -63,22 +63,22 @@ void ShotgunOperationAttached::run()
                 if (sgop->mode() == ShotgunOperation::Pull && m_action == ShotgunOperationAttached::Find) {
                     if (count == 1) {
                         branch->setIndex(0);
-                        QVariantMap fields = branch->envAt(0);
+                        QVariantMap fields = qjsvalue_cast<QVariantMap>(branch->details().property(0).property("env"));
                         readEntity(sge, updateFieldsWithEnv(fields));
                     } else {
-                        error() << node() << "Can't do a Shotgun Find of" << branch->details().count() << "elements";
+                        error() << node() << "Can't do a Shotgun Find of" << branch->details().property("length").toInt() << "elements";
                     }
                 } else if (sgop->mode() == ShotgunOperation::Push && m_action == ShotgunOperationAttached::Create) {
                     if (count == 1) {
                         branch->setIndex(0);
-                        QVariantMap fields = branch->envAt(0);
+                        QVariantMap fields = qjsvalue_cast<QVariantMap>(branch->details().property(0).property("env"));
                         createEntity(sge, updateFieldsWithEnv(fields));
                     } else if (count) {
                         QVariantList fieldsList;
-                        for (int i = 0; i < branch->details().count(); i++) {
+                        for (int i = 0; i < branch->details().property("length").toInt(); i++) {
                             branch->setIndex(i);
 
-                            QVariantMap fields = branch->envAt(i);
+                            QVariantMap fields = qjsvalue_cast<QVariantMap>(branch->details().property(i).property("env"));
 
                             fieldsList.append(updateFieldsWithEnv(fields));
                         }
@@ -182,13 +182,22 @@ void ShotgunOperationAttached::addDetail(const QVariantMap entity)
     BranchBase *branch = firstParent<BranchBase>();
     Q_ASSERT(branch);
 
-    QVariantList details = branch->details();
-    Q_ASSERT(branch->index() >= 0 && branch->index() < details.length());
+    QJSValue detail = branch->details().property(branch->index());
+    if (detail.isUndefined()) {
+        detail = newObject();
+        branch->details().setProperty(branch->index(), detail);
+    }
 
-    QVariantMap entities = branch->details().at(branch->index()).toMap().value("entities", QVariantMap()).toMap();
-    entities.insert(entity.value("type").toString(), entity);
+    QJSValue entities = detail.property("entities");
+    if (entities.isUndefined()) {
+        entities = newObject();
+        detail.setProperty("entities", entities);
+    }
 
-    branch->setDetail(branch->index(), "entities", entities);
+    entities.setProperty(entity.value("type").toString(), toScriptValue(entity));
+
+    // TODO: should only do this once, instead of after every update
+    emit branch->detailsChanged();
 }
 
 void ShotgunOperationAttached::onReadCreateEntityFinished(const QVariant result)

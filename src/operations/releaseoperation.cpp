@@ -9,6 +9,9 @@ ReleaseOperationAttached::ReleaseOperationAttached(QObject *parent) :
 {
     connect(m_queue, &FileOpQueue::finished, this, &ReleaseOperationAttached::onFileOpQueueFinished);
     connect(m_queue, &FileOpQueue::error, this, &ReleaseOperationAttached::onFileOpQueueError);
+
+    connect(this, &ReleaseOperationAttached::targetChanged, this, &ReleaseOperationAttached::regenerateDetails);
+    connect(node(), &NodeBase::detailsChanged, this, &ReleaseOperationAttached::regenerateDetails);
 }
 
 bool ReleaseOperationAttached::isReleasable() const
@@ -68,22 +71,57 @@ void ReleaseOperationAttached::setMode(ReleaseOperationAttached::Mode m)
     }
 }
 
-QString ReleaseOperationAttached::modeString() const
+QJSValue ReleaseOperationAttached::details()
 {
-    switch (m_mode) {
-    case ReleaseOperationAttached::Copy:
-        return "copy";
-    case ReleaseOperationAttached::Move:
-        return "move";
-    default:
-        return "unknown";
-    }
+    return m_details;
+}
+
+const QJSValue ReleaseOperationAttached::details() const
+{
+    return m_details;
 }
 
 void ReleaseOperationAttached::reset()
 {
     OperationAttached::reset();
-    m_paths.clear();
+    m_details = newArray();
+}
+
+void ReleaseOperationAttached::regenerateDetails()
+{
+    // regenerate our details
+    const BranchBase *branch = qobject_cast<const BranchBase *>(node());
+
+    if (branch && branch->details().isArray() && m_releasableFlag && m_target) {
+        m_details = newArray();
+
+        const ReleaseOperationAttached *targetAttached = m_target->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
+
+        const QString versionFieldName = targetAttached->findVersionFieldName();
+        int nextVersion = targetAttached->findLastVersion(env()) + 1;
+
+        for (int index = 0; index < branch->details().property("length").toInt(); index++) {
+            const Element *srcElement = qjsvalue_cast<Element *>(branch->details().property(index).property("element"));
+            QVariantMap srcEnv = qjsvalue_cast<QVariantMap>(branch->details().property(index).property("env"));
+
+            if (!srcElement) {
+                error() << "index" << index << "of" << branch << "has no element";
+                continue;
+            }
+
+            srcEnv[versionFieldName] = nextVersion;
+
+            Element *destElement = new Element;
+            destElement->setPattern(m_target->map(srcEnv));
+            destElement->setFrames(srcElement->frames());
+
+            QJSValue detail = newObject();
+            detail.setProperty("element", newQObject(destElement));
+            detail.setProperty("env", toScriptValue(srcEnv));
+            m_details.setProperty(index, detail);
+        }
+        emit detailsChanged();
+    }
 }
 
 const QString ReleaseOperationAttached::findVersionFieldName() const
@@ -149,7 +187,6 @@ int ReleaseOperationAttached::findLastVersion(const QVariant data) const
     }
 }
 
-
 void ReleaseOperationAttached::run()
 {
     Q_ASSERT(operation());
@@ -157,28 +194,21 @@ void ReleaseOperationAttached::run()
     const BranchBase *branch = qobject_cast<const BranchBase *>(node());
 
     if (branch && m_releasableFlag && m_target) {
-        const ReleaseOperationAttached *targetAttached = m_target->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
+        // we can safely assume that our details are up-to-date
+        Q_ASSERT(m_details.isArray());
+        Q_ASSERT(branch->details().isArray());
+        Q_ASSERT(m_details.property("length").toInt() == branch->details().property("length").toInt());
 
-        QStringList destPaths;
-        const QString versionFieldName = targetAttached->findVersionFieldName();
-        int nextVersion = targetAttached->findLastVersion(env()) + 1;
+        m_target->setCount(m_details.property("length").toInt());
+        for (int i = 0; i < m_details.property("length").toInt(); i++)
+            m_target->details().setProperty(i, m_details.property(i));
+        emit m_target->detailsChanged();
 
-        m_target->clearDetails();
-
-        for (int index = 0; index < branch->details().length(); index++) {
-            const Element *srcElement = branch->elementAt(index);
-            QVariantMap srcEnv = branch->envAt(index);
-
-            srcEnv[versionFieldName] = nextVersion;
-
-            Element *destElement = new Element(m_target);
-            destElement->setPattern(m_target->map(srcEnv));
-            destElement->setFrames(srcElement->frames());
+        for (int index = 0; index < branch->details().property("length").toInt(); index++) {
+            const Element *srcElement = qjsvalue_cast<Element *>(branch->details().property(index).property("element"));
+            const Element *destElement = qjsvalue_cast<Element *>(details().property(index).property("element"));
 
             releaseElement(srcElement, destElement);
-
-            m_target->setDetail(index, "element", QVariant::fromValue(destElement));
-            m_target->setDetail(index, "env", srcEnv);
         }
 
         m_queue->run(env());

@@ -85,6 +85,39 @@ protected:
 
     virtual const QMetaObject *operationMetaObject() const = 0;
 
+    template <typename T>
+    QJSValue toScriptValue(T value) const
+    {
+        QQmlContext *context = QQmlEngine::contextForObject(QObject::parent());
+        Q_ASSERT(context);
+
+        return context->engine()->toScriptValue(value);
+    }
+
+    QJSValue newArray(uint length = 0) const
+    {
+        QQmlContext *context = QQmlEngine::contextForObject(QObject::parent());
+        Q_ASSERT(context);
+
+        return context->engine()->newArray(length);
+    }
+
+    QJSValue newObject() const
+    {
+        QQmlContext *context = QQmlEngine::contextForObject(QObject::parent());
+        Q_ASSERT(context);
+
+        return context->engine()->newObject();
+    }
+
+    QJSValue newQObject(QObject *object) const
+    {
+        QQmlContext *context = QQmlEngine::contextForObject(QObject::parent());
+        Q_ASSERT(context);
+
+        return context->engine()->newQObject(object);
+    }
+
 private:
     Status m_status;
     QVariantMap m_env;

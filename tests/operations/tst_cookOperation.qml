@@ -74,55 +74,43 @@ PugTestCase {
                     pattern: "{FILENAME}"
                 }
 
-                CookQueue {
+                Node {
+                    logLevel: Log.Debug
                     id: copier
                     name: "copier"
                     count: input ? input.details.length : 0
                     
-                    property File input: workFile
+                    property var input: workFile
 
                     inputs: Input { name: "input" }
 
-                    component: Component {
-                        PugItem {
-                            id: item
-                            property int index
-                            
-                            signal cook(var env)
-                            signal cooked(int status)
-                            
-                            onCook: {
-                                debug("onCook===");
-                                
-                                debug("input is " + copier.input);
-                                debug("index is " + index);
-                                debug("input.details[index].element is " + copier.input.details[index].element);
-                                debug("input.details[index].element.path is " + copier.input.details[index].element.path);
-                                debug("input.details[index].env " + JSON.stringify(copier.input.details[index].env));
-                                var inputPath = copier.input.details[index].element.path;
-                                var outputDir = copier.input.details[index].element.directory + "temp/";
-                                var outputPath = outputDir + "temp_" + copier.input.details[index].element.baseName + "." + copier.input.details[index].element.extension;
-    
-                                debug("--- creating " + outputPath + " from " + inputPath);
-                                if (!Util.exists(outputDir))
-                                    Util.mkpath(outputDir);
-                                Util.copy(inputPath, outputPath);
-                                
-                                var newElement = Util.createElement(copier, {pattern: outputPath});
-                                
-                                var d = copier.details;
-                                
-                                for (var i = d.length; i <= index; i++) {
-                                    d.push(null);
-                                }
-                                
-                                d[index] = {"element": newElement, "env": copier.input.details[index].env};
-                                debug("new element with env: " + JSON.stringify(d[index].env));
-                                copier.details = d;
-                                debug(item + " sending cooked(" + Operation.Finished + ")");
-                                item.cooked(Operation.Finished);
-                            }
-                        }
+                    signal cookAtIndex(int index, var env)
+                    signal cookedAtIndex(int index, int status)
+                    
+                    onCookAtIndex: {
+                        debug("onCookAtIndex");
+                        
+                        debug("input is " + copier.input);
+                        debug("index is " + index);
+                        debug("input.details[index].element is " + copier.input.details[index].element);
+                        debug("input.details[index].element.path is " + copier.input.details[index].element.path);
+                        debug("input.details[index].env " + JSON.stringify(copier.input.details[index].env));
+                        debug("input.count is " + input.count);
+                        debug("count is " + count);
+                        var inputPath = copier.input.details[index].element.path;
+                        var outputDir = copier.input.details[index].element.directory + "temp/";
+                        var outputPath = outputDir + "temp_" + copier.input.details[index].element.baseName + "." + copier.input.details[index].element.extension;
+
+                        debug("--- creating " + outputPath + " from " + inputPath);
+                        if (!Util.exists(outputDir))
+                            Util.mkpath(outputDir);
+                        Util.copy(inputPath, outputPath);
+                        
+                        var newElement = Util.newElement();
+                        
+                        details[index] = {"element": newElement, "env": copier.input.details[index].env};
+                        detailsChanged();
+                        cookedAtIndex(index, Operation.Finished);
                     }
                 }
                 
@@ -165,11 +153,16 @@ PugTestCase {
         compare(workFile.details[0].element.path, workPaths[0]);
         compare(workFile.details[1].element.path, workPaths[1]);
         compare(workFile.details[2].element.path, workPaths[2]);
+        compare(cookFile.details.length, 0);
         
         cook.run(cookFile, env);
         cookSpy.wait(1000);
         compare(cook.status, Operation.Finished);
-        compare(cookFile.count, workFile.count);
+        console.log("workfile has " + workFile.details.length + " details and a count of " + workFile.count);
+        console.log("copier has " + copier.details.length + " details and a count of " + copier.count);
+        console.log("cookFile has " + cookFile.details.length + " details and a count of " + cookFile.count);
+        compare(copier.count, workFile.count);
+        compare(cookFile.count, copier.count);
         compare(workFile.CookOperation.status, Operation.Finished);
         compare(copier.CookOperation.status, Operation.Finished);
         compare(cookFile.CookOperation.status, Operation.Finished);

@@ -3,3 +3,4 @@ MakeThumbnail 1.0 MakeThumbnail.qml
 Sequence 1.0 Sequence.qml
 Identify 1.0 Identify.qml
 MakeDistorted 1.0 MakeDistorted.qml
+ConformMaya 1.0 ConformMaya.qml

@@ -3,7 +3,7 @@ import Pug 1.0
 
 import "js/identify.js" as Identify
 
-Script {
+Process {
     id: self
     details: input.details
 

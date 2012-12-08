@@ -38,6 +38,7 @@ void File::setInput(NodeBase *node)
 {
     if (m_input != node) {
         m_input = node;
+
         emit inputChanged(m_input);
     }
 }
@@ -76,30 +77,26 @@ void File::onCook(const QVariant env)
     if (m_input) {
         copious() << "has input" << m_input;
         // hard link to input, pass data along
-        clearDetails();
 
-        QVariantList inputDetails = m_input->details();
-
-        debug() << "input" << m_input;
-        debug() << "input details" << inputDetails;
-
-        if (inputDetails.length() == 0) {
+        if (m_input->details().property("length").toInt() == 0) {
             warning() << "no input details";
         }
 
-        for (int index=0; index < inputDetails.length(); index++) {
-            if (inputDetails[index].canConvert<QVariantMap>()) {
-                QVariantMap inputDetail = inputDetails[index].toMap();
+        setCount(m_input->details().property("length").toInt());
+
+        for (int index=0; index < count(); index++) {
+            QJSValue inputDetail = m_input->details().property(index);
+            if (inputDetail.isObject()) {
 
                 debug() << "cooking index" << index;
 
-                if (inputDetail.contains("element") && inputDetail.contains("env")) {
-                    const Element *inputElement = inputDetail.value("element").value<Element *>();
-                    const QVariantMap inputEnv = inputDetail.value("env").value<QVariantMap>();
+                if (inputDetail.property("element").isQObject() && inputDetail.property("env").isObject()) {
+                    const Element *inputElement = qjsvalue_cast<Element *>(inputDetail.property("element"));
+                    const QVariantMap inputEnv = qjsvalue_cast<QVariantMap>(inputDetail.property("env"));
 
                     debug() << "input env" << inputEnv;
 
-                    Element *destElement = new Element(this);
+                    Element *destElement = new Element;
 
                     destElement->setPattern(map(inputEnv));
                     destElement->setFrames(inputElement->frames());
@@ -156,20 +153,21 @@ void File::onCook(const QVariant env)
                         }
                     }
 
-                    setDetail(index, "element", QVariant::fromValue(destElement));
-                    setDetail(index, "env", destEnv);
+                    details().property(index).setProperty("element", toScriptValue(destElement));
+                    details().property(index).setProperty("env", toScriptValue(destEnv));
 
-                } else if (!inputDetail.contains("element")) {
-                    error() << "input.details[" << index << "].element does not exist";
-                } else if (!inputDetail.contains("env")) {
-                    error() << "input.details[" << index << "].env does not exist";
+                } else if (!inputDetail.property("element").isQObject()) {
+                    error() << "input.details[" << index << "].element does not exist or is not an Element";
+                } else if (!inputDetail.property("env").isObject()) {
+                    error() << "input.details[" << index << "].env does not exist or is not an Object";
                 }
             } else {
-                error() << "input.details[" << index << "] is not a map";
+                error() << "input.details[" << index << "] is not an Object";
             }
 
         }
 
+        emit detailsChanged();
     }
 
     emit cooked(OperationAttached::Finished);

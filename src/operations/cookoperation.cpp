@@ -48,8 +48,15 @@ void CookOperationAttached::run()
     if (m_mode == CookOperationAttached::Cook) {
         emit cook(env());
     } else if (m_mode == CookOperationAttached::CookAtIndex) {
-        for (int i = 0; i < node()->count(); i++) {
-            emit cookAtIndex(i, env());
+        if (node()->count() > 0) {
+            debug() << "cooking" << node()->count() << "details";
+            for (int i = 0; i < node()->count(); i++) {
+                emit cookAtIndex(i, env());
+            }
+        } else {
+            warning() << "nothing to cook";
+            setStatus(OperationAttached::Finished);
+            continueRunning();
         }
     } else {
         setStatus(OperationAttached::Finished);

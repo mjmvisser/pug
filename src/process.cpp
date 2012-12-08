@@ -12,16 +12,29 @@ Process::Process(QObject *parent) :
     connect(this, &Process::cookAtIndex, this, &Process::onCookAtIndex);
 }
 
-QStringList Process::argv()
+const QStringList Process::argv() const
 {
     return m_argv;
 }
 
-void Process::setArgv(QStringList a)
+void Process::setArgv(const QStringList a)
 {
     if (m_argv != a) {
         m_argv = a;
         emit argvChanged(a);
+    }
+}
+
+const QString Process::stdin() const
+{
+    return m_stdin;
+}
+
+void Process::setStdin(const QString s)
+{
+    if (m_stdin != s) {
+        m_stdin = s;
+        emit stdinChanged(s);
     }
 }
 
@@ -74,6 +87,10 @@ void Process::onCookAtIndex(int i, const QVariant env)
 
         m_processes[i]->start(program, args);
 
+        // write any input
+        if (!m_stdin.isEmpty())
+            m_processes[i]->write(m_stdin.toUtf8());
+
         // close stdin so we don't hang indefinitely
         m_processes[i]->closeWriteChannel();
     } else {
@@ -90,12 +107,17 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     Q_ASSERT(i >= 0);
 
     QString stdout = process->readAllStandardOutput();
-    setDetail(i, "process", "stdout", stdout);
-    setDetail(i, "process", "exitCode", process->exitCode());
+    if (details().property(i).isUndefined())
+        details().setProperty(i, newObject());
+    if (details().property(i).property("process").isUndefined())
+        details().property(i).setProperty("process", newObject());
+    details().property(i).property("process").setProperty("stdout", stdout);
+    details().property(i).property("process").setProperty("exitCode", process->exitCode());
 
     m_processes[i] = 0;
     process->deleteLater();
 
+    emit detailsChanged();
     emit cookedAtIndex(i, status);
 }
 

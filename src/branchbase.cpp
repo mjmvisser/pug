@@ -127,49 +127,16 @@ QQmlListProperty<Field> BranchBase::fields_()
     return QQmlListProperty<Field>(this, m_fields);
 }
 
-const Element *BranchBase::elementAt(int index) const
-{
-    if (index < details().length())
-        return details().at(index).toMap().value("element").value<Element *>();
-    else
-        return 0;
-}
-
-Element *BranchBase::elementAt(int index)
-{
-    if (index < details().length())
-        return details().at(index).toMap().value("element").value<Element *>();
-    else
-        return 0;
-}
-
-const QVariantMap BranchBase::envAt(int index) const
-{
-    if (index < details().length())
-        return details().at(index).toMap().value("env").value<QVariantMap>();
-    else
-        return QVariantMap();
-}
-
-void BranchBase::setEnvAt(int index, const QVariantMap env)
-{
-    if (index < details().length()) {
-        QVariantMap detail = details().at(index).toMap();
-        detail.insert("env", env);
-        setDetail(index, detail);
-    }
-}
-
 void BranchBase::setPaths(const QStringList paths, const QVariantMap env)
 {
-    clearDetails();
+    QJSValue newDetails = newArray();
 
     int index = 0;
     foreach (const QString path, paths) {
         bool found = false;
 
-        for (int i = 0; i < details().count(); i++) {
-            Element *element = elementAt(i);
+        for (int i = 0; i < details().property("length").toInt(); i++) {
+            Element *element = qjsvalue_cast<Element *>(details().property(i).property("element"));
             if (element->matches(path)) {
                 element->append(path);
                 found = true;
@@ -178,7 +145,7 @@ void BranchBase::setPaths(const QStringList paths, const QVariantMap env)
         }
 
         if (!found) {
-            Element *element = new Element(this);
+            Element *element = new Element;
             element->setPattern(path);
             if (element->hasFrames())
                 element->append(path);
@@ -193,11 +160,17 @@ void BranchBase::setPaths(const QStringList paths, const QVariantMap env)
                     elementEnv.insert(i.key(), i.value());
             }
 
-            setDetail(index, "element", QVariant::fromValue(element));
-            setDetail(index, "env", elementEnv);
+            QJSValue detail = newObject();
+            detail.setProperty("element", newQObject(element));
+            detail.setProperty("env", toScriptValue(elementEnv));
+            newDetails.setProperty(index, detail);
             index++;
         }
     }
+
+    setCount(index);
+    for (int i = 0; i < index; i++)
+        details().setProperty(i, newDetails.property(i));
     emit detailsChanged();
 }
 

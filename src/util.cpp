@@ -56,14 +56,7 @@ bool Util::copy(const QString src, const QString dest)
     return QFile::copy(src, dest);
 }
 
-Element *Util::createElement(QObject *parent, const QVariant data)
+Element *Util::newElement()
 {
-    Element *element = new Element(parent);
-    if (data.isValid() && data.canConvert<QVariantMap>()) {
-        for (QVariantMap::const_iterator it = data.toMap().constBegin(); it != data.toMap().constEnd(); ++it) {
-            element->setProperty(it.key().toUtf8().constData(), it.value());
-        }
-    }
-
-    return element;
+    return new Element;
 }
