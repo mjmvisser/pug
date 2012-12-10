@@ -75,7 +75,6 @@ PugTestCase {
                 }
 
                 Node {
-                    logLevel: Log.Debug
                     id: copier
                     name: "copier"
                     count: input ? input.details.length : 0
@@ -107,6 +106,7 @@ PugTestCase {
                         Util.copy(inputPath, outputPath);
                         
                         var newElement = Util.newElement();
+                        newElement.pattern = outputPath;
                         
                         details[index] = {"element": newElement, "env": copier.input.details[index].env};
                         detailsChanged();
@@ -154,13 +154,10 @@ PugTestCase {
         compare(workFile.details[1].element.path, workPaths[1]);
         compare(workFile.details[2].element.path, workPaths[2]);
         compare(cookFile.details.length, 0);
-        
+
         cook.run(cookFile, env);
         cookSpy.wait(1000);
         compare(cook.status, Operation.Finished);
-        console.log("workfile has " + workFile.details.length + " details and a count of " + workFile.count);
-        console.log("copier has " + copier.details.length + " details and a count of " + copier.count);
-        console.log("cookFile has " + cookFile.details.length + " details and a count of " + cookFile.count);
         compare(copier.count, workFile.count);
         compare(cookFile.count, copier.count);
         compare(workFile.CookOperation.status, Operation.Finished);

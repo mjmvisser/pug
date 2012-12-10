@@ -92,13 +92,14 @@ void ReleaseOperationAttached::regenerateDetails()
     // regenerate our details
     const BranchBase *branch = qobject_cast<const BranchBase *>(node());
 
+    debug() << "regenerateDetails on" << branch;
+
     if (branch && branch->details().isArray() && m_releasableFlag && m_target) {
         m_details = newArray();
 
         const ReleaseOperationAttached *targetAttached = m_target->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
 
         const QString versionFieldName = targetAttached->findVersionFieldName();
-        int nextVersion = targetAttached->findLastVersion(env()) + 1;
 
         for (int index = 0; index < branch->details().property("length").toInt(); index++) {
             const Element *srcElement = qjsvalue_cast<Element *>(branch->details().property(index).property("element"));
@@ -108,6 +109,8 @@ void ReleaseOperationAttached::regenerateDetails()
                 error() << "index" << index << "of" << branch << "has no element";
                 continue;
             }
+
+            int nextVersion = targetAttached->findLastVersion(srcEnv) + 1;
 
             srcEnv[versionFieldName] = nextVersion;
 
@@ -119,6 +122,9 @@ void ReleaseOperationAttached::regenerateDetails()
             detail.setProperty("element", newQObject(destElement));
             detail.setProperty("env", toScriptValue(srcEnv));
             m_details.setProperty(index, detail);
+
+            debug() << "set detail" << index << "element to" << destElement->toString() << "env to" << srcEnv;
+
         }
         emit detailsChanged();
     }
@@ -143,6 +149,8 @@ int ReleaseOperationAttached::findLastVersion(const QVariant data) const
 {
     // find branch parent with version field
     const BranchBase *branch = qobject_cast<const BranchBase *>(node());
+
+    debug() << "findLastVersion on" << branch << "with" << data;
 
     const ReleaseOperationAttached *branchAttached = branch ? branch->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject()) : 0;
     QString versionFieldName = branchAttached ? branchAttached->m_versionFieldName : QString();
@@ -180,6 +188,8 @@ int ReleaseOperationAttached::findLastVersion(const QVariant data) const
             }
         }
 
+        debug() << "findLastVersion got version" << lastVersion;
+
         return lastVersion;
     } else {
         error() << this << ".lastVersion for" << node() << "no VERSION field found";
@@ -193,6 +203,8 @@ void ReleaseOperationAttached::run()
 
     const BranchBase *branch = qobject_cast<const BranchBase *>(node());
 
+    debug() << "run on" << branch;
+
     if (branch && m_releasableFlag && m_target) {
         // we can safely assume that our details are up-to-date
         Q_ASSERT(m_details.isArray());
@@ -200,8 +212,13 @@ void ReleaseOperationAttached::run()
         Q_ASSERT(m_details.property("length").toInt() == branch->details().property("length").toInt());
 
         m_target->setCount(m_details.property("length").toInt());
-        for (int i = 0; i < m_details.property("length").toInt(); i++)
+        for (int i = 0; i < m_details.property("length").toInt(); i++) {
             m_target->details().setProperty(i, m_details.property(i));
+            const Element *element = qjsvalue_cast<Element *>(m_target->details().property(i).property("element"));
+            const QVariantMap env = qjsvalue_cast<QVariantMap>(m_target->details().property(i).property("env"));
+
+            debug() << "detail" << i << "copying element" << element->toString() << "env" << env;
+        }
         emit m_target->detailsChanged();
 
         for (int index = 0; index < branch->details().property("length").toInt(); index++) {
@@ -225,6 +242,7 @@ void ReleaseOperationAttached::run()
 
 void ReleaseOperationAttached::releaseElement(const Element *srcElement, const Element *destElement)
 {
+    debug() << "releasing" << srcElement->toString() << "to" << destElement->toString();
     if (srcElement->frameList()) {
         const QStringList srcPaths = srcElement->paths();
         const QStringList destPaths = destElement->paths();
@@ -244,6 +262,7 @@ void ReleaseOperationAttached::releaseElement(const Element *srcElement, const E
 
 void ReleaseOperationAttached::releaseFile(const QString srcPath, const QString destPath)
 {
+    debug() << "    releasing" << srcPath << "to" << destPath;
     if (!destPath.isEmpty()) {
         QFileInfo destInfo(destPath);
         if (!destInfo.absoluteDir().exists())

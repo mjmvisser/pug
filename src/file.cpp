@@ -94,7 +94,10 @@ void File::onCook(const QVariant env)
                     const Element *inputElement = qjsvalue_cast<Element *>(inputDetail.property("element"));
                     const QVariantMap inputEnv = qjsvalue_cast<QVariantMap>(inputDetail.property("env"));
 
+                    debug() << "input" << m_input;
                     debug() << "input env" << inputEnv;
+                    debug() << "input element pattern" << inputElement->pattern();
+                    debug() << "input element" << inputElement->toString();
 
                     Element *destElement = new Element;
 
@@ -153,7 +156,7 @@ void File::onCook(const QVariant env)
                         }
                     }
 
-                    details().property(index).setProperty("element", toScriptValue(destElement));
+                    details().property(index).setProperty("element", newQObject(destElement));
                     details().property(index).setProperty("env", toScriptValue(destEnv));
 
                 } else if (!inputDetail.property("element").isQObject()) {

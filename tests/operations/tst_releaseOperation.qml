@@ -45,7 +45,6 @@ PugTestCase {
     }
 
     Root {
-        logLevel: Log.Debug
         id: root
 
         operations: [
@@ -188,6 +187,12 @@ PugTestCase {
         releaseSpy.wait(500);
         
         var releasePath = tmpDir + "releasetests/abc/foo/release/main/v003/dag.%04d.txt";
+        
+        console.log(workSeq.details.length);
+        for (var i = 0; i < workSeq.details.length; i++) {
+            console.log("detail " + i + " " + workSeq.details[i].pattern);
+        }
+        
         compare(workSeq.details.length, 1);
         compare(releaseSeq.details.length, 1);
         compare(releaseSeq.details[0].element.pattern, releasePath);

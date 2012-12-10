@@ -166,6 +166,8 @@ void NodeBase::setOutput(bool o)
 
 QJSValue NodeBase::details()
 {
+    if (m_details.isUndefined())
+         m_details = newArray();
     return m_details;
 }
 
@@ -408,18 +410,25 @@ int NodeBase::count() const
 
 void NodeBase::setCount(int count)
 {
-    if (m_count != count) {
+    if (m_details.isUndefined())
+         m_details = newArray(count);
+
+   if (m_count != count) {
         m_count = count;
 
-        if (m_details.isUndefined())
-            m_details = newArray(count);
+        bool detailsChangedFlag = false;
 
-        for (int i = m_details.property("length").toInt(); i < count; i++)
+        for (int i = m_details.property("length").toInt(); i < count; i++) {
             m_details.setProperty(i, newObject());
+            detailsChangedFlag = true;
+        }
 
         emit countChanged(count);
-        emit detailsChanged();
+
+        if (detailsChangedFlag)
+            emit detailsChanged();
     }
+
 }
 
 int NodeBase::index() const

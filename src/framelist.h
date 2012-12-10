@@ -33,8 +33,9 @@ signals:
     void patternChanged(const QString& pattern);
 
 private:
-    static const QString framesToPattern(const QVariantList& frames);
-    static const QVariantList patternToFrames(const QString& frames);
+    static const QString framesToPattern(const QVariantList &frames);
+    static const QVariantList patternToFrames(const QString &frames);
+    static const QVariantList sortAndRemoveDuplicates(const QVariantList &frames);
 
 private:
     QVariantList m_frames;

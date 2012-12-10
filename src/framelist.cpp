@@ -3,6 +3,7 @@
 #include <QString>
 #include <QStringList>
 #include <QVariantList>
+#include <QSet>
 
 #include "framelist.h"
 
@@ -35,20 +36,15 @@ const QVariantList FrameList::frames() const
 
 void FrameList::setFrames(const QVariantList frames)
 {
-    // check that we can convert each frame to a float
-    bool failed = false;
+    // check that we can convert each frame to a int
     foreach (QVariant v, frames) {
         if (!v.canConvert<float>()) {
             qWarning() << this << "invalid frame:" << v;
-            failed = true;
+            return;
         }
     }
 
-    QVariantList newFrames;
-    if (failed)
-        newFrames = QVariantList();
-    else
-        newFrames = frames;
+    QVariantList newFrames = sortAndRemoveDuplicates(frames);
 
     if (m_frames != newFrames) {
         m_frames = newFrames;
@@ -99,47 +95,41 @@ static const QString formatRange(float start, float end, float by)
 
 const QString FrameList::framesToPattern(const QVariantList& frames)
 {
-    if (frames.length() == 0)
+    if (frames.length() == 0) {
         return QString();
+    } else if (frames.length() == 1) {
+        return formatRange(frames[0].toFloat(), frames[0].toFloat(), 1.0f);
+    } else {
+        QStringList patterns;
 
-    QList<float> sortedFrames;
-    foreach (QVariant frame, frames) {
-        Q_ASSERT(frame.canConvert<float>());
-        sortedFrames << frame.toFloat();
-    }
+        float start = frames[0].toFloat();
+        float end = frames[1].toFloat();
+        float by = end-start;
+        float lastF = end;
+        for (int index = 2; index < frames.length(); index++) {
+            float f = frames[index].toFloat();
+            if (fabs(f - lastF - by) < 1.0e-7) {
+                end = f;
+            } else if (fabs(f - start - by - 1.0f) < 1.0e-7) {
+                by += 1.0f;
+            } else {
+                patterns << formatRange(start, end, by);
+                start = end = f;
+                by = 1.0f;
+            }
 
-    qSort(sortedFrames);
-    QStringList patterns;
-
-    float start = sortedFrames.at(0);
-    float end = sortedFrames.at(0);
-    float by = 1.0f;
-    float lastF = start-by;
-    int index;
-    for (index = 0; index < sortedFrames.length(); index++) {
-        float f = sortedFrames.at(index);
-        if (f == lastF + by) {
-            end = f;
-        } else if (f == start+by+1) {
-            by += 1.0f;
-        } else {
-            patterns << formatRange(start, end, by);
-
-            start = end = f;
-            by = 1.0f;
+            lastF = f;
         }
 
-        lastF = f;
+        patterns << formatRange(start, end, by);
+
+        return patterns.join(',');
     }
-
-    patterns << formatRange(start, end, by);
-
-    return patterns.join(',');
 }
 
 const QVariantList FrameList::patternToFrames(const QString& pattern)
 {
-    QList<float> frames;
+    QVariantList frames;
     QStringList patterns = pattern.split(',');
     foreach (QString pattern, patterns) {
         static const QRegularExpression parseRange("(?:(?<start>-?\\d+(?:[.]\\d+)?)(?:-(?<end>-?\\d+(?:[.]\\d+)?)(?:x(?<by>-?\\d+(?:[.]\\d+)?))?)?)");
@@ -166,11 +156,29 @@ const QVariantList FrameList::patternToFrames(const QString& pattern)
         }
     }
 
-    qSort(frames);
-    QVariantList sortedFrames;
-    foreach (float frame, frames) {
-        sortedFrames << frame;
+    return sortAndRemoveDuplicates(frames);
+}
+
+const QVariantList FrameList::sortAndRemoveDuplicates(const QVariantList &frames)
+{
+    // convert to float
+    QList<float> floatFrames;
+    foreach (QVariant v, frames) {
+        Q_ASSERT(v.canConvert<float>());
+        floatFrames << v.toFloat();
     }
 
-    return sortedFrames;
+    QList<float> sortedFrames = floatFrames;
+    qSort(sortedFrames);
+
+    QVariantList noDuplicateFrames;
+    float lastF = -1e10;
+    foreach (float f, sortedFrames) {
+        if (fabs(f-lastF) > 1e-7) {
+            noDuplicateFrames << f;
+            lastF = f;
+        }
+    }
+
+    return noDuplicateFrames;
 }

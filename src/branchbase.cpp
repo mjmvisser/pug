@@ -129,15 +129,16 @@ QQmlListProperty<Field> BranchBase::fields_()
 
 void BranchBase::setPaths(const QStringList paths, const QVariantMap env)
 {
+    debug() << "setPaths" << paths;
     QJSValue newDetails = newArray();
 
     int index = 0;
     foreach (const QString path, paths) {
         bool found = false;
 
-        for (int i = 0; i < details().property("length").toInt(); i++) {
-            Element *element = qjsvalue_cast<Element *>(details().property(i).property("element"));
-            if (element->matches(path)) {
+        for (int i = 0; i < newDetails.property("length").toInt(); i++) {
+            Element *element = qjsvalue_cast<Element *>(newDetails.property(i).property("element"));
+            if (element->hasFrames() && element->matches(path)) {
                 element->append(path);
                 found = true;
                 break;
@@ -169,8 +170,10 @@ void BranchBase::setPaths(const QStringList paths, const QVariantMap env)
     }
 
     setCount(index);
+    debug() << details().property("length").toInt();
     for (int i = 0; i < index; i++)
         details().setProperty(i, newDetails.property(i));
+    debug() << details().toVariant();
     emit detailsChanged();
 }
 
