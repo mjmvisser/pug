@@ -25,9 +25,11 @@ Process {
     
     onCookedAtIndex: {
         debug("onCooked");
-        var newElement = Util.createElement(self, {pattern: __outputPath});
-        setDetail(index, "element", newElement);
-        setDetail(index, "env", input.details[index].env);
+        var newElement = Util.newElement();
+        newElement.pattern = __outputPath;
+        details[index].element = newElement;
+        details[index].env = input.details[index].env;
+        detailsChanged();
         debug("new element " + newElement.pattern);
     }
 }        
