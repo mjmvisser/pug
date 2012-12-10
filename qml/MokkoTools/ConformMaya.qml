@@ -11,16 +11,22 @@ Process {
         Input { name: "textures" }
     ]
 
-    property var __releasedTextures: textures.details.map(function (detail) {
-        // call getReleasePath on each element path in the detail
-        return textures.ReleaseOperation.getReleasePath(detail.element.path);
-    })
+    function dedent(s) {
+        var lines = s.split("\n");
+        if (lines[0].length == 0)
+            lines.shift();
+        var spaceRegexp = RegExp("^[ ]+");
+        var indent = spaceRegexp.exec(lines[0]);
+        var dedentRegexp = RegExp("^" + indent);
+        for (var i = 0; i < lines.length; i++) {
+            lines[i] = lines[i].replace(dedentRegexp, "");
+        }
+        return lines.join("\n");
+    }
 
-    stdin: "
+    stdin: dedent("
         import pymel.core as pm
-        print 'OK'
-        pm.quit() 
-    "
+    ");
 
     argv: [
         "mayapy",
@@ -29,9 +35,10 @@ Process {
     
     onCookedAtIndex: {
         debug("onCooked");
-        // var newElement = Util.createElement(self, {pattern: __outputPath});
-        // setDetail(index, "element", newElement);
-        // setDetail(index, "env", input.details[index].env);
-        // debug("new element " + newElement.pattern);
+        debug("ReleaseOperation.details: " + textures.ReleaseOperation.details);
+        for (var textureIndex = 0; textureIndex < textures.details.length; textureIndex++) {
+            debug("conforming " + textures.details[textureIndex].element.pattern);
+            debug(" -> " + textures.ReleaseOperation.details[textureIndex].element.pattern);            
+        }
     }
 }        
