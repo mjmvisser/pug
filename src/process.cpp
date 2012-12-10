@@ -146,5 +146,5 @@ void Process::onProcessError(QProcess::ProcessError err)
 void Process::onReadyReadStandardError()
 {
     QProcess *process = qobject_cast<QProcess *>(QObject::sender());
-    error() << process->readAllStandardError();
+    warning() << process->readAllStandardError();
 }
