@@ -1,3 +1,4 @@
 module Pug
 FrameSpecField 1.0 FrameSpecField.qml
+Merge 1.0 Merge.qml
 plugin pugplugin
