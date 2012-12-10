@@ -5,10 +5,10 @@ import "js/identify.js" as Identify
 
 Process {
     id: self
-    details: input.details
+    count: input ? input.details.length : 0;
 
     property var input
-    property var metadata: {} 
+    property var metadata: {}
 
     inputs: Input { name: "input" }
     params: Param { name: "metadata" }
@@ -18,6 +18,7 @@ Process {
         "-format", Identify.buildFormatString(self.metadata),
         input.details[index].element.paths[0]
     ]
+    
     onCookedAtIndex: {
         debug("Identify.onCooked " + status);
         if (status == Operation.Finished) {
@@ -29,7 +30,8 @@ Process {
                 debug("tokens is " + JSON.stringify(tokens));
                 data[tokens[0]] = tokens[1];
             }
-            self.setDetail(index, "identify", data);
+            details[index] = input.details[index]
+            details[index].identify = data;
         }
     }
 }        
