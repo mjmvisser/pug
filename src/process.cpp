@@ -38,6 +38,23 @@ void Process::setStdin(const QString s)
     }
 }
 
+QJSValue Process::env()
+{
+    return m_env;
+}
+
+void Process::setEnv(const QJSValue env)
+{
+    if (!m_env.strictlyEquals(env)) {
+        if (env.isObject()) {
+            m_env = env;
+            emit envChanged();
+        } else {
+            warning() << "Ignoring attempt to set env to" << m_env.toString();
+        }
+    }
+}
+
 bool Process::ignoreExitCode() const
 {
     return m_ignoreExitCode;
@@ -60,7 +77,13 @@ void Process::onCookAtIndex(int i, const QVariant env)
     if (m_processes.size() != count())
         m_processes.resize(count());
 
-    QProcessEnvironment processEnv = QProcessEnvironment::systemEnvironment();
+    QProcessEnvironment processEnv;
+
+    QJSValueIterator it(m_env);
+    while (it.hasNext()) {
+        it.next();
+        processEnv.insert(it.name(), it.value().toString());
+    }
 
     // add our env
     for (QVariantMap::const_iterator it = env.toMap().constBegin(); it != env.toMap().constEnd(); ++it) {
@@ -88,8 +111,10 @@ void Process::onCookAtIndex(int i, const QVariant env)
         m_processes[i]->start(program, args);
 
         // write any input
-        if (!m_stdin.isEmpty())
+        if (!m_stdin.isEmpty()) {
+            info() << m_stdin;
             m_processes[i]->write(m_stdin.toUtf8());
+        }
 
         // close stdin so we don't hang indefinitely
         m_processes[i]->closeWriteChannel();
@@ -147,4 +172,17 @@ void Process::onReadyReadStandardError()
 {
     QProcess *process = qobject_cast<QProcess *>(QObject::sender());
     warning() << process->readAllStandardError();
+}
+
+void Process::componentComplete()
+{
+    QQmlContext *context = QQmlEngine::contextForObject(this);
+    Q_ASSERT(context);
+
+    m_env = context->engine()->newObject();
+
+    QProcessEnvironment systemEnv = QProcessEnvironment::systemEnvironment();
+    foreach (const QString key, systemEnv.keys()) {
+        m_env.setProperty(key, systemEnv.value(key));
+    }
 }
