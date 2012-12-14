@@ -44,22 +44,26 @@ TestCase {
             id: scene
             name: "scene"
             pattern: testScenePath
-            ReleaseOperation.releasable: true
             ReleaseOperation.target: releaseScene
         }
         
         File {
-            id: textures
-            name: "textures"
+            id: refs
+            name: "refs"
             pattern: testImagePath
-            ReleaseOperation.releasable: true
             ReleaseOperation.target: releaseTextures 
         }
         
         ConformMaya {
             id: conform
             scene: scene
-            textures: textures
+            refs: refs
+            
+            Component.onCompleted: {
+                env["MOKKO_WORK_TYPE"] = "asset"
+                env["MOKKO_DEPARTMENT"] = "modeling"
+            }
+            
         }
     }
     
