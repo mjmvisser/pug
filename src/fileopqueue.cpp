@@ -68,9 +68,8 @@ void FileOpQueue::hardlink(const QString target, const QString dest)
     m_workQueue.enqueue(FileOpQueue::Item(FileOpQueue::Item::Hardlink, target, dest));
 }
 
-void FileOpQueue::run(const QVariantMap env)
+void FileOpQueue::run()
 {
-    m_env = env;
     continueRunning();
 }
 
@@ -83,12 +82,6 @@ void FileOpQueue::continueRunning()
 
         // default environment
         QProcessEnvironment processEnv = QProcessEnvironment::systemEnvironment();
-
-        // add our env
-        for (QVariantMap::const_iterator i = m_env.constBegin(); i != m_env.constEnd(); ++i) {
-            if (i.value().canConvert<QString>())
-                processEnv.insert(i.key(), i.value().toString());
-        }
 
         m_process->setProcessEnvironment(processEnv);
 

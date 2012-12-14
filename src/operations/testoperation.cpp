@@ -1,14 +1,12 @@
 #include "testoperation.h"
 
 TestOperationAttached::TestOperationAttached(QObject *parent) :
-    OperationAttached(parent)
-{
+        OperationAttached(parent) {
 }
 
-void TestOperationAttached::run()
-{
+void TestOperationAttached::run() {
     debug() << this << node() << operation() << ".run";
-    if (env().value("error").toBool()) {
+    if (context().value("error").toBool()) {
         error() << "intentionally generating an error for test purposes";
         setStatus(OperationAttached::Error);
     } else {
@@ -19,17 +17,14 @@ void TestOperationAttached::run()
     continueRunning();
 }
 
-const QMetaObject *TestOperationAttached::operationMetaObject() const
-{
+const QMetaObject *TestOperationAttached::operationMetaObject() const {
     return &TestOperation::staticMetaObject;
 }
 
 TestOperation::TestOperation(QObject *parent) :
-    Operation(parent)
-{
+        Operation(parent) {
 }
 
-TestOperationAttached *TestOperation::qmlAttachedProperties(QObject *object)
-{
+TestOperationAttached *TestOperation::qmlAttachedProperties(QObject *object) {
     return new TestOperationAttached(object);
 }

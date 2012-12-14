@@ -83,7 +83,7 @@ PugTestCase {
 
                     inputs: Input { name: "input" }
 
-                    signal cookAtIndex(int index, var env)
+                    signal cookAtIndex(int index, var context)
                     signal cookedAtIndex(int index, int status)
                     
                     onCookAtIndex: {
@@ -93,7 +93,7 @@ PugTestCase {
                         debug("index is " + index);
                         debug("input.details[index].element is " + copier.input.details[index].element);
                         debug("input.details[index].element.path is " + copier.input.details[index].element.path);
-                        debug("input.details[index].env " + JSON.stringify(copier.input.details[index].env));
+                        debug("input.details[index].context " + JSON.stringify(copier.input.details[index].context));
                         debug("input.count is " + input.count);
                         debug("count is " + count);
                         var inputPath = copier.input.details[index].element.path;
@@ -108,7 +108,7 @@ PugTestCase {
                         var newElement = Util.newElement();
                         newElement.pattern = outputPath;
                         
-                        details[index] = {"element": newElement, "env": copier.input.details[index].env};
+                        details[index] = {"element": newElement, "context": copier.input.details[index].context};
                         detailsChanged();
                         cookedAtIndex(index, Operation.Finished);
                     }
@@ -137,7 +137,7 @@ PugTestCase {
     }
 
     function test_cookFile() {
-        var env = {ROOT: tmpDir, FOO: "foo"};
+        var context = {ROOT: tmpDir, FOO: "foo"};
         var workPaths = [tmpDir + "cooktests/abc/foo/work/baa.txt",
                          tmpDir + "cooktests/abc/foo/work/bar.txt",
                          tmpDir + "cooktests/abc/foo/work/baz.txt"];
@@ -145,7 +145,7 @@ PugTestCase {
                          tmpDir + "cooktests/abc/foo/work/cooked/bar.txt",
                          tmpDir + "cooktests/abc/foo/work/cooked/baz.txt"];
 
-        update.run(cookFile, env);
+        update.run(cookFile, context);
         updateSpy.wait(500);
         compare(update.status, Operation.Finished);
         compare(workFile.UpdateOperation.status, Operation.Finished);
@@ -155,7 +155,7 @@ PugTestCase {
         compare(workFile.details[2].element.path, workPaths[2]);
         compare(cookFile.details.length, 0);
 
-        cook.run(cookFile, env);
+        cook.run(cookFile, context);
         cookSpy.wait(1000);
         compare(cook.status, Operation.Finished);
         compare(copier.count, workFile.count);

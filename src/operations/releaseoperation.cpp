@@ -89,27 +89,27 @@ void ReleaseOperationAttached::regenerateDetails()
 
         for (int index = 0; index < branch->details().property("length").toInt(); index++) {
             const Element *srcElement = qjsvalue_cast<Element *>(branch->details().property(index).property("element"));
-            QVariantMap srcEnv = qjsvalue_cast<QVariantMap>(branch->details().property(index).property("env"));
+            QVariantMap srcContext = qjsvalue_cast<QVariantMap>(branch->details().property(index).property("context"));
 
             if (!srcElement) {
                 error() << "index" << index << "of" << branch << "has no element";
                 continue;
             }
 
-            int nextVersion = targetAttached->findLastVersion(srcEnv) + 1;
+            int nextVersion = targetAttached->findLastVersion(srcContext) + 1;
 
-            srcEnv[versionFieldName] = nextVersion;
+            srcContext[versionFieldName] = nextVersion;
 
             Element *destElement = new Element;
-            destElement->setPattern(m_target->map(srcEnv));
+            destElement->setPattern(m_target->map(srcContext));
             destElement->setFrames(srcElement->frames());
 
             QJSValue detail = newObject();
             detail.setProperty("element", newQObject(destElement));
-            detail.setProperty("env", toScriptValue(srcEnv));
+            detail.setProperty("context", toScriptValue(srcContext));
             m_details.setProperty(index, detail);
 
-            debug() << "set detail" << index << "element to" << destElement->toString() << "env to" << srcEnv;
+            debug() << "set detail" << index << "element to" << destElement->toString() << "context to" << srcContext;
 
         }
         emit detailsChanged();
@@ -160,11 +160,11 @@ int ReleaseOperationAttached::findLastVersion(const QVariant data) const
         int lastVersion = 0;
 
         foreach (QString path, releasedPaths) {
-            QVariant releaseEnv = branch->parse(path);
-            copious() << "parse got" << releaseEnv;
-            if (releaseEnv.isValid() && releaseEnv.toMap().contains(versionField->name()))
+            QVariant releaseContext = branch->parse(path);
+            copious() << "parse got" << releaseContext;
+            if (releaseContext.isValid() && releaseContext.toMap().contains(versionField->name()))
             {
-                int version = versionField->get(releaseEnv.toMap()).toInt();
+                int version = versionField->get(releaseContext.toMap()).toInt();
                 copious() << "got version" << version;
                 if (version > lastVersion) {
                     lastVersion = version;
@@ -201,9 +201,9 @@ void ReleaseOperationAttached::run()
         for (int i = 0; i < m_details.property("length").toInt(); i++) {
             m_target->details().setProperty(i, m_details.property(i));
             const Element *element = qjsvalue_cast<Element *>(m_target->details().property(i).property("element"));
-            const QVariantMap env = qjsvalue_cast<QVariantMap>(m_target->details().property(i).property("env"));
+            const QVariantMap context = qjsvalue_cast<QVariantMap>(m_target->details().property(i).property("context"));
 
-            debug() << "detail" << i << "copying element" << element->toString() << "env" << env;
+            debug() << "detail" << i << "copying element" << element->toString() << "context" << context;
         }
         emit m_target->detailsChanged();
 
@@ -214,7 +214,7 @@ void ReleaseOperationAttached::run()
             releaseElement(srcElement, destElement);
         }
 
-        m_queue->run(env());
+        m_queue->run();
 
     } else {
         setStatus(OperationAttached::Finished);
@@ -271,19 +271,19 @@ void ReleaseOperationAttached::onFileOpQueueFinished()
     debug() << ".onFileOpQueueFinished";
     const ReleaseOperationAttached *targetAttached = m_target->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
     const QString versionFieldName = targetAttached->findVersionFieldName();
-    int version = targetAttached->findLastVersion(env());
+    int version = targetAttached->findLastVersion(context());
 
-    QVariantMap targetEnv = env();
-    targetEnv[versionFieldName] = version;
+    QVariantMap targetContext = context();
+    targetContext[versionFieldName] = version;
 
     // update the parents
     BranchBase *p = m_target->firstParent<BranchBase>();
     while (p && !p->isRoot()) {
         debug() << "updating" << p;
-        debug() << "target env is" << targetEnv;
-        QStringList paths = p->listMatchingPaths(targetEnv);
+        debug() << "target context is" << targetContext;
+        QStringList paths = p->listMatchingPaths(targetContext);
         debug() << "got paths" << paths;
-        p->setPaths(paths, targetEnv);
+        p->setPaths(paths, targetContext);
 
         p = p->firstParent<BranchBase>();
    }

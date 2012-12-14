@@ -179,11 +179,11 @@ const QVariant Field::parse(const QString s) const
     }
 }
 
-const QVariant Field::get(const QVariantMap data) const
+const QVariant Field::get(const QVariantMap context) const
 {
     QVariant value;
-    if (data.contains(name())) {
-        value = data.value(name());
+    if (context.contains(name())) {
+        value = context.value(name());
     } else if (!m_env.isEmpty() && QProcessEnvironment::systemEnvironment().contains(m_env)) {
         value = parse(QProcessEnvironment::systemEnvironment().value(m_env));
     } else if (!m_defaultValue.isEmpty()) {

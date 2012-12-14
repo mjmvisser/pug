@@ -30,7 +30,7 @@ public:
     Q_INVOKABLE void symlink(const QString target, const QString dest);
     Q_INVOKABLE void hardlink(const QString target, const QString dest);
 
-    Q_INVOKABLE void run(const QVariantMap env);
+    Q_INVOKABLE void run();
 
 signals:
     void finished();
@@ -59,7 +59,6 @@ private:
     QString m_group;
     QProcess *m_process;
     QQueue<Item> m_workQueue;
-    QVariantMap m_env;
 };
 
 #endif

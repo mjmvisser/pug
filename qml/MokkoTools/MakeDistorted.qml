@@ -30,7 +30,7 @@ Process {
         debug("onCooked");
         var newElement = Util.createElement(self, {pattern: inputsequence});
         setDetail(index, "element", newElement);
-        setDetail(index, "env", input.details[index].env);
+        setDetail(index, "fields", input.details[index].fields);
         debug("new element " + newElement.pattern);
     }
 }        

@@ -48,11 +48,11 @@ public:
     Q_INVOKABLE const QVariant parse(const QString path) const;
     Q_INVOKABLE const QString map(const QVariant fields) const;
 
-    Q_INVOKABLE const QStringList listMatchingPaths(const QVariantMap env) const;
-    Q_INVOKABLE void setPaths(const QStringList paths, const QVariantMap env);
+    Q_INVOKABLE const QStringList listMatchingPaths(const QVariantMap context) const;
+    Q_INVOKABLE void setPaths(const QStringList paths, const QVariantMap context);
 
 signals:
-    void update(const QVariant env);
+    void update(const QVariant context);
     void updated(int status);
 
     void rootChanged(BranchBase *root);
@@ -63,7 +63,7 @@ protected:
     void setExactMatch(bool f);
 
 private:
-    const QStringList listMatchingPathsHelper(const QDir parentDir, const QVariantMap fields) const;
+    const QStringList listMatchingPathsHelper(const QDir parentDir, const QVariantMap context) const;
     bool containsFields(const QVariantMap& needle, const QVariantMap& haystack) const;
 
     BranchBase *m_root;

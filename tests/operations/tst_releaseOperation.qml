@@ -138,17 +138,17 @@ PugTestCase {
     }
 
     function test_lastVersion() {
-        var env = {ROOT: tmpDir, FOO: "foo", BAR: "bar"};
-        compare(releaseFile.ReleaseOperation.findLastVersion(env), 2);
+        var context = {ROOT: tmpDir, FOO: "foo", BAR: "bar"};
+        compare(releaseFile.ReleaseOperation.findLastVersion(context), 2);
     }
 
     function test_releaseFile() {
-        var env = {ROOT: tmpDir, FOO: "foo", BAR: "bar"};
+        var context = {ROOT: tmpDir, FOO: "foo", BAR: "bar"};
         var workPath = tmpDir + "releasetests/abc/foo/work/bar.txt";
         var releasePath_v003 = tmpDir + "releasetests/abc/foo/release/main/v003/bar.txt";
         var releasePath_v004 = tmpDir + "releasetests/abc/foo/release/main/v004/bar.txt";
         
-        release.run(workFile, env);
+        release.run(workFile, context);
         releaseSpy.wait(500);
         compare(release.status, Operation.Finished);
         compare(workFile.details.length, 1);
@@ -158,7 +158,7 @@ PugTestCase {
         compare(releaseFile.details.length, 1);
         verify(Util.exists(releasePath_v003));
         
-        release.run(workFile, env);
+        release.run(workFile, context);
         releaseSpy.wait(500);
         compare(release.status, Operation.Finished);
         compare(workFile.ReleaseOperation.status, Operation.Finished);
@@ -177,11 +177,11 @@ PugTestCase {
     }
     
     function test_releaseSequence() {
-        var env = {ROOT: tmpDir, FOO: "foo", DAG: "dag"};
-        update.run(workSeq, env);
+        var context = {ROOT: tmpDir, FOO: "foo", DAG: "dag"};
+        update.run(workSeq, context);
         updateSpy.wait(500);
         
-        release.run(workSeq, env);
+        release.run(workSeq, context);
         releaseSpy.wait(500);
         
         var releasePath = tmpDir + "releasetests/abc/foo/release/main/v003/dag.%04d.txt";

@@ -127,7 +127,7 @@ QQmlListProperty<Field> BranchBase::fields_()
     return QQmlListProperty<Field>(this, m_fields);
 }
 
-void BranchBase::setPaths(const QStringList paths, const QVariantMap env)
+void BranchBase::setPaths(const QStringList paths, const QVariantMap context)
 {
     debug() << "setPaths" << paths;
     QJSValue newDetails = newArray();
@@ -150,20 +150,20 @@ void BranchBase::setPaths(const QStringList paths, const QVariantMap env)
             element->setPattern(path);
             if (element->hasFrames())
                 element->append(path);
-            QVariantMap elementEnv = parse(element->pattern()).toMap();
+            QVariantMap elementContext = parse(element->pattern()).toMap();
 
-            // merge input env
-            QMapIterator<QString, QVariant> i(env);
+            // merge input field values
+            QMapIterator<QString, QVariant> i(context);
             while (i.hasNext()) {
                 i.next();
                 // don't overwrite
-                if (!elementEnv.contains(i.key()))
-                    elementEnv.insert(i.key(), i.value());
+                if (!elementContext.contains(i.key()))
+                    elementContext.insert(i.key(), i.value());
             }
 
             QJSValue detail = newObject();
             detail.setProperty("element", newQObject(element));
-            detail.setProperty("env", toScriptValue(elementEnv));
+            detail.setProperty("context", toScriptValue(elementContext));
             newDetails.setProperty(index, detail);
             index++;
         }
@@ -323,14 +323,14 @@ const QVariant BranchBase::match(const QString pattern, const QString path, bool
     debug() << ".match got" << match;
 
     if (match.hasMatch()) {
-        QVariantMap fields;
+        QVariantMap context;
 
         foreach (QString fieldName, fieldNames(pattern)) {
             const Field *f = findField(fieldName);
             if (f) {
-                fields[fieldName] = f->parse(match.captured(fieldName));
+                context[fieldName] = f->parse(match.captured(fieldName));
             } else {
-                fields[fieldName] = QVariant();
+                context[fieldName] = QVariant();
             }
         }
 
@@ -344,12 +344,12 @@ const QVariant BranchBase::match(const QString pattern, const QString path, bool
 
         if (remainder.length() > 0) {
             if (!exact)
-                fields["_"] = remainder;
+                context["_"] = remainder;
             else
                 return QVariant();
         }
 
-        return fields;
+        return context;
     }
 
     return QVariant();
@@ -490,12 +490,12 @@ const QString BranchBase::map(const QVariant fields) const
     return QString();
 }
 
-const QStringList BranchBase::listMatchingPaths(const QVariantMap env) const
+const QStringList BranchBase::listMatchingPaths(const QVariantMap context) const
 {
-    copious() << ".listMatchingPaths" << QJsonDocument::fromVariant(env);
+    copious() << ".listMatchingPaths" << QJsonDocument::fromVariant(context);
     QStringList result;
 
-    QString path = map(env);
+    QString path = map(context);
 
     copious() << "initial map got" << path;
 
@@ -520,14 +520,14 @@ const QStringList BranchBase::listMatchingPaths(const QVariantMap env) const
         // absolute
         copious() << "absolute file path detected";
         QFileInfo pathInfo(path);
-        result = listMatchingPathsHelper(pathInfo.absoluteDir(), env);
+        result = listMatchingPathsHelper(pathInfo.absoluteDir(), context);
     } else if (root()) {
-        QString parentPath = root()->map(env);
+        QString parentPath = root()->map(context);
 
         if (!parentPath.isEmpty()) {
             QDir parentDir(parentPath);
             if (parentDir.isAbsolute()) {
-                result = listMatchingPathsHelper(parentDir, env);
+                result = listMatchingPathsHelper(parentDir, context);
             } else {
                 warning() << ".map returned a relative path" << parentPath;
             }

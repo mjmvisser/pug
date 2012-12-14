@@ -68,9 +68,9 @@ void Process::setIgnoreExitCode(bool flag)
     }
 }
 
-void Process::onCookAtIndex(int i, const QVariant env)
+void Process::onCookAtIndex(int i, const QVariant context)
 {
-    debug() << "Process::onCookAtIndex(" << i << "," << env << ")";
+    debug() << "Process::onCookAtIndex(" << i << "," << context << ")";
 
     setIndex(i);
 
@@ -86,7 +86,7 @@ void Process::onCookAtIndex(int i, const QVariant env)
     }
 
     // add our env
-    for (QVariantMap::const_iterator it = env.toMap().constBegin(); it != env.toMap().constEnd(); ++it) {
+    for (QVariantMap::const_iterator it = context.toMap().constBegin(); it != context.toMap().constEnd(); ++it) {
         if (it.value().canConvert<QString>())
             processEnv.insert(it.key(), it.value().toString());
     }

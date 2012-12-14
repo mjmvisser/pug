@@ -42,7 +42,7 @@ CookQueue {
             onCooked: {
                 debug("onCooked");
                 var newElement = Util.createElement(self, {pattern: inputsequence});
-                self.details.push({"element": newElement, "env": input.details[index].env});
+                self.details.push({"element": newElement, "fields": input.details[index].fields});
                 
                 debug("new element " + newElement.pattern);
             }

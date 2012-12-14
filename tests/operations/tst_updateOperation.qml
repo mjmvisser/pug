@@ -69,8 +69,8 @@ PugTestCase {
     }
     
     function test_update() {
-        var env = {FOO: "foo", BAR: "bar", BAZ: 18, FILENAME: "somefile"};
-        update.run(file1, env);
+        var context = {FOO: "foo", BAR: "bar", BAZ: 18, FILENAME: "somefile"};
+        update.run(file1, context);
         spy.wait(500);
         compare(branch1.UpdateOperation.status, Operation.Finished);
         compare(branch2.UpdateOperation.status, Operation.Finished);

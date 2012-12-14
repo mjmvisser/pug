@@ -26,7 +26,7 @@ Process {
         var newElement = Util.newElement();
         newElement.pattern = __outputPath;
         details[index].element = newElement;
-        details[index].env = input.details[index].env;
+        details[index].fields = input.details[index].fields;
         detailsChanged();
         
         debug("new element " + newElement.pattern);

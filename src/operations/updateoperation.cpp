@@ -38,7 +38,7 @@ void UpdateOperationAttached::setUpdatable(bool c)
 void UpdateOperationAttached::run()
 {
     if (m_updatableFlag) {
-        emit update(env());
+        emit update(context());
     } else {
         setStatus(OperationAttached::Finished);
         continueRunning();

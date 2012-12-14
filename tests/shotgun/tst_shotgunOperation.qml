@@ -345,7 +345,7 @@ PugTestCase {
     }
 
     function test_releaseFile() {
-        var env = {PROJECT: "888_test",
+        var context = {PROJECT: "888_test",
                    TRANSFER: "20121018",
                    USER: "mvisser",
                    FILENAME: "somefile",
@@ -353,19 +353,19 @@ PugTestCase {
         var workPath = tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work/mvisser/somefile.txt";
         var releasePath = tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001/somefile.txt";
 
-        var env2 = env;
-        env2.VERSION = 1;
+        var context2 = context;
+        context2.VERSION = 1;
 
         // compare(releaseFile.root, transferRelease);
-        // compare(transferRelease.map(env2), tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001/");
+        // compare(transferRelease.map(context2), tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001/");
         verify(transferRelease.parse(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001/"));
 
         return;
 
         verify(Util.exists(workPath));
-        compare(workFile.map(env), workPath);
+        compare(workFile.map(context), workPath);
         
-        release.run(workFile, env);
+        release.run(workFile, context);
         releaseSpy.wait(10000);
         
         verify(Util.exists(releasePath));
@@ -394,7 +394,7 @@ PugTestCase {
     }
 
     function test_releaseSeq() {
-        var env = {ROOT: tmpDir + "shotguntests",
+        var context = {ROOT: tmpDir + "shotguntests",
                    PROJECT: "888_test",
                    SEQUENCE: "DEV",
                    SHOT: "001",
@@ -413,23 +413,23 @@ PugTestCase {
         }
 
         // check that the config is good
-        update.run(compWork, env);
+        update.run(compWork, context);
         updateSpy.wait(1000);
     
         compare(workSeq.details.length, 1);
         compare(workSeq.details[0].element.pattern, workPath);
 
-        release.run(compWork, env);
+        release.run(compWork, context);
         releaseSpy.wait(10000);
     }
     
     function test_pullFields() {
-        var env = {ROOT: tmpDir + "shotguntests",
+        var context = {ROOT: tmpDir + "shotguntests",
                    PROJECT: "888_test",
                    SEQUENCE: "DEV",
                    SHOT: "001",
                    USER: "mvisser"};
-        shotgunPull.run(shot, env);
+        shotgunPull.run(shot, context);
         pullSpy.wait(5000);
         
         compare(shot.details[0].entities.Shot.sg_head_in, 1);                

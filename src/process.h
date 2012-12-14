@@ -36,11 +36,11 @@ signals:
     void envChanged();
     void stdinChanged(const QString stdin);
     void ignoreExitCodeChanged(bool ignoreExitCodeChanged);
-    void cookAtIndex(int index, const QVariant env);
+    void cookAtIndex(int index, const QVariant context);
     void cookedAtIndex(int index, int status);
 
 protected slots:
-    void onCookAtIndex(int index, const QVariant env);
+    void onCookAtIndex(int index, const QVariant context);
     void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onProcessError(QProcess::ProcessError);
     void onReadyReadStandardError();

@@ -56,11 +56,11 @@ void File::setLinkType(File::LinkType lt)
     }
 }
 
-void File::onUpdate(const QVariant env)
+void File::onUpdate(const QVariant context)
 {
-    QStringList paths = listMatchingPaths(env.toMap());
+    QStringList paths = listMatchingPaths(context.toMap());
 
-    setPaths(paths, env.toMap());
+    setPaths(paths, context.toMap());
 
     debug() << "onUpdate set paths" << paths;
 
@@ -70,7 +70,7 @@ void File::onUpdate(const QVariant env)
     emit updated(OperationAttached::Finished);
 }
 
-void File::onCook(const QVariant env)
+void File::onCook(const QVariant context)
 {
     debug() << "onCook";
 
@@ -90,33 +90,33 @@ void File::onCook(const QVariant env)
 
                 debug() << "cooking index" << index;
 
-                if (inputDetail.property("element").isQObject() && inputDetail.property("env").isObject()) {
+                if (inputDetail.property("element").isQObject() && inputDetail.property("context").isObject()) {
                     const Element *inputElement = qjsvalue_cast<Element *>(inputDetail.property("element"));
-                    const QVariantMap inputEnv = qjsvalue_cast<QVariantMap>(inputDetail.property("env"));
+                    const QVariantMap inputContext = qjsvalue_cast<QVariantMap>(inputDetail.property("context"));
 
                     debug() << "input" << m_input;
-                    debug() << "input env" << inputEnv;
+                    debug() << "input fields" << inputContext;
                     debug() << "input element pattern" << inputElement->pattern();
                     debug() << "input element" << inputElement->toString();
 
                     Element *destElement = new Element;
 
-                    destElement->setPattern(map(inputEnv));
+                    destElement->setPattern(map(inputContext));
                     destElement->setFrames(inputElement->frames());
 
-                    // create a new env based off our default
-                    QVariantMap destEnv(env.toMap());
+                    // create a new field values based off our default
+                    QVariantMap destContext(context.toMap());
 
-                    debug() << "dest env" << destEnv;
+                    debug() << "dest context" << destContext;
 
                     debug() << "dest element" << destElement->toString();
 
-                    // merge input env
-                    QMapIterator<QString, QVariant> i(inputEnv);
+                    // merge input context
+                    QMapIterator<QString, QVariant> i(inputContext);
                     while (i.hasNext()) {
                         i.next();
                         // don't overwrite
-                        destEnv.insert(i.key(), i.value());
+                        destContext.insert(i.key(), i.value());
                     }
 
                     foreach (const QString inputPath, inputElement->paths()) {
@@ -157,12 +157,12 @@ void File::onCook(const QVariant env)
                     }
 
                     details().property(index).setProperty("element", newQObject(destElement));
-                    details().property(index).setProperty("env", toScriptValue(destEnv));
+                    details().property(index).setProperty("context", toScriptValue(destContext));
 
                 } else if (!inputDetail.property("element").isQObject()) {
                     error() << "input.details[" << index << "].element does not exist or is not an Element";
-                } else if (!inputDetail.property("env").isObject()) {
-                    error() << "input.details[" << index << "].env does not exist or is not an Object";
+                } else if (!inputDetail.property("context").isObject()) {
+                    error() << "input.details[" << index << "].fields does not exist or is not an Object";
                 }
             } else {
                 error() << "input.details[" << index << "] is not an Object";

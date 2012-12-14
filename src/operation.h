@@ -16,7 +16,6 @@ class OperationAttached : public PugItem
 {
     Q_OBJECT
     Q_PROPERTY(Status status READ status WRITE setStatus NOTIFY statusChanged)
-    Q_PROPERTY(QVariantMap env READ env WRITE setEnv NOTIFY envChanged)
     Q_ENUMS(Status)
 public:
     // these are listed in order of increasing comparison precedence
@@ -27,8 +26,7 @@ public:
     Status status() const;
     void setStatus(Status);
 
-    QVariantMap env() const;
-    void setEnv(const QVariantMap);
+    const QVariantMap context() const;
 
     // use like this: foo->operation<MyOperation>()
     template <class T>
@@ -54,7 +52,6 @@ public:
 
 signals:
     void statusChanged(Status status);
-    void envChanged(QVariant env);
     void finished(OperationAttached *operation);
 
 protected slots:
@@ -120,7 +117,7 @@ protected:
 
 private:
     Status m_status;
-    QVariantMap m_env;
+    QVariantMap m_context;
     Operation *m_operation;
 };
 
@@ -158,7 +155,7 @@ public:
     OperationAttached::Status status() const;
     void setStatus(OperationAttached::Status);
 
-    Q_INVOKABLE virtual void run(NodeBase *node, const QVariant env);
+    Q_INVOKABLE virtual void run(NodeBase *node, const QVariant context);
 
     //static OperationAttached *qmlAttachedProperties(QObject *); // must be defined in subclasses
 
@@ -177,7 +174,7 @@ protected slots:
 protected:
     void resetAll(NodeBase *node);
 
-    void startRunning(NodeBase *node, const QVariant env);
+    void startRunning(NodeBase *node, const QVariant context);
     void continueRunning();
 
     OperationAttached::Status dependenciesStatus() const;
@@ -198,8 +195,8 @@ private:
     QList<Operation *> m_dependencies;
     QList<Operation *> m_triggers;
 
-    NodeBase *m_runningNode;
-    QVariant m_runningEnv;
+    NodeBase *m_node;
+    QVariant m_context;
     OperationAttached::Status m_status;
 };
 

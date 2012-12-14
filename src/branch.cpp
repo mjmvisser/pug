@@ -14,12 +14,12 @@ Branch::Branch(QObject *parent) :
     connect(this, &Branch::update, this, &Branch::onUpdate);
 }
 
-void Branch::onUpdate(const QVariant env)
+void Branch::onUpdate(const QVariant context)
 {
-    QStringList paths = listMatchingPaths(env.toMap());
+    QStringList paths = listMatchingPaths(context.toMap());
 
     copious() << this << "onUpdate got" << paths;
 
-    setPaths(paths, env.toMap());
+    setPaths(paths, context.toMap());
     emit updated(OperationAttached::Finished);
 }

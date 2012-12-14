@@ -28,12 +28,12 @@ signals:
     void inputChanged(NodeBase *input);
     void linkTypeChanged(LinkType linkType);
 
-    void cook(const QVariant env);
+    void cook(const QVariant context);
     void cooked(int status);
 
 protected slots:
-    void onUpdate(const QVariant env);
-    void onCook(const QVariant env);
+    void onUpdate(const QVariant context);
+    void onCook(const QVariant context);
 
 private:
     NodeBase *m_input;

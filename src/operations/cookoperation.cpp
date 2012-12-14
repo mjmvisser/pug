@@ -46,12 +46,12 @@ void CookOperationAttached::run()
     debug() << ".run, cook mode is" << m_mode;
     m_indexStatus.clear();
     if (m_mode == CookOperationAttached::Cook) {
-        emit cook(env());
+        emit cook(context());
     } else if (m_mode == CookOperationAttached::CookAtIndex) {
         if (node()->count() > 0) {
             debug() << "cooking" << node()->count() << "details";
             for (int i = 0; i < node()->count(); i++) {
-                emit cookAtIndex(i, env());
+                emit cookAtIndex(i, context());
             }
         } else {
             warning() << "nothing to cook";
