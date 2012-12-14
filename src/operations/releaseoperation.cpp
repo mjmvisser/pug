@@ -2,7 +2,6 @@
 
 ReleaseOperationAttached::ReleaseOperationAttached(QObject *parent) :
     OperationAttached(parent),
-    m_releasableFlag(false),
     m_target(),
     m_mode(ReleaseOperationAttached::Copy),
     m_queue(new FileOpQueue(this))
@@ -12,19 +11,6 @@ ReleaseOperationAttached::ReleaseOperationAttached(QObject *parent) :
 
     connect(this, &ReleaseOperationAttached::targetChanged, this, &ReleaseOperationAttached::regenerateDetails);
     connect(node(), &NodeBase::detailsChanged, this, &ReleaseOperationAttached::regenerateDetails);
-}
-
-bool ReleaseOperationAttached::isReleasable() const
-{
-    return m_releasableFlag;
-}
-
-void ReleaseOperationAttached::setReleasable(bool r)
-{
-    if (m_releasableFlag != r) {
-        m_releasableFlag = r;
-        emit releasableChanged(r);
-    }
 }
 
 BranchBase *ReleaseOperationAttached::target()
@@ -94,7 +80,7 @@ void ReleaseOperationAttached::regenerateDetails()
 
     debug() << "regenerateDetails on" << branch;
 
-    if (branch && branch->details().isArray() && m_releasableFlag && m_target) {
+    if (branch && branch->details().isArray() && m_target) {
         m_details = newArray();
 
         const ReleaseOperationAttached *targetAttached = m_target->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
@@ -205,7 +191,7 @@ void ReleaseOperationAttached::run()
 
     debug() << "run on" << branch;
 
-    if (branch && m_releasableFlag && m_target) {
+    if (branch && m_target) {
         // we can safely assume that our details are up-to-date
         Q_ASSERT(m_details.isArray());
         Q_ASSERT(branch->details().isArray());
@@ -230,10 +216,6 @@ void ReleaseOperationAttached::run()
 
         m_queue->run(env());
 
-    } else if (m_releasableFlag && !m_target) {
-        error() << this << "no target specified";
-        setStatus(OperationAttached::Error);
-        continueRunning();
     } else {
         setStatus(OperationAttached::Finished);
         continueRunning();

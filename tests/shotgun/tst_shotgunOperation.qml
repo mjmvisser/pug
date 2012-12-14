@@ -216,7 +216,6 @@ PugTestCase {
                     id: workFile
                     name: "workFile"
                     pattern: "{FILENAME}.{EXT}"
-                    ReleaseOperation.releasable: true
                     ReleaseOperation.target: node("../../transferRelease/releaseFile")
                 }
             }
@@ -305,7 +304,6 @@ PugTestCase {
                     id: workSeq
                     name: "workSeq"
                     pattern: "images/{FILENAME}.{FRAME}.{EXT}"
-                    ReleaseOperation.releasable: true
                     ReleaseOperation.target: node("../../transferRelease/releaseSeq")
                     output: true
                 }

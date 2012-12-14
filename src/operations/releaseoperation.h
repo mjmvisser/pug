@@ -14,7 +14,6 @@ class ReleaseOperationAttached : public OperationAttached
 {
     Q_OBJECT
     Q_ENUMS(Mode)
-    Q_PROPERTY(bool releasable READ isReleasable WRITE setReleasable NOTIFY releasableChanged)
     Q_PROPERTY(BranchBase *target READ target WRITE setTarget NOTIFY targetChanged)
     Q_PROPERTY(QString versionField READ versionFieldName WRITE setVersionFieldName NOTIFY versionFieldChanged)
     Q_PROPERTY(QJSValue details READ details NOTIFY detailsChanged)
@@ -23,9 +22,6 @@ public:
     enum Mode { Copy, Move };
 
     explicit ReleaseOperationAttached(QObject *parent = 0);
-
-    bool isReleasable() const;
-    void setReleasable(bool);
 
     BranchBase *target();
     const BranchBase *target() const;
@@ -47,7 +43,6 @@ public:
     Q_INVOKABLE int findLastVersion(const QVariant data) const;
 
 signals:
-    void releasableChanged(bool releasable);
     void targetChanged(BranchBase *target);
     void versionFieldChanged(const QString versionField);
     void detailsChanged();
@@ -67,7 +62,6 @@ private slots:
     void regenerateDetails();
 
 private:
-    bool m_releasableFlag;
     BranchBase *m_target;
     QString m_versionFieldName;
     QJSValue m_details;

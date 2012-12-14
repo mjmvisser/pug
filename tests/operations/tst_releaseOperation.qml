@@ -111,7 +111,6 @@ PugTestCase {
                     name: "workFile"
                     pattern: "{BAR}.txt"
                     root: workBranch
-                    ReleaseOperation.releasable: true
                     ReleaseOperation.target: releaseFile
                 }
                 
@@ -120,7 +119,6 @@ PugTestCase {
                     name: "workSeq"
                     pattern: "{DAG}.{FRAME}.txt"
                     root: workBranch
-                    ReleaseOperation.releasable: true
                     ReleaseOperation.target: releaseSeq
                 }
             }
