@@ -9,6 +9,7 @@
 #include "pugitem.h"
 #include "param.h"
 #include "input.h"
+#include "output.h"
 #include "operation.h"
 
 class NodeBase : public PugItem
@@ -16,8 +17,9 @@ class NodeBase : public PugItem
     Q_OBJECT
     Q_PROPERTY(QQmlListProperty<Param> params READ params_ NOTIFY paramsChanged)
     Q_PROPERTY(QQmlListProperty<Input> inputs READ inputs_ NOTIFY inputsChanged)
+    Q_PROPERTY(QQmlListProperty<Output> outputs READ outputs_ NOTIFY outputsChanged)
     Q_PROPERTY(QQmlListProperty<NodeBase> children READ nodes_ NOTIFY nodesChanged)
-    Q_PROPERTY(bool output READ isOutput WRITE setOutput NOTIFY outputChanged)
+    Q_PROPERTY(bool active READ isActive WRITE setActive NOTIFY activeChanged)
     Q_PROPERTY(QJSValue details READ details NOTIFY detailsChanged)
     Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(int index READ index WRITE setIndex NOTIFY indexChanged)
@@ -25,11 +27,12 @@ public:
     explicit NodeBase(QObject *parent = 0);
 
     QQmlListProperty<Input> inputs_();
+    QQmlListProperty<Output> outputs_();
     QQmlListProperty<Param> params_();
     QQmlListProperty<NodeBase> nodes_();
 
-    bool isOutput() const;
-    void setOutput(bool o);
+    bool isActive() const;
+    void setActive(bool o);
 
     Q_INVOKABLE NodeBase* node(const QString node);
     const NodeBase* node(const QString node) const;
@@ -59,14 +62,16 @@ signals:
     void paramsChanged();
     void nodesChanged();
     void inputsChanged();
-    void outputChanged(bool output);
+    void outputsChanged();
+    void activeChanged(bool active);
     void detailsChanged();
     void countChanged(int index);
     void indexChanged(int index);
 
 protected:
-    void addInput(const QString name);
     void addParam(const QString name);
+    void addInput(const QString name);
+    void addOutput(const QString name);
 
 private:
     const NodeBase *nodeInChildren(const QString n) const;
@@ -96,9 +101,16 @@ private:
     static Input *input_at(QQmlListProperty<Input> *, int);
     static void inputs_clear(QQmlListProperty<Input> *);
 
+    // outputs property
+    static void outputs_append(QQmlListProperty<Output> *, Output *);
+    static int outputs_count(QQmlListProperty<Output> *);
+    static Output *output_at(QQmlListProperty<Output> *, int);
+    static void outputs_clear(QQmlListProperty<Output> *);
+
     QList<Param *> m_params;
     QList<Input *> m_inputs;
-    bool m_outputFlag;
+    QList<Output *> m_outputs;
+    bool m_activeFlag;
     QJSValue m_details;
     int m_count;
     int m_index;

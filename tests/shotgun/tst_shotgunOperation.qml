@@ -183,7 +183,7 @@ PugTestCase {
                     Node {
                         id: releaseFileElement
                         // dummy node to force a dependency on releaseFile
-                        output: true
+                        active: true
                         ShotgunOperation.action: ShotgunOperation.Create
                         
                         ShotgunElement {
@@ -305,14 +305,14 @@ PugTestCase {
                     name: "workSeq"
                     pattern: "images/{FILENAME}.{FRAME}.{EXT}"
                     ReleaseOperation.target: node("../../transferRelease/releaseSeq")
-                    output: true
+                    active: true
                 }
                 
                 MakeThumbnail {
                     id: workSeqThumbnail
                     name: "workSeqThumbnail"
                     input: workSeq
-                    output: true
+                    active: true
                 }
 
                 MakeThumbnail {
@@ -320,7 +320,7 @@ PugTestCase {
                     name: "workSeqFilmstrip"
                     input: workSeq
                     filmstrip: true
-                    output: true
+                    active: true
                 }
             }
         }

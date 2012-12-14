@@ -1,13 +1,13 @@
-#include <QDebug>
 #include <QQmlProperty>
 
 #include "nodebase.h"
 #include "param.h"
 #include "input.h"
+#include "output.h"
 
 NodeBase::NodeBase(QObject *parent) :
     PugItem(parent),
-    m_outputFlag(false),
+    m_activeFlag(false),
     m_count(0),
     m_index(-1)
 {
@@ -35,6 +35,14 @@ QQmlListProperty<Input> NodeBase::inputs_()
                                         NodeBase::inputs_count,
                                         NodeBase::input_at,
                                         NodeBase::inputs_clear);
+}
+
+QQmlListProperty<Output> NodeBase::outputs_()
+{
+    return QQmlListProperty<Output>(this, 0, NodeBase::outputs_append,
+                                        NodeBase::outputs_count,
+                                        NodeBase::output_at,
+                                        NodeBase::outputs_clear);
 }
 
 // nodes property
@@ -151,16 +159,50 @@ void NodeBase::inputs_clear(QQmlListProperty<Input> *prop)
     emit that->inputsChanged();
 }
 
-bool NodeBase::isOutput() const
+// outputs property
+void NodeBase::outputs_append(QQmlListProperty<Output> *prop, Output *in)
 {
-    return m_outputFlag;
+    NodeBase *that = static_cast<NodeBase *>(prop->object);
+
+    in->setParent(that);
+    that->m_outputs.append(in);
+    emit that->outputsChanged();
 }
 
-void NodeBase::setOutput(bool o)
+int NodeBase::outputs_count(QQmlListProperty<Output> *prop)
 {
-    if (m_outputFlag != o) {
-        m_outputFlag = o;
-        emit outputChanged(o);
+    NodeBase *that = static_cast<NodeBase *>(prop->object);
+    return that->m_outputs.count();
+}
+
+Output *NodeBase::output_at(QQmlListProperty<Output> *prop, int i)
+{
+    NodeBase *that = static_cast<NodeBase *>(prop->object);
+    if (i < that->m_outputs.count())
+        return that->m_outputs[i];
+    else
+        return 0;
+}
+
+void NodeBase::outputs_clear(QQmlListProperty<Output> *prop)
+{
+    NodeBase *that = static_cast<NodeBase *>(prop->object);
+    foreach (Output *in, that->m_outputs) {
+        in->setParent(0);
+    }
+    emit that->outputsChanged();
+}
+
+bool NodeBase::isActive() const
+{
+    return m_activeFlag;
+}
+
+void NodeBase::setActive(bool flag)
+{
+    if (m_activeFlag != flag) {
+        m_activeFlag = flag;
+        emit activeChanged(flag);
     }
 }
 
@@ -466,6 +508,14 @@ NodeBase *NodeBase::rootBranch()
     return p;
 }
 
+void NodeBase::addParam(const QString name)
+{
+    Param *param = new Param(this);
+    param->setName(name);
+    m_params.append(param);
+    emit paramsChanged();
+}
+
 void NodeBase::addInput(const QString name)
 {
     Input *input = new Input(this);
@@ -474,10 +524,10 @@ void NodeBase::addInput(const QString name)
     emit inputsChanged();
 }
 
-void NodeBase::addParam(const QString name)
+void NodeBase::addOutput(const QString name)
 {
-    Param *param = new Param(this);
-    param->setName(name);
-    m_params.append(param);
-    emit paramsChanged();
+    Output *output = new Output(this);
+    output->setName(name);
+    m_outputs.append(output);
+    emit outputsChanged();
 }

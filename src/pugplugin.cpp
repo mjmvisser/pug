@@ -3,6 +3,7 @@
 #include "root.h"
 #include "param.h"
 #include "input.h"
+#include "output.h"
 #include "node.h"
 #include "field.h"
 #include "branchbase.h"
@@ -42,6 +43,7 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<Element>(uri, 1, 0, "Element");
     qmlRegisterType<PugItem>(uri, 1, 0, "PugItem");
     qmlRegisterType<Input>(uri, 1, 0, "Input");
+    qmlRegisterType<Output>(uri, 1, 0, "Output");
     qmlRegisterType<Param>(uri, 1, 0, "Param");
     qmlRegisterType<NodeBase>();
     qmlRegisterType<Node>(uri, 1, 0, "Node");

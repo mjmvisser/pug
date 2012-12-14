@@ -65,7 +65,7 @@ OperationAttached::Status OperationAttached::childrenStatus() const {
     foreach (QObject * o, node()->children())
     {
         NodeBase *child = qobject_cast<NodeBase *>(o);
-        if (child && child->isOutput()) {
+        if (child && child->isActive()) {
             OperationAttached *childAttached = child->attachedPropertiesObject<
                     OperationAttached>(operationMetaObject());
             OperationAttached::Status childStatus = childAttached->status();
@@ -112,7 +112,7 @@ void OperationAttached::resetChildrenStatus() {
     foreach (QObject * o, node()->children())
     {
         NodeBase *child = qobject_cast<NodeBase *>(o);
-        if (child && child->isOutput()) {
+        if (child && child->isActive()) {
             OperationAttached *childAttached = child->attachedPropertiesObject<
                     OperationAttached>(operationMetaObject());
             childAttached->resetAllStatus();
@@ -153,7 +153,7 @@ void OperationAttached::resetChildren() {
     foreach (QObject * o, node()->children())
     {
         NodeBase *child = qobject_cast<NodeBase *>(o);
-        if (child && child->isOutput()) {
+        if (child && child->isActive()) {
             OperationAttached *childAttached = child->attachedPropertiesObject<
                     OperationAttached>(operationMetaObject());
             childAttached->resetAll();
@@ -322,11 +322,11 @@ void OperationAttached::runChildren() {
 
     debug() << node() << "runChildren";
 
-    // run children with outputs flag and connect their finished signal to ourself
+    // run children with active flag and connect their finished signal to ourself
     foreach (QObject * o, node()->children())
     {
         NodeBase *child = qobject_cast<NodeBase *>(o);
-        if (child && child->isOutput()) {
+        if (child && child->isActive()) {
             debug() << "got" << child;
             OperationAttached *childAttached = child->attachedPropertiesObject<
                     OperationAttached>(operationMetaObject());
