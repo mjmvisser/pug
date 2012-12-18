@@ -1,4 +1,4 @@
-pug
+bin/*
 tst_*
 !tst_*.*
 moc_*.cpp
