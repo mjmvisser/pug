@@ -59,9 +59,8 @@ Branch {
             id: workSeq
             name: "workSeq"
             pattern: "images/{SEQUENCE}_{SHOT}_{DEPARTMENT}.{FRAME}.{EXT}"
-            ReleaseOperation.releasable: true
             ReleaseOperation.target: releaseSeq
-            output: true
+            active: true
         }
     }
 }

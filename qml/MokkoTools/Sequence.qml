@@ -10,7 +10,7 @@ File {
         id: makeThumbnail
         name: "makeThumbnail"
         input: self
-        output: true
+        active: true
     }
 
     MakeThumbnail {
@@ -18,7 +18,7 @@ File {
         name: "makeFilmstrip"
         input: self
         filmstrip: true
-        output: true
+        active: true
     }
     
 }

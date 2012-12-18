@@ -11,14 +11,22 @@ Process {
     inputs: Input { name: "input" }
     params: Param { name: "filmstrip" }
 
-    property string __outputPath: input.details[index].element.directory + input.details[index].element.baseName + (self.filmstrip ? "_filmstrip.jpg" : "_thumbnail.jpg")
+    function __buildOutputPath() {
+        var directory = detail(index, "element", "directory");
+        var baseName = detail(index, "element", "baseName");
+        var ext = self.filmstrip ? "_filmstrip.jpg" : "_thumbnail.jpg";
+        if (typeof directory !== "undefined" && typeof baseName !== "undefined")
+            return directory + baseName + ext;
+        else
+            return "";
+    }
 
     argv: [ 
         Qt.resolvedUrl("scripts/makeThumbnail.py").replace("file://", ""),
-        "--inputPath", input.details[index].element.pattern,
-        "--outputPath", __outputPath,
-        "--firstFrame", input.details[index].element.firstFrame,
-        "--lastFrame", input.details[index].element.lastFrame
+        "--inputPath", detail(index, "element", "pattern"),
+        "--outputPath", __buildOutputPath(),
+        "--firstFrame", detail(index, "element", "firstFrame"),
+        "--lastFrame", detail(index, "element", "lastFrame")
     ]
 
     onCookedAtIndex: {

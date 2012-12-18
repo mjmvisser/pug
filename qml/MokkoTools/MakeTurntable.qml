@@ -7,7 +7,7 @@ Process {
     property var scene
 
     inputs: [
-        Input { name: "scene" },
+        Input { name: "scene" }
     ]
     
     property string format: "1920x1080"
@@ -19,7 +19,7 @@ Process {
     argv: [
         Qt.resolvedUrl("scripts/makeTurntable.py").replace("file://", ""),
         "--format", format,
-        "--scene", input.details[index].element.pattern,
+        "--scene", scene.detail(index, "element", "pattern"),
         "--output", __outputPath
     ]
     

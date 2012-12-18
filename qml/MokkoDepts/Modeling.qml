@@ -64,8 +64,8 @@ Branch {
                 release: release
                 user: node("/prod")
                 code: "{ASSET_TYPE}_{ASSET}_{STEP}_{VARIATION}_v{VERSION}"
-                thumbnail: workTurntableSeq.thumbnail
-                filmstrip: workTurntableSeq.filmstrip
+                thumbnail: makeThumbnail
+                filmstrip: makeFilmstrip
             }
         }            
 
@@ -84,33 +84,30 @@ Branch {
         File {
             id: workMaya
             pattern: "scenes/{FILENAME}.mb"
-            ReleaseOperation.releasable: true
             ReleaseOperation.target: releaseMaya 
-            output: true
+            active: true
         }
 
         File {
             id: workZBrush
             pattern: "zbrush/{FILENAME}.ztool"
-            ReleaseOperation.releasable: true
             ReleaseOperation.target: releaseMaya 
-            output: true
+            active: true
         }
 
         MakeTurntable {
             id: makeTurntable
             name: "makeTurntable"
-            input: workMaya
-            ReleaseOperation.releasable: true
+            scene: workMaya
             ReleaseOperation.target: releaseTurntableSeq 
-            output: true
+            active: true
         }
 
         MakeThumbnail {
             id: makeThumbnail
             name: "makeThumbnail"
             input: makeTurntable
-            output: true
+            active: true
         }
     
         MakeThumbnail {
@@ -118,14 +115,13 @@ Branch {
             name: "makeFilmstrip"
             input: makeTurntable
             filmstrip: true
-            output: true
+            active: true
         }
         
         MakeQuicktime {
             id: makeMovie
             name: "makeMovie"
             input: makeTurntable
-            ReleaseOperation.releasable: true
             ReleaseOperation.target: releaseTurntableMovie 
         }
     }

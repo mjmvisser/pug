@@ -91,7 +91,6 @@ Branch {
             id: workFile
             name: "workFile"
             pattern: "{FILENAME}.{EXT}"
-            ReleaseOperation.releasable: true
             ReleaseOperation.target: releaseFile
         }
 
@@ -99,14 +98,13 @@ Branch {
             id: workFileThumbnail
             name: "workFileThumbnail"
             input: workFile
-            output: true
+            active: true
         }
 
         File {
             id: workSeq
             name: "workSeq"
             pattern: "{FILENAME}.{FRAME}.{EXT}"
-            ReleaseOperation.releasable: true
             ReleaseOperation.target: releaseSeq
         }
         
@@ -114,7 +112,7 @@ Branch {
             id: workSeqThumbnail
             name: "workSeqThumbnail"
             input: workSeq
-            output: true
+            active: true
         }
 
         MakeThumbnail {
@@ -122,7 +120,7 @@ Branch {
             name: "workSeqfilmstrip"
             input: workSeq
             filmstrip: true
-            output: true
+            active: true
         }
     }
 }
