@@ -18,6 +18,7 @@ class ReleaseOperationAttached : public OperationAttached
     Q_PROPERTY(QString versionField READ versionFieldName WRITE setVersionFieldName NOTIFY versionFieldChanged)
     Q_PROPERTY(QJSValue details READ details NOTIFY detailsChanged)
     Q_PROPERTY(Mode mode READ mode WRITE setMode NOTIFY modeChanged)
+    Q_PROPERTY(Sudo *sudo READ sudo WRITE setSudo NOTIFY sudoChanged)
 public:
     enum Mode { Copy, Move };
 
@@ -36,6 +37,9 @@ public:
     const QJSValue details() const;
     QJSValue details();
 
+    Sudo *sudo();
+    void setSudo(Sudo *);
+
     Q_INVOKABLE virtual void reset();
     Q_INVOKABLE virtual void run();
 
@@ -47,7 +51,7 @@ signals:
     void versionFieldChanged(const QString versionField);
     void detailsChanged();
     void modeChanged(Mode mode);
-    void pathsChanged(QString paths);
+    void sudoChanged(Sudo *sudo);
 
 protected:
     void releaseElement(const Element *srcElement, const Element *destElement);

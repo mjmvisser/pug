@@ -5,36 +5,24 @@
 
 FileOpQueue::FileOpQueue(QObject *parent) :
     PugItem(parent),
-    m_process(new QProcess(this))
+    m_process(new QProcess(this)),
+    m_sudo()
 {
     m_process->setProcessChannelMode(QProcess::ForwardedChannels);
     connect(m_process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             this, &FileOpQueue::onProcessFinished);
 }
 
-const QString FileOpQueue::user() const
+Sudo *FileOpQueue::sudo()
 {
-    return m_user;
+    return m_sudo;
 }
 
-void FileOpQueue::setUser(const QString u)
+void FileOpQueue::setSudo(Sudo *sudo)
 {
-    if (m_user != u) {
-        m_user = u;
-        emit userChanged(m_user);
-    }
-}
-
-const QString FileOpQueue::group() const
-{
-    return m_group;
-}
-
-void FileOpQueue::setGroup(const QString g)
-{
-    if (m_group != g) {
-        m_group = g;
-        emit groupChanged(m_group);
+    if (m_sudo != sudo) {
+        m_sudo = sudo;
+        emit sudoChanged(sudo);
     }
 }
 
@@ -87,15 +75,6 @@ void FileOpQueue::continueRunning()
 
         QStringList argv;
 
-        if (!m_user.isEmpty()) {
-            argv << "sudo";
-
-            argv << "-u" << m_user;
-
-            if (!m_group.isEmpty())
-                argv << "-g" << m_group;
-        }
-
         switch (item.type) {
         case FileOpQueue::Item::Mkdir:
             argv << "mkdir" << "-p" << item.args;
@@ -115,6 +94,10 @@ void FileOpQueue::continueRunning()
         default:
             qWarning() << this << "unknown file mode " << item.type;
             break;
+        }
+
+        if (m_sudo) {
+            argv = m_sudo->wrapCommand(argv);
         }
 
         copious() << argv;

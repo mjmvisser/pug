@@ -8,20 +8,17 @@
 #include <QProcess>
 
 #include "pugitem.h"
+#include "sudo.h"
 
 class FileOpQueue : public PugItem
 {
     Q_OBJECT
-    Q_PROPERTY(QString user READ user WRITE setUser NOTIFY userChanged)
-    Q_PROPERTY(QString group READ group WRITE setGroup NOTIFY groupChanged)
+    Q_PROPERTY(Sudo *sudo READ sudo WRITE setSudo NOTIFY sudoChanged)
 public:
     explicit FileOpQueue(QObject *parent = 0);
 
-    const QString user() const;
-    void setUser(const QString);
-
-    const QString group() const;
-    void setGroup(const QString);
+    Sudo *sudo();
+    void setSudo(Sudo *);
 
     Q_INVOKABLE void mkdir(const QString dir);
     Q_INVOKABLE void chmod(const QString mode, const QString target);
@@ -33,10 +30,10 @@ public:
     Q_INVOKABLE void run();
 
 signals:
+    void sudoChanged(Sudo *sudo);
+
     void finished();
     void error();
-    void userChanged(const QString user);
-    void groupChanged(const QString group);
 
 protected:
     struct Item {
@@ -55,10 +52,9 @@ private slots:
     void onProcessError(QProcess::ProcessError);
 
 private:
-    QString m_user;
-    QString m_group;
     QProcess *m_process;
     QQueue<Item> m_workQueue;
+    Sudo *m_sudo;
 };
 
 #endif

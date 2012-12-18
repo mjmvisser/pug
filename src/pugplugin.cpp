@@ -24,6 +24,7 @@
 #include "fileopqueue.h"
 #include "util.h"
 #include "logger.h"
+#include "sudo.h"
 
 #include "pugplugin.h"
 
@@ -58,6 +59,7 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<CookOperation>(uri, 1, 0, "CookOperation");
     qmlRegisterType<ListOperation>(uri, 1, 0, "ListOperation");
     qmlRegisterType<ReleaseOperation>(uri, 1, 0, "ReleaseOperation");
+    qmlRegisterType<Sudo>(uri, 1, 0, "Sudo");
     qmlRegisterType<UpdateOperation>(uri, 1, 0, "UpdateOperation");
     qmlRegisterType<ShotgunOperation>(uri, 1, 0, "ShotgunOperation");
     qmlRegisterType<Shotgun>(uri, 1, 0, "Shotgun");

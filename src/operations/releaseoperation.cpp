@@ -67,6 +67,19 @@ const QJSValue ReleaseOperationAttached::details() const
     return m_details;
 }
 
+Sudo *ReleaseOperationAttached::sudo()
+{
+    return m_queue->sudo();
+}
+
+void ReleaseOperationAttached::setSudo(Sudo *sudo)
+{
+    if (m_queue->sudo() != sudo) {
+        m_queue->setSudo(sudo);
+        emit sudoChanged(sudo);
+    }
+}
+
 void ReleaseOperationAttached::reset()
 {
     OperationAttached::reset();
