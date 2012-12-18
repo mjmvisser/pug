@@ -39,7 +39,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
         while (args.length() > 0) {
             QString arg = args.takeFirst();
 
-            if (arg == "-path") {
+            if (arg == "-branch") {
                 QString path = args.takeFirst();
                 QFileInfo pathInfo(path);
                 if (pathInfo.isDir())
@@ -74,6 +74,6 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 
         qDebug() << status;
     } else {
-        qDebug() << "usage:" << app.arguments()[0] << "COMMAND" << "[-properties KEY=VALUE ...]" << "[-context KEY=VALUE ...]";
+        qDebug() << "usage:" << app.arguments()[0] << "COMMAND" << "[-branch PATH]" << "[-properties KEY=VALUE ...]" << "[-context KEY=VALUE ...]";
     }
 }
