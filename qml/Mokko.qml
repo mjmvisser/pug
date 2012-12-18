@@ -52,15 +52,15 @@ Root {
         Field { name: "PROJECT"; env: "MOKKO_PROJECT_ID"; regexp: "[0-9]{3}_[a-z]+" },
         Field { name: "SEQUENCE"; env: "MOKKO_SEQUENCE" },
         Field { name: "SHOT"; env: "MOKKO_SHOT" },
-        Field { name: "ASSET"; env: "MOKKO_ASSET_NAME" }
-        Field { name: "ASSET_TYPE"; env: "MOKKO_ASSET_TYPE" }
+        Field { name: "ASSET"; env: "MOKKO_ASSET_NAME" },
+        Field { name: "ASSET_TYPE"; env: "MOKKO_ASSET_TYPE" },
         Field { name: "DEPARTMENT"; env: "MOKKO_DEPARTMENT" },
         Field { name: "USER"; env: "USER" },
         Field { name: "VARIATION"; env: "MOKKO_VARIATION" },
         FrameSpecField { name: "FRAME" },
         Field { name: "VERSION"; type: Field.Integer; width: 3 },
         Field { name: "FORMAT" },
-        Field { name: "EXT" },
+        Field { name: "EXT" }
     ]
     
     Branch {
@@ -151,6 +151,6 @@ Root {
     Modeling {
         id: model
         name: "model"
-        root: assetType
+        root: asset
     }
 }
