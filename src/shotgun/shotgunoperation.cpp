@@ -188,10 +188,10 @@ void ShotgunOperationAttached::addDetail(const QVariantMap entity)
         branch->details().setProperty(branch->index(), detail);
     }
 
-    QJSValue entities = detail.property("entities");
+    QJSValue entities = detail.property("sg");
     if (entities.isUndefined()) {
         entities = newObject();
-        detail.setProperty("entities", entities);
+        detail.setProperty("sg", entities);
     }
 
     entities.setProperty(entity.value("type").toString(), toScriptValue(entity));

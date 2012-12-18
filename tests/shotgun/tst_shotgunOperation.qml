@@ -379,13 +379,13 @@ PugTestCase {
         compare(transfer.ShotgunOperation.status, Operation.Finished);
         compare(releaseFile.ShotgunOperation.status, Operation.Finished);
 
-        compare(project.ShotgunOperation.entities.Project.type, "Project");
-        compare(transfer.ShotgunOperation.entities.Delivery.type, "Delivery");
-        compare(transferRelease.ShotgunOperation.entities.PublishEvent.type, "PublishEvent");
-        compare(releaseFileElement.ShotgunOperation.entities.Element.type, "Element");
-        compare(releaseFile.ShotgunOperation.entities.Attachment.type, "Attachment");
-        compare(releaseFile.ShotgunOperation.entities.Version.type, "Version");
-        compare(transferRelease.ShotgunOperation.entities.PublishEvent.type, "PublishEvent");
+        compare(project.ShotgunOperation.sg.Project.type, "Project");
+        compare(transfer.ShotgunOperation.sg.Delivery.type, "Delivery");
+        compare(transferRelease.ShotgunOperation.sg.PublishEvent.type, "PublishEvent");
+        compare(releaseFileElement.ShotgunOperation.sg.Element.type, "Element");
+        compare(releaseFile.ShotgunOperation.sg.Attachment.type, "Attachment");
+        compare(releaseFile.ShotgunOperation.sg.Version.type, "Version");
+        compare(transferRelease.ShotgunOperation.sg.PublishEvent.type, "PublishEvent");
 
         compare(workFile.details.length, 1);
         compare(workFile.details[0].element.path, workPath);
@@ -432,7 +432,7 @@ PugTestCase {
         shotgunPull.run(shot, context);
         pullSpy.wait(5000);
         
-        compare(shot.details[0].entities.Shot.sg_head_in, 1);                
-        compare(shot.details[0].entities.Shot.sg_tail_out, 100);                
+        compare(shot.details[0].sg.Shot.sg_head_in, 1);                
+        compare(shot.details[0].sg.Shot.sg_tail_out, 100);                
     }
 }

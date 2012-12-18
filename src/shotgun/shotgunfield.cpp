@@ -170,13 +170,13 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
                 error() << branch << "missing fields for" << m_pattern;
             }
         } else {
-            error() << branch << "specifies a type of Pattern but" << branch << ".elements has no entries";
+            error() << branch << "specifies a type of Pattern but" << branch << "has no details";
         }
 
     } else if (m_type == ShotgunField::Link) {
         // this field is an entity link
         if (link() && !linkType().isEmpty()) {
-            const QVariantMap entities = qjsvalue_cast<QVariantMap>(link()->details().property(0).property("entities"));
+            const QVariantMap entities = qjsvalue_cast<QVariantMap>(link()->details().property(0).property("sg"));
 
             if (entities.contains(m_linkTypes.at(0)) && entities[m_linkTypes.at(0)].toMap().contains("id")) {
                 QVariantMap link;
@@ -193,7 +193,7 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
             QVariantList links;
             for (int i = 0; i < m_links.length(); i++) {
                 if (m_links[i] && !m_linkTypes[i].isEmpty()) {
-                    const QVariantMap entities = qjsvalue_cast<QVariantMap>(link()->details().property(branch->index()).property("entities"));
+                    const QVariantMap entities = qjsvalue_cast<QVariantMap>(link()->details().property(branch->index()).property("sg"));
 
                     if (entities.contains(m_linkTypes[i])) {
                         QVariantMap link;
