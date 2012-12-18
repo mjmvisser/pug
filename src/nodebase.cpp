@@ -508,6 +508,30 @@ NodeBase *NodeBase::rootBranch()
     return p;
 }
 
+QJSValue NodeBase::detail(int index, const QString arg1, const QString arg2,
+        const QString arg3, const QString arg4, const QString arg5)
+{
+    // access details[index]?.arg1?.arg2?.arg3?.arg4?.arg5? for each non-empty arg
+    QJSValue result = m_details.property(index);
+    if (!result.isUndefined() && !arg1.isEmpty()) {
+        result = result.property(arg1);
+        if (!result.isUndefined() && !arg2.isEmpty()) {
+            result = result.property(arg2);
+            if (!result.isUndefined() && !arg3.isEmpty()) {
+                result = result.property(arg3);
+                if (!result.isUndefined() && !arg4.isEmpty()) {
+                    result = result.property(arg4);
+                    if (!result.isUndefined() && !arg5.isEmpty()) {
+                        result = result.property(arg5);
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
 void NodeBase::addParam(const QString name)
 {
     Param *param = new Param(this);

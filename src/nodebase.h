@@ -58,6 +58,9 @@ public:
     const NodeBase *rootBranch() const;
     NodeBase *rootBranch();
 
+    Q_INVOKABLE QJSValue detail(int index, const QString arg1=QString(), const QString arg2=QString(),
+            const QString arg3=QString(), const QString arg4=QString(), const QString arg5=QString());
+
 signals:
     void paramsChanged();
     void nodesChanged();
