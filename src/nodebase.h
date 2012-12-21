@@ -76,6 +76,8 @@ protected:
     void addInput(const QString name);
     void addOutput(const QString name);
 
+    virtual void componentComplete();
+
 private:
     const NodeBase *nodeInChildren(const QString n) const;
     NodeBase *nodeInChildren(const QString n);

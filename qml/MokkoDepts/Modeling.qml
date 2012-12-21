@@ -25,9 +25,9 @@ Branch {
         }
         
         File {
-            id: releaseMaya
-            name: "releaseMaya"
-            pattern: "maya/{LOD}/{ASSET_TYPE}_{ASSET}_{DEPARTMENT}_{VARIATION}_{LOD}_v{VERSION}.mb"
+            id: releaseMayaMaster
+            name: "releaseMayaMaster"
+            pattern: "maya/master/bin/{ASSET}_{DEPARTMENT}_v{VERSION}.mb"
             ShotgunOperation.action: ShotgunOperation.Create
             
             ShotgunFile {
@@ -39,9 +39,9 @@ Branch {
         }
 
         File {
-            id: releaseZBrush
-            name: "releaseZBrush"
-            pattern: "zbrush/{ASSET_TYPE}_{ASSET}_{DEPARTMENT}_{VARIATION}_{LOD}_v{VERSION}.ztool"
+            id: releaseMayaLod
+            name: "releaseMayaLod"
+            pattern: "maya/{LOD}/bin/{ASSET}_{DEPARTMENT}_{LOD}_v{VERSION}.mb"
             ShotgunOperation.action: ShotgunOperation.Create
             
             ShotgunFile {
@@ -49,80 +49,83 @@ Branch {
                 release: release
                 user: node("/prod")
             }
-        }
-        
-        File {
-            id: releaseTurntableSeq
-            name: "releaseTurntableSeq"
-            pattern: "turntable/{LOD}/{ASSET_TYPE}_{ASSET}_{DEPARTMENT}_{VARIATION}_{LOD}_v{VERSION}.{FRAME}.{EXT}"
-            ShotgunOperation.action: ShotgunOperation.Create
             
-            ShotgunVersion {
-                project: node("/project")
-                entityType: "Asset"
-                entity: node("/asset")
-                release: release
-                user: node("/prod")
-                code: "{ASSET_TYPE}_{ASSET}_{STEP}_{VARIATION}_v{VERSION}"
-                thumbnail: makeThumbnail
-                filmstrip: makeFilmstrip
-            }
-        }            
-
-        File {
-            id: releaseTurntableMovie
-            name: "releaseTurntableMovie"
-            pattern: "turntable/{LOD}/{ASSET_TYPE}_{ASSET}_{DEPARTMENT}_{VARIATION}_{LOD}_v{VERSION}.{EXT}"
         }
+
+        // File {
+            // id: releaseTurntableSeq
+            // name: "releaseTurntableSeq"
+            // pattern: "turntable/{LOD}/{ASSET_TYPE}_{ASSET}_{DEPARTMENT}_{VARIATION}_{LOD}_v{VERSION}.{FRAME}.{EXT}"
+            // ShotgunOperation.action: ShotgunOperation.Create
+//             
+            // ShotgunVersion {
+                // project: node("/project")
+                // entityType: "Asset"
+                // entity: node("/asset")
+                // release: release
+                // user: node("/prod")
+                // code: "{ASSET_TYPE}_{ASSET}_{STEP}_{VARIATION}_v{VERSION}"
+                // thumbnail: makeThumbnail
+                // filmstrip: makeFilmstrip
+            // }
+        // }            
+// 
+        // File {
+            // id: releaseTurntableMovie
+            // name: "releaseTurntableMovie"
+            // pattern: "turntable/{LOD}/{ASSET_TYPE}_{ASSET}_{DEPARTMENT}_{VARIATION}_{LOD}_v{VERSION}.{EXT}"
+        // }
     }
     
     Branch {
         id: work
         name: "work"
         pattern: "work/{USER}/"
+
+        fields: Field { name: "FILENAME" }
         
         File {
-            id: workMaya
+            id: workMayaMaster
             pattern: "scenes/{FILENAME}.mb"
-            ReleaseOperation.target: releaseMaya 
+            ReleaseOperation.target: releaseMayaMaster 
             active: true
         }
 
-        File {
-            id: workZBrush
-            pattern: "zbrush/{FILENAME}.ztool"
-            ReleaseOperation.target: releaseMaya 
-            active: true
-        }
-
-        MakeTurntable {
-            id: makeTurntable
-            name: "makeTurntable"
-            scene: workMaya
-            ReleaseOperation.target: releaseTurntableSeq 
-            active: true
-        }
-
-        MakeThumbnail {
-            id: makeThumbnail
-            name: "makeThumbnail"
-            input: makeTurntable
-            active: true
-        }
-    
-        MakeThumbnail {
-            id: makeFilmstrip
-            name: "makeFilmstrip"
-            input: makeTurntable
-            filmstrip: true
+        SplitMayaModel {
+            id: workMayaLod
+            input: workMayaMaster
+            ReleaseOperation.target: releaseMayaLod 
             active: true
         }
         
-        MakeQuicktime {
-            id: makeMovie
-            name: "makeMovie"
-            input: makeTurntable
-            ReleaseOperation.target: releaseTurntableMovie 
-        }
+        // MakeTurntable {
+            // id: makeTurntable
+            // name: "makeTurntable"
+            // scene: workMayaLod
+            // ReleaseOperation.target: releaseTurntableSeq 
+            // active: true
+        // }
+// 
+        // MakeThumbnail {
+            // id: makeThumbnail
+            // name: "makeThumbnail"
+            // input: makeTurntable
+            // active: true
+        // }
+//     
+        // MakeThumbnail {
+            // id: makeFilmstrip
+            // name: "makeFilmstrip"
+            // input: makeTurntable
+            // filmstrip: true
+            // active: true
+        // }
+//         
+        // MakeQuicktime {
+            // id: makeMovie
+            // name: "makeMovie"
+            // input: makeTurntable
+            // ReleaseOperation.target: releaseTurntableMovie 
+        // }
     }
 }

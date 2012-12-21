@@ -6,7 +6,7 @@
 #include "process.h"
 
 Process::Process(QObject *parent) :
-    NodeBase(parent),
+    Node(parent),
     m_ignoreExitCode(false)
 {
     connect(this, &Process::cookAtIndex, this, &Process::onCookAtIndex);
@@ -66,6 +66,15 @@ void Process::setIgnoreExitCode(bool flag)
         m_ignoreExitCode = flag;
         emit ignoreExitCodeChanged(flag);
     }
+}
+
+const QString Process::stdout(int i) const
+{
+    if (i < m_processes.count() && m_processes.at(i) && m_processes[i]->state() == QProcess::NotRunning) {
+        return m_processes[i]->readAllStandardOutput();
+    }
+
+    return QString();
 }
 
 void Process::onCookAtIndex(int i, const QVariant context)

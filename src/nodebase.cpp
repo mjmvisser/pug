@@ -208,8 +208,6 @@ void NodeBase::setActive(bool flag)
 
 QJSValue NodeBase::details()
 {
-    if (m_details.isUndefined())
-         m_details = newArray();
     return m_details;
 }
 
@@ -452,25 +450,10 @@ int NodeBase::count() const
 
 void NodeBase::setCount(int count)
 {
-    if (m_details.isUndefined())
-         m_details = newArray(count);
-
-   if (m_count != count) {
+    if (m_count != count) {
         m_count = count;
-
-        bool detailsChangedFlag = false;
-
-        for (int i = m_details.property("length").toInt(); i < count; i++) {
-            m_details.setProperty(i, newObject());
-            detailsChangedFlag = true;
-        }
-
         emit countChanged(count);
-
-        if (detailsChangedFlag)
-            emit detailsChanged();
     }
-
 }
 
 int NodeBase::index() const
@@ -554,4 +537,9 @@ void NodeBase::addOutput(const QString name)
     output->setName(name);
     m_outputs.append(output);
     emit outputsChanged();
+}
+
+void NodeBase::componentComplete()
+{
+    m_details = newArray();
 }

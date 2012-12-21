@@ -190,6 +190,33 @@ void BranchBase::setPattern(const QString p)
     }
 }
 
+
+const Element *BranchBase::element(int index) const
+{
+    if (!details().property("length").isUndefined() && details().property("length").toInt() == 1) {
+        QJSValue detail = details().property(index);
+
+        if (detail.property("element").isQObject()) {
+            return qjsvalue_cast<Element *>(detail.property("element"));
+        }
+    }
+
+    return 0;
+}
+
+Element *BranchBase::element(int index)
+{
+    if (!details().property("length").isUndefined() && details().property("length").toInt() == 1) {
+        QJSValue detail = details().property(index);
+
+        if (detail.property("element").isQObject()) {
+            return qjsvalue_cast<Element *>(detail.property("element"));
+        }
+    }
+
+    return 0;
+}
+
 bool BranchBase::exactMatch() const
 {
     return m_exactMatchFlag;

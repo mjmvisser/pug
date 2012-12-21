@@ -3,7 +3,7 @@ import MokkoDepts 1.0
 import ShotgunEntities 1.0
 
 Root {
-    //logLevel: Log.Copious
+    logLevel: Log.Info
     
     Shotgun {
         id: shotgun

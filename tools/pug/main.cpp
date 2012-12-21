@@ -39,14 +39,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
         while (args.length() > 0) {
             QString arg = args.takeFirst();
 
-            if (arg == "-branch") {
-                QString path = args.takeFirst();
-                QFileInfo pathInfo(path);
-                if (pathInfo.isDir())
-                    path += "/";
-                branch = path;
-            } else if (arg == "-properties") {
-                while (!args.first().startsWith('-')) {
+            if (arg == "-properties") {
+                while (args.length() > 0 && !args.first().startsWith('-')) {
                     QString prop = args.takeFirst();
                     QStringList propParts = prop.split('=');
                     if (propParts.length() != 2) {
@@ -56,7 +50,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
                     }
                 }
             } else if (arg == "-context") {
-                while (!args.first().startsWith('-')) {
+                while (args.length() > 0 && !args.first().startsWith('-')) {
                     QString data = args.takeFirst();
                     QStringList dataParts = data.split('=');
                     if (dataParts.length() != 2) {
@@ -65,6 +59,12 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
                         extraData.insert(dataParts[0], dataParts[1]);
                     }
                 }
+            } else if (!arg.startsWith('-')) {
+                QString path = arg;
+                QFileInfo pathInfo(path);
+                if (pathInfo.isDir())
+                    path += "/";
+                branch = path;
             } else {
                 qWarning() << "Skipping unknown parameter:" << arg;
             }
@@ -74,6 +74,6 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 
         qDebug() << status;
     } else {
-        qDebug() << "usage:" << app.arguments()[0] << "COMMAND" << "[-branch PATH]" << "[-properties KEY=VALUE ...]" << "[-context KEY=VALUE ...]";
+        qDebug() << "usage:" << app.arguments()[0] << "COMMAND" << "[-properties KEY=VALUE ...]" << "[-context KEY=VALUE ...]" << "[PATH]";
     }
 }

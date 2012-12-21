@@ -9,7 +9,7 @@
 #include "node.h"
 #include "operation.h"
 
-class Process : public NodeBase
+class Process : public Node
 {
     Q_OBJECT
     Q_PROPERTY(QStringList argv READ argv WRITE setArgv NOTIFY argvChanged)
@@ -30,6 +30,8 @@ public:
 
     bool ignoreExitCode() const;
     void setIgnoreExitCode(bool);
+
+    Q_INVOKABLE const QString stdout(int index) const;
 
 signals:
     void argvChanged(const QStringList argv);
