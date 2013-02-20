@@ -16,12 +16,12 @@ VERSION = 1.0
 #LIBS += -L 3rdparty/qgetopts/lib -lqgetopts
 #INCLUDEPATH += 3rdparty/qgetopts/include
 
-INCLUDEPATH += operations shotgun
+INCLUDEPATH += operations shotgun tractor
 
 DEFINES += PUG_LIBRARY
 
-HEADERS += Pug *.h operations/*.h shotgun/*.h
-SOURCES += *.cpp operations/*.cpp shotgun/*.cpp
+HEADERS += Pug *.h operations/*.h shotgun/*.h tractor/*.h
+SOURCES += *.cpp operations/*.cpp shotgun/*.cpp tractor/*.cpp
 
 headers.path = ../include
 headers.files = $$HEADERS

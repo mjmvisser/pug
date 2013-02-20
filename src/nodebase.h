@@ -39,6 +39,8 @@ public:
     Q_INVOKABLE NodeBase* node(const QString node);
     const NodeBase* node(const QString node) const;
 
+    Q_INVOKABLE const QString path() const;
+
     const QList<NodeBase *> upstream();
     Q_INVOKABLE const QVariantList upstreamNodes();
     const QList<const NodeBase *> upstream() const;

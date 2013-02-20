@@ -364,6 +364,21 @@ const NodeBase *NodeBase::node(const QString n) const
     return 0;
 }
 
+const QString NodeBase::path() const
+{
+    QString path = objectName();
+    path.prepend("/");
+
+    const NodeBase *p = firstNamedParent();
+    while (p) {
+        path.prepend(p->objectName());
+        path.prepend("/");
+        p = p->firstNamedParent();
+    }
+
+    return path;
+}
+
 NodeBase *NodeBase::nodeInFirstNamedParent(const QString n)
 {
     NodeBase *p = firstNamedParent();

@@ -26,6 +26,11 @@
 #include "logger.h"
 #include "sudo.h"
 #include "nodemodel.h"
+#include "tractorblock.h"
+#include "tractorjob.h"
+#include "tractortask.h"
+#include "tractorcmd.h"
+#include "tractoroperation.h"
 
 #include "pugplugin.h"
 
@@ -72,4 +77,9 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<Log>(uri, 1, 0, "Log");
     qmlRegisterSingletonType<Util>(uri, 1, 0, "Util", Util_provider);
     qmlRegisterType<NodeModel>(uri, 1, 0, "NodeModel");
+    qmlRegisterType<TractorBlock>();
+    qmlRegisterType<TractorJob>(uri, 1, 0, "TractorJob");
+    qmlRegisterType<TractorTask>(uri, 1, 0, "TractorTask");
+    qmlRegisterType<TractorCmd>(uri, 1, 0, "TractorCmd");
+    qmlRegisterType<TractorOperation>(uri, 1, 0, "TractorOperation");
 }

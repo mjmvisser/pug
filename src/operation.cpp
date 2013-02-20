@@ -2,51 +2,62 @@
 #include "nodebase.h"
 
 OperationAttached::OperationAttached(QObject *parent) :
-        PugItem(parent), m_operation() {
+        PugItem(parent), m_operation()
+{
 }
 
-const QVariantMap OperationAttached::context() const {
+const QVariantMap OperationAttached::context() const
+{
     return m_context;
 }
 
-OperationAttached::Status OperationAttached::status() const {
+OperationAttached::Status OperationAttached::status() const
+{
     return m_status;
 }
 
-void OperationAttached::setStatus(OperationAttached::Status s) {
+void OperationAttached::setStatus(OperationAttached::Status s)
+{
     if (m_status != s) {
         m_status = s;
         emit statusChanged(s);
     }
 }
 
-const Operation *OperationAttached::operation() const {
+const Operation *OperationAttached::operation() const
+{
     return m_operation;
 }
 
-Operation *OperationAttached::operation() {
+Operation *OperationAttached::operation()
+{
     return m_operation;
 }
 
-const NodeBase* OperationAttached::node() const {
+const NodeBase* OperationAttached::node() const
+{
     return parent<NodeBase>();
 }
 
-NodeBase* OperationAttached::node() {
+NodeBase* OperationAttached::node()
+{
     return parent<NodeBase>();
 }
 
-void OperationAttached::resetStatus() {
+void OperationAttached::resetStatus()
+{
     debug() << "resetting status to" << OperationAttached::None;
     setStatus(OperationAttached::None);
 }
 
-void OperationAttached::reset() {
+void OperationAttached::reset()
+{
     debug() << "resetting status to" << OperationAttached::None;
     setStatus(OperationAttached::None);
 }
 
-OperationAttached::Status OperationAttached::inputsStatus() const {
+OperationAttached::Status OperationAttached::inputsStatus() const
+{
     OperationAttached::Status status = OperationAttached::Invalid;
 
     foreach (const NodeBase* input, node()->upstream()) {
@@ -59,7 +70,8 @@ OperationAttached::Status OperationAttached::inputsStatus() const {
     return status;
 }
 
-OperationAttached::Status OperationAttached::childrenStatus() const {
+OperationAttached::Status OperationAttached::childrenStatus() const
+{
     OperationAttached::Status status = OperationAttached::Invalid;
 
     foreach (QObject * o, node()->children())
@@ -77,11 +89,13 @@ OperationAttached::Status OperationAttached::childrenStatus() const {
     return status;
 }
 
-OperationAttached::Status OperationAttached::extraStatus() const {
+OperationAttached::Status OperationAttached::extraStatus() const
+{
     return OperationAttached::Invalid;
 }
 
-OperationAttached::Status OperationAttached::dependenciesStatus() const {
+OperationAttached::Status OperationAttached::dependenciesStatus() const
+{
     OperationAttached::Status status = OperationAttached::Invalid;
 
     OperationAttached::Status is = inputsStatus();
@@ -97,7 +111,8 @@ OperationAttached::Status OperationAttached::dependenciesStatus() const {
     return status;
 }
 
-void OperationAttached::resetInputsStatus() {
+void OperationAttached::resetInputsStatus()
+{
     // reset inputs
     foreach (NodeBase * input, node()->upstream())
     {
@@ -107,7 +122,8 @@ void OperationAttached::resetInputsStatus() {
     }
 }
 
-void OperationAttached::resetChildrenStatus() {
+void OperationAttached::resetChildrenStatus()
+{
     // reset children
     foreach (QObject * o, node()->children())
     {
@@ -120,10 +136,12 @@ void OperationAttached::resetChildrenStatus() {
     }
 }
 
-void OperationAttached::resetExtraStatus() {
+void OperationAttached::resetExtraStatus()
+{
 }
 
-void OperationAttached::resetAllStatus() {
+void OperationAttached::resetAllStatus()
+{
     // already reset?
     if (status() == OperationAttached::None)
         return;
@@ -138,7 +156,8 @@ void OperationAttached::resetAllStatus() {
     resetExtraStatus();
 }
 
-void OperationAttached::resetInputs() {
+void OperationAttached::resetInputs()
+{
     // reset inputs
     foreach (NodeBase * input, node()->upstream())
     {
@@ -148,7 +167,8 @@ void OperationAttached::resetInputs() {
     }
 }
 
-void OperationAttached::resetChildren() {
+void OperationAttached::resetChildren()
+{
     // reset children
     foreach (QObject * o, node()->children())
     {
@@ -161,10 +181,12 @@ void OperationAttached::resetChildren() {
     }
 }
 
-void OperationAttached::resetExtra() {
+void OperationAttached::resetExtra()
+{
 }
 
-void OperationAttached::resetAll() {
+void OperationAttached::resetAll()
+{
     // already reset?
     if (status() == OperationAttached::None)
         return;
@@ -179,7 +201,8 @@ void OperationAttached::resetAll() {
     resetExtra();
 }
 
-void OperationAttached::run(Operation *op, const QVariant context) {
+void OperationAttached::run(Operation *op, const QVariant context)
+{
     debug() << node() << ".run" << op;
     Q_ASSERT(op);
 
@@ -199,7 +222,8 @@ void OperationAttached::run(Operation *op, const QVariant context) {
     continueRunning();
 }
 
-void OperationAttached::continueRunning() {
+void OperationAttached::continueRunning()
+{
     Q_ASSERT(m_operation);
 
     debug() << node() << ".continueRunning";
@@ -290,14 +314,14 @@ void OperationAttached::continueRunning() {
     }
 }
 
-void OperationAttached::runInputs() {
+void OperationAttached::runInputs()
+{
     Q_ASSERT(m_operation);
 
     debug() << node() << "runInputs";
 
     // run inputs and connect their finished signal to ourself
-    foreach (NodeBase * input, node()->upstream())
-    {
+    foreach (NodeBase * input, node()->upstream()) {
         debug() << "got" << input;
         OperationAttached *inputAttached = input->attachedPropertiesObject
                 < OperationAttached > (operationMetaObject());
@@ -307,9 +331,9 @@ void OperationAttached::runInputs() {
         if (inputStatus == OperationAttached::None
                 || inputStatus == OperationAttached::Idle
                 || inputStatus == OperationAttached::Running) {
-connect        (inputAttached, SIGNAL(finished(OperationAttached *)),
-                this, SLOT(onInputFinished(OperationAttached *)));
-    }
+            connect(inputAttached, SIGNAL(finished(OperationAttached *)),
+                    this, SLOT(onInputFinished(OperationAttached *)));
+        }
 
         if (inputStatus == OperationAttached::None
                 || inputStatus == OperationAttached::Idle)
@@ -317,7 +341,8 @@ connect        (inputAttached, SIGNAL(finished(OperationAttached *)),
     }
 }
 
-void OperationAttached::runChildren() {
+void OperationAttached::runChildren()
+{
     Q_ASSERT(m_operation);
 
     debug() << node() << "runChildren";
@@ -336,9 +361,9 @@ void OperationAttached::runChildren() {
             if (childStatus == OperationAttached::None
                     || childStatus == OperationAttached::Idle
                     || childStatus == OperationAttached::Running) {
-connect            (childAttached, SIGNAL(finished(OperationAttached *)),
-                    this, SLOT(onChildFinished(OperationAttached *)));
-        }
+                connect(childAttached, SIGNAL(finished(OperationAttached *)),
+                        this, SLOT(onChildFinished(OperationAttached *)));
+            }
 
             if (childStatus == OperationAttached::None
                     || childStatus == OperationAttached::Idle)
@@ -347,10 +372,12 @@ connect            (childAttached, SIGNAL(finished(OperationAttached *)),
     }
 }
 
-void OperationAttached::runExtra() {
+void OperationAttached::runExtra()
+{
 }
 
-void OperationAttached::runDependencies() {
+void OperationAttached::runDependencies()
+{
     Q_ASSERT(m_operation);
     // TODO: check for cycles
 
@@ -358,7 +385,8 @@ void OperationAttached::runDependencies() {
     runExtra();
 }
 
-void OperationAttached::onInputFinished(OperationAttached *attached) {
+void OperationAttached::onInputFinished(OperationAttached *attached)
+{
     debug() << node() << operation() << ".onInputFinished" << attached->node();
     disconnect(attached, SIGNAL(finished(OperationAttached *)),
             this, SLOT(onInputFinished(OperationAttached *)));
@@ -366,7 +394,8 @@ void OperationAttached::onInputFinished(OperationAttached *attached) {
     continueRunning();
 }
 
-void OperationAttached::onChildFinished(OperationAttached *attached) {
+void OperationAttached::onChildFinished(OperationAttached *attached)
+{
     debug() << node() << operation() << ".onChildFinished" << attached->node();
     disconnect(attached, &OperationAttached::finished, this,
             &OperationAttached::onChildFinished);
@@ -374,7 +403,8 @@ void OperationAttached::onChildFinished(OperationAttached *attached) {
     continueRunning();
 }
 
-void OperationAttached::onExtraFinished(OperationAttached *attached) {
+void OperationAttached::onExtraFinished(OperationAttached *attached)
+{
     debug() << node() << operation() << ".onExtraFinished" << attached->node();
     disconnect(attached, SIGNAL(finished(OperationAttached *)),
             this, SLOT(onExtraFinished(OperationAttached *)));
@@ -383,24 +413,29 @@ void OperationAttached::onExtraFinished(OperationAttached *attached) {
 }
 
 Operation::Operation(QObject *parent) :
-        PugItem(parent), m_node(), m_status(OperationAttached::Invalid) {
+        PugItem(parent), m_node(), m_status(OperationAttached::Invalid)
+{
 }
 
-QQmlListProperty<PugItem> Operation::data_() {
+QQmlListProperty<PugItem> Operation::data_()
+{
     return QQmlListProperty<PugItem>(this, 0, Operation::data_append,
             Operation::data_count, Operation::data_at, Operation::data_clear);
 }
 
-QQmlListProperty<Operation> Operation::dependencies_() {
+QQmlListProperty<Operation> Operation::dependencies_()
+{
     return QQmlListProperty<Operation>(this, m_dependencies);
 }
 
-QQmlListProperty<Operation> Operation::triggers_() {
+QQmlListProperty<Operation> Operation::triggers_()
+{
     return QQmlListProperty<Operation>(this, m_triggers);
 }
 
 // data property
-void Operation::data_append(QQmlListProperty<PugItem> *prop, PugItem *item) {
+void Operation::data_append(QQmlListProperty<PugItem> *prop, PugItem *item)
+{
     if (!item)
         return;
 
@@ -409,33 +444,39 @@ void Operation::data_append(QQmlListProperty<PugItem> *prop, PugItem *item) {
     item->setParent(that);
 }
 
-int Operation::data_count(QQmlListProperty<PugItem> *prop) {
+int Operation::data_count(QQmlListProperty<PugItem> *prop)
+{
     Q_UNUSED(prop);
     return 0;
 }
 
-PugItem *Operation::data_at(QQmlListProperty<PugItem> *prop, int i) {
+PugItem *Operation::data_at(QQmlListProperty<PugItem> *prop, int i)
+{
     Q_UNUSED(prop);
     Q_UNUSED(i);
     return 0;
 }
 
-void Operation::data_clear(QQmlListProperty<PugItem> *prop) {
+void Operation::data_clear(QQmlListProperty<PugItem> *prop)
+{
     Q_UNUSED(prop)
 }
 
-OperationAttached::Status Operation::status() const {
+OperationAttached::Status Operation::status() const
+{
     return m_status;
 }
 
-void Operation::setStatus(OperationAttached::Status s) {
+void Operation::setStatus(OperationAttached::Status s)
+{
     if (m_status != s) {
         m_status = s;
         emit statusChanged(s);
     }
 }
 
-void Operation::resetAll(NodeBase *node) {
+void Operation::resetAll(NodeBase *node)
+{
     // TODO: cycle detection
 
     // reset dependencies
@@ -458,7 +499,8 @@ void Operation::resetAll(NodeBase *node) {
     }
 }
 
-void Operation::run(NodeBase *node, const QVariant context) {
+void Operation::run(NodeBase *node, const QVariant context)
+{
     if (!node)
         return;
 
@@ -471,7 +513,8 @@ void Operation::run(NodeBase *node, const QVariant context) {
     startRunning(node, context);
 }
 
-void Operation::startRunning(NodeBase *node, const QVariant context) {
+void Operation::startRunning(NodeBase *node, const QVariant context)
+{
     debug() << ".startRunning" << node;
     Q_ASSERT(node);
     Q_ASSERT(status() == OperationAttached::None);
@@ -483,7 +526,8 @@ void Operation::startRunning(NodeBase *node, const QVariant context) {
     continueRunning();
 }
 
-OperationAttached::Status Operation::dependenciesStatus() const {
+OperationAttached::Status Operation::dependenciesStatus() const
+{
     OperationAttached::Status status = OperationAttached::Invalid;
 
     foreach (Operation * op, m_dependencies)
@@ -497,7 +541,8 @@ OperationAttached::Status Operation::dependenciesStatus() const {
     return status;
 }
 
-void Operation::runDependencies() {
+void Operation::runDependencies()
+{
     debug() << ".runDependencies";
     // TODO: check for cycles in triggers and dependencies
 
@@ -516,7 +561,8 @@ void Operation::runDependencies() {
     }
 }
 
-OperationAttached::Status Operation::triggersStatus() const {
+OperationAttached::Status Operation::triggersStatus() const
+{
     OperationAttached::Status status = OperationAttached::Invalid;
 
     foreach (Operation * op, m_triggers)
@@ -530,7 +576,8 @@ OperationAttached::Status Operation::triggersStatus() const {
     return status;
 }
 
-void Operation::runTriggers() {
+void Operation::runTriggers()
+{
     debug() << ".runTriggers";
     // TODO: check for cycles in triggers and dependencies
 
@@ -547,7 +594,8 @@ void Operation::runTriggers() {
     }
 }
 
-void Operation::continueRunning() {
+void Operation::continueRunning()
+{
     debug() << ".continueRunning";
     OperationAttached::Status depStatus = dependenciesStatus();
 
@@ -661,7 +709,8 @@ void Operation::continueRunning() {
     }
 }
 
-void Operation::onDependencyFinished() {
+void Operation::onDependencyFinished()
+{
     Operation *op = qobject_cast<Operation *>(QObject::sender());
     debug() << "onDependencyFinished" << op;
     if (op) {
@@ -674,7 +723,8 @@ void Operation::onDependencyFinished() {
     }
 }
 
-void Operation::onTriggerFinished() {
+void Operation::onTriggerFinished()
+{
     Operation *op = qobject_cast<Operation *>(QObject::sender());
     debug() << "onTriggerFinished" << op;
     if (op) {
@@ -687,7 +737,8 @@ void Operation::onTriggerFinished() {
     }
 }
 
-void Operation::onFinished(OperationAttached *attached) {
+void Operation::onFinished(OperationAttached *attached)
+{
     debug() << attached << attached->node() << "finished";
     disconnect(attached, SIGNAL(finished(OperationAttached*)),
             this, SLOT(onFinished(OperationAttached*)));
