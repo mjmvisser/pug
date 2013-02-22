@@ -25,6 +25,7 @@
 #include "util.h"
 #include "logger.h"
 #include "sudo.h"
+#include "nodemodel.h"
 
 #include "pugplugin.h"
 
@@ -46,7 +47,7 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<Input>(uri, 1, 0, "Input");
     qmlRegisterType<Output>(uri, 1, 0, "Output");
     qmlRegisterType<Param>(uri, 1, 0, "Param");
-    qmlRegisterType<NodeBase>();
+    qmlRegisterType<NodeBase>(uri, 1, 0, "NodeBase");
     qmlRegisterType<Node>(uri, 1, 0, "Node");
     qmlRegisterType<Field>(uri, 1, 0, "Field");
     qmlRegisterType<BranchBase>();
@@ -70,4 +71,5 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<FileOpQueue>(uri, 1, 0, "FileOpQueue");
     qmlRegisterType<Log>(uri, 1, 0, "Log");
     qmlRegisterSingletonType<Util>(uri, 1, 0, "Util", Util_provider);
+    qmlRegisterType<NodeModel>(uri, 1, 0, "NodeModel");
 }

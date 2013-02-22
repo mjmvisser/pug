@@ -1,0 +1,5 @@
+module PugUI
+GraphNode 1.0 GraphNode.qml
+Connection 1.0 Connection.qml
+NodeGraphView 1.0 NodeGraphView.qml
+MainWindow 1.0 MainWindow.qml

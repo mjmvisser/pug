@@ -9,7 +9,9 @@ NodeBase::NodeBase(QObject *parent) :
     PugItem(parent),
     m_activeFlag(false),
     m_count(0),
-    m_index(-1)
+    m_index(-1),
+    m_x(0),
+    m_y(0)
 {
 }
 
@@ -216,6 +218,50 @@ const QJSValue NodeBase::details() const
     return m_details;
 }
 
+int NodeBase::childIndex() const
+{
+    const NodeBase *p = parent<NodeBase>();
+    if (p) {
+        int index = 0;
+        foreach (const QObject *o, p->children()) {
+            const NodeBase *child = qobject_cast<const NodeBase *>(o);
+            if (child) {
+                if (child == this)
+                    return index;
+                index++;
+            }
+        }
+    }
+
+    return -1;
+}
+
+NodeBase *NodeBase::child(int i)
+{
+    int index = 0;
+    foreach (QObject *o, children()) {
+        NodeBase *child = qobject_cast<NodeBase *>(o);
+        if (child) {
+            if (index == i)
+                return child;
+            index++;
+        }
+    }
+    return 0;
+}
+
+int NodeBase::childCount() const
+{
+    int count = 0;
+    foreach (QObject *o, children()) {
+        NodeBase *child = qobject_cast<NodeBase *>(o);
+        if (child) {
+            count++;
+        }
+    }
+    return count;
+}
+
 NodeBase *NodeBase::firstNamedParent()
 {
     NodeBase *p = parent<NodeBase>();
@@ -386,6 +432,26 @@ const QList<const NodeBase *> NodeBase::upstream() const
     return result;
 }
 
+const QVariantList NodeBase::upstreamNodes()
+{
+    copious() << ".upstream";
+    QVariantList result;
+    // loop through inputs and find upstream nodes
+    foreach (const Input *in, m_inputs) {
+        if (hasProperty(in->name().toUtf8())) {
+            QVariant v = QObject::property(in->name().toUtf8());
+            if (v.canConvert<NodeBase *>()) {
+                NodeBase *input = v.value<NodeBase*>();
+                if (input) {
+                    result.append(QVariant::fromValue(input));
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
 const QList<NodeBase *> NodeBase::upstream()
 {
     copious() << ".upstream";
@@ -416,6 +482,22 @@ const QList<NodeBase *> NodeBase::downstream()
             NodeBase *n = qobject_cast<NodeBase*>(o);
             if (n && n->upstream().contains(this))
                 result.append(n);
+        }
+    }
+
+    return result;
+}
+
+const QVariantList NodeBase::downstreamNodes()
+{
+    QVariantList result;
+
+    if (parent<NodeBase>()) {
+        // loop through siblings params and find inputs
+        foreach (QObject *o, QObject::parent()->children()) {
+            NodeBase *n = qobject_cast<NodeBase*>(o);
+            if (n && n->upstream().contains(this))
+                result.append(QVariant::fromValue(n));
         }
     }
 
@@ -542,4 +624,30 @@ void NodeBase::addOutput(const QString name)
 void NodeBase::componentComplete()
 {
     m_details = newArray();
+}
+
+qreal NodeBase::x() const
+{
+    return m_x;
+}
+
+void NodeBase::setX(qreal x)
+{
+    if (m_x != x) {
+        m_x = x;
+        emit xChanged(x);
+    }
+}
+
+qreal NodeBase::y() const
+{
+    return m_y;
+}
+
+void NodeBase::setY(qreal y)
+{
+    if (m_y != y) {
+        m_y = y;
+        emit yChanged(y);
+    }
 }

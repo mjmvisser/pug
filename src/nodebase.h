@@ -23,6 +23,8 @@ class NodeBase : public PugItem
     Q_PROPERTY(QJSValue details READ details NOTIFY detailsChanged)
     Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(int index READ index WRITE setIndex NOTIFY indexChanged)
+    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
+    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
 public:
     explicit NodeBase(QObject *parent = 0);
 
@@ -38,9 +40,11 @@ public:
     const NodeBase* node(const QString node) const;
 
     const QList<NodeBase *> upstream();
+    Q_INVOKABLE const QVariantList upstreamNodes();
     const QList<const NodeBase *> upstream() const;
 
     const QList<NodeBase *> downstream();
+    Q_INVOKABLE const QVariantList downstreamNodes();
     const QList<const NodeBase *> downstream() const;
 
     // TODO: not sure if this is the best way
@@ -61,6 +65,15 @@ public:
     Q_INVOKABLE QJSValue detail(int index, const QString arg1=QString(), const QString arg2=QString(),
             const QString arg3=QString(), const QString arg4=QString(), const QString arg5=QString());
 
+    Q_INVOKABLE int childIndex() const;
+    NodeBase *child(int index);
+    int childCount() const;
+
+    qreal x() const;
+    void setX(qreal);
+    qreal y() const;
+    void setY(qreal);
+
 signals:
     void paramsChanged();
     void nodesChanged();
@@ -70,6 +83,8 @@ signals:
     void detailsChanged();
     void countChanged(int index);
     void indexChanged(int index);
+    void xChanged(qreal x);
+    void yChanged(qreal y);
 
 protected:
     void addParam(const QString name);
@@ -119,6 +134,7 @@ private:
     QJSValue m_details;
     int m_count;
     int m_index;
+    qreal m_x, m_y; // should this be QVector2D? does it matter?
 };
 
 Q_DECLARE_METATYPE(NodeBase*) // makes available to QVariant
