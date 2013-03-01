@@ -356,3 +356,24 @@ const QRegularExpression Element::regExpFromPattern(const QString pattern)
 
     return QRegularExpression(regExpStr);
 }
+
+QDataStream &operator<<(QDataStream &stream, const Element *element)
+{
+    stream << element->pattern();
+    stream << element->frames();
+
+    return stream;
+}
+
+QDataStream &operator>>(QDataStream &stream, Element *element)
+{
+    QString pattern;
+    stream >> pattern;
+    element->setPattern(pattern);
+
+    QVariant frames;
+    stream >> frames;
+    element->setFrames(frames);
+
+    return stream;
+}

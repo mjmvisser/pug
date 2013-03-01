@@ -33,7 +33,13 @@ protected:
     virtual const QMetaObject *operationMetaObject() const;
 
 private:
+    void generateTask();
+    void executeTask();
     TractorOperationAttached *parentAttached();
+
+    const QString tractorDataPath() const;
+    void readTractorData(const QString &dataPath);
+    void writeTractorData(const QString &dataPath);
 
     QString m_serviceKey;
     bool m_serialSubtasksFlag;
@@ -43,10 +49,17 @@ private:
 class TractorOperation : public Operation
 {
     Q_OBJECT
+    Q_PROPERTY(Mode mode READ mode WRITE setMode NOTIFY modeChanged)
     Q_PROPERTY(Operation *target READ target WRITE setTarget NOTIFY targetChanged)
     Q_PROPERTY(TractorJob *tractorJob READ tractorJob NOTIFY tractorJobChanged)
+    Q_ENUMS(Mode)
 public:
+    enum Mode { Submit, Execute };
+
     explicit TractorOperation(QObject *parent = 0);
+
+    Mode mode() const;
+    void setMode(Mode);
 
     Operation *target();
     const Operation *target() const;
@@ -59,6 +72,7 @@ public:
     static TractorOperationAttached *qmlAttachedProperties(QObject *);
 
 signals:
+    void modeChanged(Mode mode);
     void targetChanged(Operation *target);
     void tractorJobChanged(TractorJob *tractorJob);
 
@@ -66,6 +80,7 @@ protected:
     TractorJob *buildTractorJob(NodeBase *node, const QVariant context);
 
 private:
+    Mode m_mode;
     Operation *m_target;
     TractorJob *m_tractorJob;
 };

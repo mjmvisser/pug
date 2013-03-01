@@ -2,7 +2,7 @@ import Pug 1.0
 
 Process {
     id: self
-    count: input.details.length
+    count: input !== null ? input.numDetails() : 0
     property var input
 
     onDetailsChanged: {

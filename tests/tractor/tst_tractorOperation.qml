@@ -17,13 +17,9 @@ PugTestCase {
         Util.remove(tmpDir + "tractortests/abc/foo/work/baa.txt");
         Util.remove(tmpDir + "tractortests/abc/foo/work/bar.txt");
         Util.remove(tmpDir + "tractortests/abc/foo/work/baz.txt");
-        Util.remove(tmpDir + "tractortests/abc/foo/work/temp/temp_baa.txt");
-        Util.remove(tmpDir + "tractortests/abc/foo/work/temp/temp_bar.txt");
-        Util.remove(tmpDir + "tractortests/abc/foo/work/temp/temp_baz.txt");
         Util.remove(tmpDir + "tractortests/abc/foo/work/cooked/baa.txt");
         Util.remove(tmpDir + "tractortests/abc/foo/work/cooked/bar.txt");
         Util.remove(tmpDir + "tractortests/abc/foo/work/cooked/baz.txt");
-        Util.rmdir(tmpDir + "tractortests/abc/foo/work/temp");
         Util.rmdir(tmpDir + "tractortests/abc/foo/work/cooked");
         Util.rmdir(tmpDir + "tractortests/abc/foo/work");
         Util.rmdir(tmpDir + "tractortests/abc/foo");
@@ -33,6 +29,7 @@ PugTestCase {
 
     Root {
         id: root
+        logLevel: Log.Debug
 
         operations: [
             UpdateOperation {
@@ -80,51 +77,11 @@ PugTestCase {
                     pattern: "{FILENAME}"
                 }
 
-                Node {
-                    id: copier
-                    name: "copier"
-                    count: input ? input.details.length : 0
-                    
-                    property var input: workFile
-
-                    inputs: Input { name: "input" }
-
-                    signal cookAtIndex(int index, var context)
-                    signal cookedAtIndex(int index, int status)
-                    
-                    onCookAtIndex: {
-                        debug("onCookAtIndex");
-                        
-                        debug("input is " + copier.input);
-                        debug("index is " + index);
-                        debug("input.details[index].element is " + copier.input.details[index].element);
-                        debug("input.details[index].element.path is " + copier.input.details[index].element.path);
-                        debug("input.details[index].context " + JSON.stringify(copier.input.details[index].context));
-                        debug("input.count is " + input.count);
-                        debug("count is " + count);
-                        var inputPath = copier.input.details[index].element.path;
-                        var outputDir = copier.input.details[index].element.directory + "temp/";
-                        var outputPath = outputDir + "temp_" + copier.input.details[index].element.baseName + "." + copier.input.details[index].element.extension;
-
-                        debug("--- creating " + outputPath + " from " + inputPath);
-                        if (!Util.exists(outputDir))
-                            Util.mkpath(outputDir);
-                        Util.copy(inputPath, outputPath);
-                        
-                        var newElement = Util.newElement();
-                        newElement.pattern = outputPath;
-                        
-                        details[index] = {"element": newElement, "context": copier.input.details[index].context};
-                        detailsChanged();
-                        cookedAtIndex(index, Operation.Finished);
-                    }
-                }
-                
                 File {
                     id: cookFile
                     name: "cookFile"
                     pattern: "cooked/{FILENAME}"
-                    input: copier
+                    input: workFile
                 }
             }
         }
@@ -142,14 +99,31 @@ PugTestCase {
         signalName: "finished"
     }
 
-    function test_tractorOperation() {
+    function test_tractorOperationGenerate() {
         var foo;
         var context = {ROOT: tmpDir, FOO: "foo", TITLE: "title of record"};
 
+        tractor.mode = TractorOperation.Submit;
+        
         tractor.run(cookFile, context);
         tractorSpy.wait(1000);
         compare(update.status, Operation.Finished);
         compare(tractor.status, Operation.Finished);
-        console.log(tractor.tractorJob.asString());
+        var tractor_data_dir = tractor.tractorJob.asString().match(/TRACTOR_DATA_DIR=([^ ]*)/)[1];
+        verify(tractor_data_dir);
+    }
+    
+    function test_tractorOperationExecute() {
+        var foo;
+        var context = {ROOT: tmpDir, 
+                       FOO: "foo", TITLE: "title of record",
+                       TRACTOR_DATA_DIR: tmpDir};
+
+        tractor.mode = TractorOperation.Execute;
+                
+        tractor.run(cookFile, context);
+        tractorSpy.wait(1000);
+        compare(update.status, Operation.Finished);
+        compare(tractor.status, Operation.Finished);
     }
 }

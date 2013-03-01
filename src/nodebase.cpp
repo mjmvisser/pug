@@ -218,6 +218,22 @@ const QJSValue NodeBase::details() const
     return m_details;
 }
 
+void NodeBase::setDetails(const QJSValue &details)
+{
+    if (!m_details.strictlyEquals(details)) {
+        m_details = details;
+        emit detailsChanged();
+    }
+}
+
+int NodeBase::numDetails() const
+{
+    if (m_details.isArray())
+        return m_details.property("length").toInt();
+    else
+        return 0;
+}
+
 int NodeBase::childIndex() const
 {
     const NodeBase *p = parent<NodeBase>();

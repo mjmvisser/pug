@@ -12,12 +12,12 @@
 class PugItem : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
-    Q_PROPERTY(QQmlListProperty<PugItem> data READ data_ CONSTANT)
-    Q_PROPERTY(PugItem* parent READ parentItem CONSTANT)
+    Q_PROPERTY(QQmlListProperty<PugItem> data READ data_ STORED false CONSTANT)
+    Q_PROPERTY(PugItem* parent READ parentItem STORED false CONSTANT)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
-    Q_PROPERTY(QString className READ className CONSTANT FINAL)
-    Q_PROPERTY(Log::MessageType logLevel READ logLevel WRITE setLogLevel NOTIFY logLevelChanged)
-    Q_PROPERTY(Log log READ log CONSTANT)
+    Q_PROPERTY(QString className READ className STORED false CONSTANT FINAL)
+    Q_PROPERTY(Log::MessageType logLevel READ logLevel WRITE setLogLevel NOTIFY logLevelChanged STORED false)
+    Q_PROPERTY(Log log READ log STORED false CONSTANT)
     Q_INTERFACES(QQmlParserStatus)
     Q_CLASSINFO("DefaultProperty", "data")
     Q_ENUMS(Log::MessageType)

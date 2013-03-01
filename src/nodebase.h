@@ -60,6 +60,9 @@ public:
 
     QJSValue details();
     const QJSValue details() const;
+    void setDetails(const QJSValue &);
+
+    Q_INVOKABLE int numDetails() const;
 
     const NodeBase *rootBranch() const;
     NodeBase *rootBranch();

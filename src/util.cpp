@@ -56,7 +56,7 @@ bool Util::copy(const QString src, const QString dest)
     return QFile::copy(src, dest);
 }
 
-Element *Util::newElement()
+Element *Util::element()
 {
     return new Element;
 }

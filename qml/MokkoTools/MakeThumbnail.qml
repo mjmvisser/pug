@@ -3,7 +3,7 @@ import Pug 1.0
 
 Process {
     id: self
-    count: input !== null ? input.details.length : 0
+    count: input !== null ? input.numDetails() : 0
 
     property var input
     property bool filmstrip: false 

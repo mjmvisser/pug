@@ -19,7 +19,7 @@ public:
     Q_INVOKABLE bool touch(const QString path);
     Q_INVOKABLE bool remove(const QString path);
     Q_INVOKABLE bool copy(const QString src, const QString dest);
-    Q_INVOKABLE Element *newElement();
+    Q_INVOKABLE Element *element();
 };
 
 #endif
