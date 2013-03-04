@@ -1,6 +1,8 @@
 #ifndef TRACTOROPERATION_H
 #define TRACTOROPERATION_H
 
+#include <QDataStream>
+
 #include "operation.h"
 #include "tractorjob.h"
 #include "tractortask.h"
@@ -29,17 +31,26 @@ signals:
     void serialSubtasksChanged(bool serialSubtasks);
     void tractorTaskChanged();
 
+protected slots:
+    void onTargetFinished(OperationAttached::Status status);
+
 protected:
     virtual const QMetaObject *operationMetaObject() const;
 
 private:
     void generateTask();
     void executeTask();
+    void cleanupTask();
+
     TractorOperationAttached *parentAttached();
 
     const QString tractorDataPath() const;
+
+    void writeTractorData(const QString &dataPath) const;
+    void writeTractorAttachedStatuses(QDataStream &stream, const Operation *operation) const;
+
     void readTractorData(const QString &dataPath);
-    void writeTractorData(const QString &dataPath);
+    void readTractorAttachedStatuses(QDataStream &stream, Operation *operation);
 
     QString m_serviceKey;
     bool m_serialSubtasksFlag;
@@ -54,7 +65,7 @@ class TractorOperation : public Operation
     Q_PROPERTY(TractorJob *tractorJob READ tractorJob NOTIFY tractorJobChanged)
     Q_ENUMS(Mode)
 public:
-    enum Mode { Submit, Execute };
+    enum Mode { Submit, Execute, Cleanup };
 
     explicit TractorOperation(QObject *parent = 0);
 
@@ -67,7 +78,7 @@ public:
 
     TractorJob *tractorJob();
 
-    Q_INVOKABLE virtual void run(NodeBase *node, const QVariant context);
+    Q_INVOKABLE virtual void run(NodeBase *node, const QVariant context, bool reset=true);
 
     static TractorOperationAttached *qmlAttachedProperties(QObject *);
 

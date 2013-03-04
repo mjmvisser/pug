@@ -58,15 +58,17 @@ void TractorOperationAttached::setSerialSubtasks(bool flag)
 
 void TractorOperationAttached::run()
 {
-    debug() << this << node() << operation() << ".run";
+    debug() << node() << operation() << ".run";
 
-    switch(qobject_cast<TractorOperation *>(operation())->mode()) {
+    switch(operation<TractorOperation>()->mode()) {
     case TractorOperation::Submit:
         generateTask();
         break;
     case TractorOperation::Execute:
         executeTask();
         break;
+    case TractorOperation::Cleanup:
+        cleanupTask();
     }
 
     continueRunning();
@@ -74,7 +76,7 @@ void TractorOperationAttached::run()
 
 void TractorOperationAttached::generateTask()
 {
-    debug() << this << node() << operation() << ".generateTask";
+    debug() << node() << operation() << ".generateTask";
 
     // build the task
     // connect it up to our parent (which we can safely assume is complete)
@@ -118,33 +120,61 @@ void TractorOperationAttached::generateTask()
 
 void TractorOperationAttached::executeTask()
 {
-    debug() << this << node() << operation() << ".executeTask";
+    debug() << node() << operation() << ".executeTask";
 
-    Operation *targetOperation = qobject_cast<TractorOperation *>(operation())->target();
+    Operation *targetOperation = operation<TractorOperation>()->target();
     OperationAttached *targetAttached = node()->attachedPropertiesObject<OperationAttached>(targetOperation->metaObject());
 
-    Q_ASSERT(targetOperation);
+    if (node() == operation()->node()) {
+        Q_ASSERT(targetOperation);
 
-    // read data for each input
-    foreach(NodeBase *input, node()->upstream()) {
-        TractorOperationAttached *inputAttached = input->attachedPropertiesObject<TractorOperationAttached>(operation()->metaObject());
-        Q_ASSERT(inputAttached);
+        connect(targetOperation, SIGNAL(finished(OperationAttached::Status)),
+                this, SLOT(onTargetFinished(OperationAttached::Status)));
 
-        inputAttached->readTractorData(tractorDataPath());
+        targetOperation->run(node(), context(), false);
     }
+    else {
+        // we're an input of the run node
+        readTractorData(tractorDataPath());
 
-    targetOperation->run(node(), context());
+        setStatus(targetAttached->status());
+    }
+}
+
+void TractorOperationAttached::cleanupTask()
+{
+    debug() << node() << operation() << ".cleanupTask";
+    bool success = QFile::remove(tractorDataPath());
+    if (!success) {
+        warning() << node() << operation() << "Unable to remove file: " << tractorDataPath();
+    }
+    setStatus(OperationAttached::Finished);
+}
+
+void TractorOperationAttached::onTargetFinished(OperationAttached::Status status)
+{
+    Operation *targetOperation = operation<TractorOperation>()->target();
+    OperationAttached *targetAttached = node()->attachedPropertiesObject<OperationAttached>(targetOperation->metaObject());
+
+    debug() << node() << operation() << ".onTargetFinished" << targetOperation << status;
+
+    disconnect(targetOperation, SIGNAL(finished(OperationAttached::Status)),
+               this, SLOT(onTargetFinished(OperationAttached::Status)));
 
     // write this node's data
     writeTractorData(tractorDataPath());
 
     setStatus(targetAttached->status());
+
+    // continue cooking
+    continueRunning();
 }
 
-void TractorOperationAttached::writeTractorData(const QString &dataPath)
+void TractorOperationAttached::writeTractorData(const QString &dataPath) const
 {
-    Operation *targetOperation = qobject_cast<TractorOperation *>(operation())->target();
-    OperationAttached *targetAttached = node()->attachedPropertiesObject<OperationAttached>(targetOperation->metaObject());
+    debug() << node() << "writing tractor data to" << dataPath;
+
+    const Operation *targetOperation = operation<TractorOperation>()->target();
 
     QFile file(dataPath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -156,16 +186,35 @@ void TractorOperationAttached::writeTractorData(const QString &dataPath)
     Q_ASSERT(context);
     JSDataStream out(context->engine(), &file);
 
-    // write details and status to data dir
+    // write details and statuses to data dir
     out << node()->details();
-    // need to downcast here to prevent QJSValue(int)
-    static_cast<QDataStream&>(out) << static_cast<int>(targetAttached->status());
+
+    writeTractorAttachedStatuses(out, targetOperation);
+}
+
+void TractorOperationAttached::writeTractorAttachedStatuses(QDataStream &stream, const Operation *operation) const
+{
+    // write dependency statuses
+    foreach(const Operation *dep, operation->dependencies()) {
+        writeTractorAttachedStatuses(stream, dep);
+    }
+
+    // write own status
+    const OperationAttached *attached = node()->attachedPropertiesObject<OperationAttached>(operation->metaObject());
+    Q_ASSERT(attached->status() != OperationAttached::Invalid);
+    stream << static_cast<int>(attached->status());
+
+    // write trigger statuses
+    foreach(const Operation *trig, operation->triggers()) {
+        writeTractorAttachedStatuses(stream, trig);
+    }
 }
 
 void TractorOperationAttached::readTractorData(const QString &dataPath)
 {
-    Operation *targetOperation = qobject_cast<TractorOperation *>(operation())->target();
-    OperationAttached *targetAttached = node()->attachedPropertiesObject<OperationAttached>(targetOperation->metaObject());
+    debug() << node() << "reading tractor data from" << dataPath;
+
+    Operation *targetOperation = operation<TractorOperation>()->target();
 
     Q_ASSERT(targetOperation);
 
@@ -181,16 +230,35 @@ void TractorOperationAttached::readTractorData(const QString &dataPath)
     JSDataStream in(context->engine(), &file);
 
     QJSValue details;
-    int status;
     in >> details;
-    // need to downcast here to prevent QJSValue(int)
-    static_cast<QDataStream&>(in) >> status;
+    node()->setDetails(details);
 
     // TODO: error handling
 
-    node()->setDetails(details);
-    targetAttached->setStatus(static_cast<OperationAttached::Status>(status));
-    setStatus(static_cast<OperationAttached::Status>(status));
+    readTractorAttachedStatuses(in, targetOperation);
+
+    Q_ASSERT(in.atEnd());
+}
+
+void TractorOperationAttached::readTractorAttachedStatuses(QDataStream &stream, Operation *operation)
+{
+    // read dependency statuses
+    foreach(Operation *dep, operation->dependencies()) {
+        readTractorAttachedStatuses(stream, dep);
+    }
+
+    // read own status
+    OperationAttached *attached = node()->attachedPropertiesObject<OperationAttached>(operation->metaObject());
+
+    int status;
+    stream >> status;
+    attached->setStatus(static_cast<OperationAttached::Status>(status));
+    Q_ASSERT(static_cast<OperationAttached::Status>(status) != OperationAttached::Invalid);
+
+    // read trigger statuses
+    foreach(Operation *trig, operation->triggers()) {
+        readTractorAttachedStatuses(stream, trig);
+    }
 }
 
 const QString TractorOperationAttached::tractorDataPath() const
@@ -250,9 +318,10 @@ TractorJob *TractorOperation::tractorJob()
     return m_tractorJob;
 }
 
-void TractorOperation::run(NodeBase *node, const QVariant context)
+void TractorOperation::run(NodeBase *node, const QVariant context, bool reset)
 {
-    Operation::run(node, context);
+    m_target->resetAll(node);
+    Operation::run(node, context, reset);
 
     if (m_mode == TractorOperation::Submit) {
         m_tractorJob = buildTractorJob(node, context);
