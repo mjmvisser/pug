@@ -8,9 +8,9 @@
 
 enum jsvalueType { UNDEFINED_VALUE, NULL_VALUE, BOOLEAN, NUMBER, STRING, OBJECT, ARRAY, DATE, VARIANT, QOBJECT };
 
-int numKeys(const QJSValue& jsvalue)
+quint32 numKeys(const QJSValue& jsvalue)
 {
-    int n = 0;
+    quint32 n = 0;
     QJSValueIterator it(jsvalue);
     while (it.hasNext()) {
         it.next();
@@ -19,8 +19,12 @@ int numKeys(const QJSValue& jsvalue)
     return n;
 }
 
+static const quint32 MAGIC = 0xdeadbeef;
+
 JSDataStream& operator<<(JSDataStream &stream, const QJSValue& jsvalue)
 {
+    static_cast<QDataStream &>(stream) << MAGIC;
+
     if (jsvalue.isUndefined()) {
         static_cast<QDataStream &>(stream) << static_cast<int>(UNDEFINED_VALUE);
     } else if (jsvalue.isNull()) {
@@ -34,7 +38,7 @@ JSDataStream& operator<<(JSDataStream &stream, const QJSValue& jsvalue)
     } else if (jsvalue.isDate()) {
         static_cast<QDataStream &>(stream) << static_cast<int>(DATE) << jsvalue.toDateTime();
     } else if (jsvalue.isArray()) {
-        quint32 length = qjsvalue_cast<int>(jsvalue.property("length"));
+        quint32 length = qjsvalue_cast<quint32>(jsvalue.property("length"));
         static_cast<QDataStream &>(stream) << static_cast<int>(ARRAY) << length;
         for (quint32 i = 0; i < length; i++) {
             stream << jsvalue.property(i);
@@ -45,7 +49,8 @@ JSDataStream& operator<<(JSDataStream &stream, const QJSValue& jsvalue)
         static_cast<QDataStream &>(stream) << static_cast<int>(VARIANT) << jsvalue.toVariant();
     } else if (jsvalue.isQObject()) {
         const QObject *obj = jsvalue.toQObject();
-        static_cast<QDataStream &>(stream) << static_cast<int>(QOBJECT) << obj->metaObject()->className();
+        QString className = obj->metaObject()->className();
+        static_cast<QDataStream &>(stream) << static_cast<int>(QOBJECT) << className;
         static_cast<QDataStream &>(stream) << *obj;
     } else if (jsvalue.isObject()) {
         static_cast<QDataStream &>(stream) << static_cast<int>(OBJECT) << numKeys(jsvalue);
@@ -66,6 +71,10 @@ JSDataStream& operator<<(JSDataStream &stream, const QJSValue& jsvalue)
 JSDataStream& operator>>(JSDataStream &stream, QJSValue &jsvalue)
 {
     Q_ASSERT(stream.m_engine);
+
+    quint32 magic;
+    stream >> magic;
+    Q_ASSERT(magic == MAGIC);
 
     int type;
     stream >> type;
@@ -90,20 +99,22 @@ JSDataStream& operator>>(JSDataStream &stream, QJSValue &jsvalue)
         stream >> value;
         jsvalue = stream.m_engine->toScriptValue(value);
     } else if (type == ARRAY) {
-        int l;
+        quint32 l;
         stream >> l;
         jsvalue = stream.m_engine->newArray(l);
 
-        for (int i = 0; i < l; i++) {
+        for (quint32 i = 0; i < l; i++) {
             QJSValue value;
             stream >> value;
+            jsvalue.setProperty(i, value);
         }
     } else if (type == OBJECT) {
-        int n;
+        quint32 n;
         stream >> n;
         jsvalue = stream.m_engine->newObject();
-        for(int i = 0; i < n; i++) {
-            QString key, value;
+        for(quint32 i = 0; i < n; i++) {
+            QString key;
+            QJSValue value;
             stream >> key;
             stream >> value;
             jsvalue.setProperty(key, value);
@@ -116,6 +127,7 @@ JSDataStream& operator>>(JSDataStream &stream, QJSValue &jsvalue)
         QString className;
         stream >> className;
         int id = QMetaType::type(className.toUtf8().data());
+        Q_ASSERT(id != QMetaType::UnknownType);
         if (id != QMetaType::UnknownType) {
             QObject *obj = static_cast<QObject *>(QMetaType::create(id));
             if (obj) {
@@ -176,5 +188,6 @@ QDataStream &operator>>(QDataStream &stream, QObject &obj) {
             }
         }
     }
+
     return stream;
 }
