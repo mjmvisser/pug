@@ -76,6 +76,7 @@ protected:
     void runInputs();
     void runChildren();
     virtual void runExtra();
+
     void runDependencies();
 
     void continueRunning();
@@ -152,12 +153,21 @@ public:
     QQmlListProperty<Operation> dependencies_();
     QQmlListProperty<Operation> triggers_();
 
+    const QList<const Operation *>& dependencies() const;
+    const QList<Operation *>& dependencies();
+    const QList<const Operation *>& triggers() const;
+    const QList<Operation *>& triggers();
+
     OperationAttached::Status status() const;
     void setStatus(OperationAttached::Status);
 
-    Q_INVOKABLE virtual void run(NodeBase *node, const QVariant context);
+    void resetAll(NodeBase *node);
+    Q_INVOKABLE virtual void run(NodeBase *node, const QVariant context, bool reset=true);
 
     //static OperationAttached *qmlAttachedProperties(QObject *); // must be defined in subclasses
+
+    NodeBase *node();
+    const NodeBase *node() const;
 
 signals:
     void dataChanged();
@@ -172,8 +182,6 @@ protected slots:
     void onFinished(OperationAttached *);
 
 protected:
-    void resetAll(NodeBase *node);
-
     void startRunning(NodeBase *node, const QVariant context);
     void continueRunning();
 

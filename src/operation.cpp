@@ -78,8 +78,7 @@ OperationAttached::Status OperationAttached::childrenStatus() const
     {
         NodeBase *child = qobject_cast<NodeBase *>(o);
         if (child && child->isActive()) {
-            OperationAttached *childAttached = child->attachedPropertiesObject<
-                    OperationAttached>(operationMetaObject());
+            OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
             OperationAttached::Status childStatus = childAttached->status();
             if (childStatus > status)
                 status = childStatus;
@@ -116,8 +115,7 @@ void OperationAttached::resetInputsStatus()
     // reset inputs
     foreach (NodeBase * input, node()->upstream())
     {
-        OperationAttached *inputAttached = input->attachedPropertiesObject
-                < OperationAttached > (operationMetaObject());
+        OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
         inputAttached->resetAllStatus();
     }
 }
@@ -129,8 +127,7 @@ void OperationAttached::resetChildrenStatus()
     {
         NodeBase *child = qobject_cast<NodeBase *>(o);
         if (child && child->isActive()) {
-            OperationAttached *childAttached = child->attachedPropertiesObject<
-                    OperationAttached>(operationMetaObject());
+            OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
             childAttached->resetAllStatus();
         }
     }
@@ -307,6 +304,7 @@ void OperationAttached::continueRunning()
 
         case OperationAttached::Invalid:
             // we should never get here
+            error() << node() << "status is invalid";
             Q_ASSERT(false);
             break;
         }
@@ -433,6 +431,26 @@ QQmlListProperty<Operation> Operation::triggers_()
     return QQmlListProperty<Operation>(this, m_triggers);
 }
 
+const QList<const Operation *>& Operation::dependencies() const
+{
+    return reinterpret_cast<QList<const Operation *> const&>(m_dependencies);
+}
+
+const QList<Operation *>& Operation::dependencies()
+{
+    return m_dependencies;
+}
+
+const QList<const Operation *>& Operation::triggers() const
+{
+    return reinterpret_cast<QList<const Operation *> const&>(m_triggers);
+}
+
+const QList<Operation *>& Operation::triggers()
+{
+    return m_triggers;
+}
+
 // data property
 void Operation::data_append(QQmlListProperty<PugItem> *prop, PugItem *item)
 {
@@ -486,8 +504,7 @@ void Operation::resetAll(NodeBase *node)
     }
 
     // reset ourself
-    OperationAttached *attached = node->attachedPropertiesObject<
-            OperationAttached>(metaObject());
+    OperationAttached *attached = node->attachedPropertiesObject<OperationAttached>(metaObject());
     Q_ASSERT(attached);
     attached->resetAll();
     setStatus(OperationAttached::None);
@@ -499,13 +516,14 @@ void Operation::resetAll(NodeBase *node)
     }
 }
 
-void Operation::run(NodeBase *node, const QVariant context)
+void Operation::run(NodeBase *node, const QVariant context, bool reset)
 {
     if (!node)
         return;
 
     // ready...
-    resetAll(node);
+    if (reset)
+        resetAll(node);
 
     Q_ASSERT(status() == OperationAttached::None);
 
@@ -747,4 +765,14 @@ void Operation::onFinished(OperationAttached *attached)
     setStatus(attached->status());
 
     continueRunning();
+}
+
+NodeBase *Operation::node()
+{
+    return m_node;
+}
+
+const NodeBase *Operation::node() const
+{
+    return m_node;
 }
