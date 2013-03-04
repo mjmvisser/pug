@@ -49,6 +49,9 @@ public:
     Q_INVOKABLE const QVariantList downstreamNodes();
     const QList<const NodeBase *> downstream() const;
 
+    Q_INVOKABLE bool isUpstream(const NodeBase *other);
+    Q_INVOKABLE bool isDownstream(const NodeBase *other);
+
     // TODO: not sure if this is the best way
     virtual bool isRoot() const;
 

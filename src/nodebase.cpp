@@ -551,6 +551,26 @@ const QList<const NodeBase *> NodeBase::downstream() const
     return result;
 }
 
+bool NodeBase::isUpstream(const NodeBase *other)
+{
+    foreach(const NodeBase *node, upstream()) {
+        if (node == other)
+            return true;
+    }
+
+    return false;
+}
+
+bool NodeBase::isDownstream(const NodeBase *other)
+{
+    foreach(const NodeBase *node, downstream()) {
+        if (node == other)
+            return true;
+    }
+
+    return false;
+}
+
 bool NodeBase::isRoot() const
 {
     return false;
