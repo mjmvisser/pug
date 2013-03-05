@@ -357,6 +357,19 @@ const QRegularExpression Element::regExpFromPattern(const QString pattern)
     return QRegularExpression(regExpStr);
 }
 
+QDebug &operator<<(QDebug &dbg, const Element *element)
+{
+    if (!element)
+        return dbg.nospace() << "Element(0x0)";
+
+    dbg.nospace() << "Element(" << (void *)element;
+    if (!element->objectName().isEmpty())
+        dbg.nospace() << "name = " << element->objectName() << ", ";
+    dbg.nospace() << "value = " << element->toString() << ")";
+
+    return dbg.maybeSpace();
+}
+
 QDataStream &operator<<(QDataStream &stream, const Element *element)
 {
     stream << element->pattern();

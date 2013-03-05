@@ -113,6 +113,7 @@ void ShotgunField::setValue(const QVariant v)
 
 const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariantMap fields) const
 {
+    trace() << ".buildValue(" << branch << "," << fields << ")";
     const Field *field = 0;
     if (!m_fieldName.isEmpty()) {
         // find the field
@@ -125,7 +126,6 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
     }
 
     QVariant result;
-    copious() << "building value from" << branch << "with" << QJsonDocument::fromVariant(fields).toJson().constData();
     if (m_type == ShotgunField::String) {
         if (field) {
             QVariant value = field->get(fields);
@@ -213,7 +213,7 @@ const QVariant ShotgunField::buildValue(const BranchBase *branch, const QVariant
         error() << "on" << branch << "has an unsupported type " << m_type;
     }
 
-    copious() << ">>" << result;
+    debug() << ">>" << result;
     return result;
 }
 

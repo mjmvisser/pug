@@ -43,7 +43,7 @@ CookOperationAttached::Mode CookOperationAttached::mode() const
 
 void CookOperationAttached::run()
 {
-    debug() << ".run, cook mode is" << m_mode;
+    trace() << ".run() [cook mode is" << m_mode << "]";
     m_indexStatus.clear();
     if (m_mode == CookOperationAttached::Cook) {
         emit cook(context());
@@ -66,14 +66,14 @@ void CookOperationAttached::run()
 
 void CookOperationAttached::onCooked(int s)
 {
-    debug() << node() << "onCooked" << static_cast<OperationAttached::Status>(s);
+    trace() << node() << ".onCooked(" << static_cast<OperationAttached::Status>(s) << ")";
     setStatus(static_cast<OperationAttached::Status>(s));
     continueRunning();
 }
 
 void CookOperationAttached::onCookedAtIndex(int index, int s)
 {
-    debug() << node() << "onCookedAtIndex" << index << static_cast<OperationAttached::Status>(s);
+    trace() << node() << ".onCookedAtIndex(" << index << "," << static_cast<OperationAttached::Status>(s) << ")";
     m_indexStatus.append(static_cast<OperationAttached::Status>(s));
 
     if (m_indexStatus.length() == node()->count()) {

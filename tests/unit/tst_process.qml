@@ -33,6 +33,7 @@ TestCase {
         cook.run(trueProcess, {});
         spy.wait(500);
         compare(trueProcess.CookOperation.status, Operation.Finished);
+        verify(trueProcess.details);
         compare(trueProcess.details[0].process.exitCode, 0);
     }
 
@@ -41,6 +42,7 @@ TestCase {
         cook.run(falseProcess, {});
         spy.wait(500);
         compare(falseProcess.CookOperation.status, Operation.Error);
+        verify(falseProcess.details);
         compare(falseProcess.details[0].process.exitCode, 1);
     }
 }

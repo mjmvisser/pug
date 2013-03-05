@@ -15,6 +15,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QJSValue>
 
 class Logger;
 
@@ -25,15 +26,15 @@ class Log : public QObject
     Q_ENUMS(MessageType)
     friend class Logger;
 public:
-    enum MessageType { Invalid, Copious, Debug, Info, Warning, Error };
+    enum MessageType { Invalid, Trace, Debug, Info, Warning, Error };
 
     explicit Log(QObject *parent = 0);
 
     MessageType level() const;
     void setLevel(MessageType);
 
+    Q_INVOKABLE void trace(const QString &message);
     Q_INVOKABLE void debug(const QString &message);
-    Q_INVOKABLE void copious(const QString &message);
     Q_INVOKABLE void info(const QString &message);
     Q_INVOKABLE void warning(const QString &message);
     Q_INVOKABLE void error(const QString &message);
@@ -60,11 +61,11 @@ private:
             QTextStream ts(&buffer);
             QString typeString;
             switch (type) {
+            case Trace:
+                typeString = "TRACE";
+                break;
             case Debug:
                 typeString = "DEBUG";
-                break;
-            case Copious:
-                typeString = "COPIOUS";
                 break;
             case Info:
                 typeString = "INFO";
@@ -122,5 +123,7 @@ public:
         }
     }
 };
+
+QDebug operator<<(QDebug, const QJSValue);
 
 #endif // LOGGING_H

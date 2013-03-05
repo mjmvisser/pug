@@ -112,6 +112,7 @@ const QVariantMap ShotgunOperationAttached::updateFieldsWithEnv(const QVariantMa
 
 void ShotgunOperationAttached::readEntity(const ShotgunEntity* sge, const QVariantMap context)
 {
+    trace() << node() << ".readEntity(" << sge << "," << context << ")";
     m_pendingTransactions++;
 
     ShotgunOperation *sgop = operation<ShotgunOperation>();
@@ -119,7 +120,6 @@ void ShotgunOperationAttached::readEntity(const ShotgunEntity* sge, const QVaria
 
     QVariantList filters = sge->buildFilters(context);
 
-    debug() << node() << operation() << ".readEntity" << sge;
     debug() << "--type" << sge->name() << "filters" << QJsonDocument::fromVariant(filters);
 
     ShotgunReply *reply = sgop->shotgun()->findOne(sge->name(), filters, sge->buildFields());
@@ -130,6 +130,7 @@ void ShotgunOperationAttached::readEntity(const ShotgunEntity* sge, const QVaria
 
 void ShotgunOperationAttached::createEntity(const ShotgunEntity* sge, const QVariantMap context)
 {
+    trace() << node() << ".createEntity(" << sge << "," << context << ")";
     m_pendingTransactions++;
 
     ShotgunOperation *sgop = qobject_cast<ShotgunOperation *>(operation());
@@ -148,6 +149,7 @@ void ShotgunOperationAttached::createEntity(const ShotgunEntity* sge, const QVar
 
 void ShotgunOperationAttached::batchCreateEntities(ShotgunEntity *sge, const QVariantList contextList)
 {
+    trace() << node() << ".batchCreateEntities(" << sge << "," << contextList << ")";
     m_pendingTransactions++;
 
     ShotgunOperation *sgop = operation<ShotgunOperation>();
@@ -202,6 +204,7 @@ void ShotgunOperationAttached::addDetail(const QVariantMap entity)
 
 void ShotgunOperationAttached::onReadCreateEntityFinished(const QVariant result)
 {
+    trace() << ".onReadCreateEntityFinished(" << result << ")";
     addDetail(result.toMap());
 
     QObject::sender()->deleteLater();
@@ -220,6 +223,7 @@ void ShotgunOperationAttached::onReadCreateEntityFinished(const QVariant result)
 
 void ShotgunOperationAttached::onBatchCreateEntitiesFinished(const QVariant result)
 {
+    trace() << ".onBatchCreateEntitiesFinished(" << result << ")";
     BranchBase *branch = firstParent<BranchBase>();
     Q_ASSERT(branch);
 
@@ -246,7 +250,7 @@ void ShotgunOperationAttached::onShotgunError()
 {
     ShotgunReply *reply = qobject_cast<ShotgunReply *>(QObject::sender());
     if (reply) {
-        error() << node() << ".onShotgunError for" << node() << "got Shotgun error:" << reply->errorString();
+        trace() << node() << ".onShotgunError() [error is" << reply->errorString() << "]";
         setStatus(OperationAttached::Error);
     } else {
         error() << ".onShotgunError WTF";

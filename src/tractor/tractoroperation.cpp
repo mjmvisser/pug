@@ -58,7 +58,7 @@ void TractorOperationAttached::setSerialSubtasks(bool flag)
 
 void TractorOperationAttached::run()
 {
-    debug() << node() << operation() << ".run";
+    trace() << node() << ".run()";
 
     switch(operation<TractorOperation>()->mode()) {
     case TractorOperation::Submit:
@@ -69,6 +69,7 @@ void TractorOperationAttached::run()
         break;
     case TractorOperation::Cleanup:
         cleanupTask();
+        break;
     }
 
     continueRunning();
@@ -76,7 +77,7 @@ void TractorOperationAttached::run()
 
 void TractorOperationAttached::generateTask()
 {
-    debug() << node() << operation() << ".generateTask";
+    trace() << node() << ".generateTask()";
 
     // build the task
     // connect it up to our parent (which we can safely assume is complete)
@@ -120,7 +121,7 @@ void TractorOperationAttached::generateTask()
 
 void TractorOperationAttached::executeTask()
 {
-    debug() << node() << operation() << ".executeTask";
+    trace() << node() << ".executeTask()";
 
     Operation *targetOperation = operation<TractorOperation>()->target();
     OperationAttached *targetAttached = node()->attachedPropertiesObject<OperationAttached>(targetOperation->metaObject());
@@ -132,8 +133,7 @@ void TractorOperationAttached::executeTask()
                 this, SLOT(onTargetFinished(OperationAttached::Status)));
 
         targetOperation->run(node(), context(), false);
-    }
-    else {
+    } else {
         // we're an input of the run node
         readTractorData(tractorDataPath());
 
@@ -143,11 +143,11 @@ void TractorOperationAttached::executeTask()
 
 void TractorOperationAttached::cleanupTask()
 {
-    debug() << node() << operation() << ".cleanupTask";
+    trace() << node() << ".cleanupTask()";
+    debug() << node() << "removing" << tractorDataPath();
     bool success = QFile::remove(tractorDataPath());
-    if (!success) {
-        warning() << node() << operation() << "Unable to remove file: " << tractorDataPath();
-    }
+    if (!success)
+        warning() << node() << "Unable to remove file:" << tractorDataPath();
     setStatus(OperationAttached::Finished);
 }
 
@@ -156,7 +156,7 @@ void TractorOperationAttached::onTargetFinished(OperationAttached::Status status
     Operation *targetOperation = operation<TractorOperation>()->target();
     OperationAttached *targetAttached = node()->attachedPropertiesObject<OperationAttached>(targetOperation->metaObject());
 
-    debug() << node() << operation() << ".onTargetFinished" << targetOperation << status;
+    trace() << node() << ".onTargetFinished(" << status << ")";
 
     disconnect(targetOperation, SIGNAL(finished(OperationAttached::Status)),
                this, SLOT(onTargetFinished(OperationAttached::Status)));
@@ -172,7 +172,7 @@ void TractorOperationAttached::onTargetFinished(OperationAttached::Status status
 
 void TractorOperationAttached::writeTractorData(const QString &dataPath) const
 {
-    debug() << node() << "writing tractor data to" << dataPath;
+    trace() << node() << ".writeTractorData(" << dataPath << ")";
 
     const Operation *targetOperation = operation<TractorOperation>()->target();
 
@@ -212,7 +212,7 @@ void TractorOperationAttached::writeTractorAttachedStatuses(QDataStream &stream,
 
 void TractorOperationAttached::readTractorData(const QString &dataPath)
 {
-    debug() << node() << "reading tractor data from" << dataPath;
+    trace() << node() << ".readTractorData(" << dataPath << ")";
 
     Operation *targetOperation = operation<TractorOperation>()->target();
 
@@ -263,7 +263,7 @@ void TractorOperationAttached::readTractorAttachedStatuses(QDataStream &stream, 
 
 const QString TractorOperationAttached::tractorDataPath() const
 {
-    QString filename = node()->path() + ".json";
+    QString filename = node()->path() + ".dat";
     filename.replace(QDir::separator(), '-');
     QString path = QDir(context()["TRACTOR_DATA_DIR"].toString()).filePath(filename);
     return path;
@@ -320,6 +320,7 @@ TractorJob *TractorOperation::tractorJob()
 
 void TractorOperation::run(NodeBase *node, const QVariant context, bool reset)
 {
+    trace() << ".run(" << node << "," << context << "," << reset << ")";
     m_target->resetAll(node);
     Operation::run(node, context, reset);
 
@@ -332,6 +333,7 @@ void TractorOperation::run(NodeBase *node, const QVariant context, bool reset)
 
 TractorJob *TractorOperation::buildTractorJob(NodeBase *node, const QVariant context)
 {
+    trace() << ".buildTractorJob(" << node << "," << context << ")";
     TractorJob *job = new TractorJob(this);
 
     TractorOperationAttached *attached = node->attachedPropertiesObject<TractorOperationAttached>(metaObject());

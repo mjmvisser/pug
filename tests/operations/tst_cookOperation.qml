@@ -105,7 +105,7 @@ PugTestCase {
                             Util.mkpath(outputDir);
                         Util.copy(inputPath, outputPath);
                         
-                        var newElement = Util.newElement();
+                        var newElement = Util.element();
                         newElement.pattern = outputPath;
                         
                         details[index] = {"element": newElement, "context": copier.input.details[index].context};
@@ -164,7 +164,7 @@ PugTestCase {
         compare(copier.CookOperation.status, Operation.Finished);
         compare(cookFile.CookOperation.status, Operation.Finished);
         compare(workFile.CookOperation.status, Operation.Finished);
-        compare(cookFile.details.length, 3);
+        compare(copier.details.length, 3);
         compare(cookFile.details.length, 3);
         compare(cookFile.details[0].element.path, cookPaths[0]);
         compare(cookFile.details[1].element.path, cookPaths[1]);

@@ -79,7 +79,7 @@ const QString Process::stdout(int i) const
 
 void Process::onCookAtIndex(int i, const QVariant context)
 {
-    debug() << "Process::onCookAtIndex(" << i << "," << context << ")";
+    trace() << ".onCookAtIndex(" << i << "," << context << ")";
 
     setIndex(i);
 
@@ -110,9 +110,9 @@ void Process::onCookAtIndex(int i, const QVariant context)
 
     m_processes[i]->setProcessEnvironment(processEnv);
 
-    QStringList args = m_argv;
+    debug() << "process argv:" << m_argv;
 
-    debug() << "Process" << args;
+    QStringList args = m_argv;
 
     if (args.length() > 0) {
         QString program = args.takeFirst();
@@ -135,10 +135,13 @@ void Process::onCookAtIndex(int i, const QVariant context)
 
 void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status status)
 {
+    trace() << ".handleFinishedProcess(" << process << "," << status << ")";
     Q_ASSERT(process);
 
     int i = m_processes.indexOf(process);
     Q_ASSERT(i >= 0);
+
+    Q_ASSERT(details().isArray());
 
     QString stdout = process->readAllStandardOutput();
     if (details().property(i).isUndefined())
@@ -158,7 +161,7 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
 void Process::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     QProcess *process = qobject_cast<QProcess *>(QObject::sender());
-    debug() << "process finished with exit code" << exitCode << "exit status" << exitStatus;
+    trace() << ".onProcessFinished(" << exitCode << "," << exitStatus << ") [signal from" << process << "]";
 
     if (exitStatus == QProcess::CrashExit || (!m_ignoreExitCode && exitCode != 0)) {
         handleFinishedProcess(process, OperationAttached::Error);
@@ -172,7 +175,7 @@ void Process::onProcessError(QProcess::ProcessError err)
     Q_UNUSED(err);
 
     QProcess *process = qobject_cast<QProcess *>(QObject::sender());
-    debug() << "process error" << process->errorString();
+    trace() << ".onProcessError(" << process->errorString() << ")";
 
     handleFinishedProcess(process, OperationAttached::Error);
 }
@@ -185,10 +188,9 @@ void Process::onReadyReadStandardError()
 
 void Process::componentComplete()
 {
-    QQmlContext *context = QQmlEngine::contextForObject(this);
-    Q_ASSERT(context);
+    NodeBase::componentComplete();
 
-    m_env = context->engine()->newObject();
+    m_env = newObject();
 
     QProcessEnvironment systemEnv = QProcessEnvironment::systemEnvironment();
     foreach (const QString key, systemEnv.keys()) {

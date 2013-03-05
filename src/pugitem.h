@@ -88,8 +88,8 @@ public:
         return qobject_cast<T *>(qmlAttachedPropertiesObject(&idx, this, mo, create));
     }
 
+    Q_INVOKABLE void trace(const QString message) const;
     Q_INVOKABLE void debug(const QString message) const;
-    Q_INVOKABLE void copious(const QString message) const;
     Q_INVOKABLE void info(const QString message) const;
     Q_INVOKABLE void warning(const QString message) const;
     Q_INVOKABLE void error(const QString message) const;
@@ -138,8 +138,8 @@ protected:
         return context->engine()->newQObject(object);
     }
 
+    Logger trace() const;
     Logger debug() const;
-    Logger copious() const;
     Logger info() const;
     Logger warning() const;
     Logger error() const;

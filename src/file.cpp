@@ -58,24 +58,23 @@ void File::setLinkType(File::LinkType lt)
 
 void File::onUpdate(const QVariant context)
 {
+    trace() << ".onUpdate(" << context << ")";
+
     QStringList paths = listMatchingPaths(context.toMap());
 
     setPaths(paths, context.toMap());
 
     debug() << "onUpdate set paths" << paths;
 
-    if (paths.length() == 0)
-        warning() << "no paths matched";
-
     emit updated(OperationAttached::Finished);
 }
 
 void File::onCook(const QVariant context)
 {
-    debug() << "onCook";
+    trace() << ".onCook(" << context << ")";
 
     if (m_input) {
-        copious() << "has input" << m_input;
+        debug() << "has input" << m_input;
         // hard link to input, pass data along
 
         if (m_input->details().property("length").toInt() == 0) {
@@ -83,6 +82,8 @@ void File::onCook(const QVariant context)
         }
 
         setCount(m_input->details().property("length").toInt());
+
+        Q_ASSERT(details().isArray());
 
         for (int index=0; index < count(); index++) {
             QJSValue inputDetail = m_input->details().property(index);
@@ -133,7 +134,7 @@ void File::onCook(const QVariant context)
                             if (destFile.exists())
                                 destFile.remove();
 
-                            copious() << "linking" << inputPath << "to" << destPath;
+                            debug() << "linking" << inputPath << "to" << destPath;
 
                             if (m_linkType == File::Hard) {
                                 // META TODO: no cross-platform hardlink support in Qt
@@ -156,8 +157,10 @@ void File::onCook(const QVariant context)
                         }
                     }
 
+                    details().setProperty(index, newObject());
                     details().property(index).setProperty("element", newQObject(destElement));
                     details().property(index).setProperty("context", toScriptValue(destContext));
+                    debug() << "set detail[" << index << "] to " << details().property(index);
 
                 } else if (!inputDetail.property("element").isQObject()) {
                     error() << "input.details[" << index << "].element does not exist or is not an Element";

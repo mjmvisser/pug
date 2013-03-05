@@ -52,35 +52,30 @@ PugTestCase {
         ]
         
         Branch {
-            TractorOperation.logLevel: Log.Debug
             id: abc
             name: "abc"
             pattern: "{ROOT}tractortests/abc/"
         }
         
         Branch {
-            TractorOperation.logLevel: Log.Debug
             id: foo
             name: "foo"
             pattern: "{FOO}/"
             root: abc
             
             Branch {
-                TractorOperation.logLevel: Log.Debug
                 id: workBranch
-                name: "work"
+                name: "workBranch"
                 pattern: "work/"
                 root: foo
                 
                 File {
-                    TractorOperation.logLevel: Log.Debug
                     id: workFile
                     name: "workFile"
                     pattern: "{FILENAME}"
                 }
 
                 File {
-                    TractorOperation.logLevel: Log.Debug
                     id: cookFile
                     name: "cookFile"
                     pattern: "cooked/{FILENAME}"
@@ -125,6 +120,26 @@ PugTestCase {
         for (var i = 0; i < nodes.length; i++) {
             tractor.run(nodes[i], context);
             tractorSpy.wait(1000);
+            
+            // preceding nodes should all be finished
+            for (var j = 0; j <= i; j++) {
+                compare(nodes[j].TractorOperation.status, Operation.Finished);
+                compare(nodes[j].CookOperation.status, Operation.Finished);
+                compare(nodes[j].UpdateOperation.status, Operation.Finished);
+                
+                if (nodes[i].name == "workFile") {
+                    verify(nodes[i].details);
+                    compare(nodes[i].details[0].element.path, tmpDir + "tractortests/abc/foo/work/baa.txt");
+                    compare(nodes[i].details[1].element.path, tmpDir + "tractortests/abc/foo/work/bar.txt");
+                    compare(nodes[i].details[2].element.path, tmpDir + "tractortests/abc/foo/work/baz.txt");
+                } else if (nodes[i].name == "cookFile") {
+                    verify(nodes[i].details);
+                    compare(nodes[i].details[0].element.path, tmpDir + "tractortests/abc/foo/work/cooked/baa.txt");
+                    compare(nodes[i].details[1].element.path, tmpDir + "tractortests/abc/foo/work/cooked/bar.txt");
+                    compare(nodes[i].details[2].element.path, tmpDir + "tractortests/abc/foo/work/cooked/baz.txt");
+                }
+            }
+            
             compare(update.status, Operation.Finished);
             compare(cook.status, Operation.Finished);
             compare(tractor.status, Operation.Finished);
@@ -134,13 +149,14 @@ PugTestCase {
         verify(Util.exists(tmpDir + "tractortests/abc/foo/work/cooked/bar.txt"));
         verify(Util.exists(tmpDir + "tractortests/abc/foo/work/cooked/baz.txt"));
         
+        // cookFile.TractorOperation.logLevel = Log.Debug;
+        // workFile.TractorOperation.logLevel = Log.Debug;
+        // workBranch.TractorOperation.logLevel = Log.Debug;
         tractor.mode = TractorOperation.Cleanup;
 
         // cleanup
-        for (var i = 0; i < nodes.length; i++) {
-            tractor.run(nodes[i], context);
-            tractorSpy.wait(1000);
-            compare(tractor.status, Operation.Finished);
-        }        
+        tractor.run(cookFile, context);
+        tractorSpy.wait(1000);
+        compare(tractor.status, Operation.Finished);
     }
 }

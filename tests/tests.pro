@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS += unit operations shotgun tools #integration
+SUBDIRS += unit operations shotgun tractor tools #integration

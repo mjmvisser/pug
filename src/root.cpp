@@ -81,20 +81,20 @@ void Root::operations_clear(QQmlListProperty<Operation> *prop)
 
 BranchBase *Root::findBranch(const QString path)
 {
-    copious() << ".findBranch" << path;
+    trace() << ".findBranch(" << path << ")";
     return findBranch(this, path);
 }
 
 BranchBase *Root::findBranch(BranchBase* branch, const QString path)
 {
-    copious() << ".findBranch" << branch << path;
+    trace() << ".findBranch(" << branch << "," << path << ")";
     BranchBase *result = 0;
     foreach (QObject *o, branch->children()) {
         BranchBase *child = qobject_cast<BranchBase *>(o);
         if (child) {
-            copious() << "checking" << child;
+            debug() << "checking" << child;
             QVariant fields = child->parse(path);
-            copious() << ".findBranch got" << fields;
+            debug() << ".findBranch got" << fields;
             if (fields.isValid()) {
                 if (fields.toMap().contains("_")) {
                     result = findBranch(child, path);

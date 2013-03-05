@@ -51,7 +51,7 @@ inline QDebug operator<<(QDebug dbg, CookOperationAttached::Mode m)
         break;
     }
 
-    return dbg.space();
+    return dbg.maybeSpace();
 }
 
 class CookOperation : public Operation

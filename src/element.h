@@ -69,6 +69,8 @@ private:
 };
 Q_DECLARE_METATYPE(Element*) // makes available to QVariant
 
+QDebug &operator<<(QDebug &, const Element *);
+
 QDataStream &operator<<(QDataStream &, const Element *);
 QDataStream &operator>>(QDataStream &, Element *);
 

@@ -300,7 +300,7 @@ const NodeBase *NodeBase::firstNamedParent() const
 
 NodeBase *NodeBase::node(const QString n)
 {
-    copious() << ".node" << n;
+    trace() << ".node(" << n << ")";
 
     if (n.isNull())
         return 0;
@@ -341,7 +341,7 @@ NodeBase *NodeBase::node(const QString n)
 
 const NodeBase *NodeBase::node(const QString n) const
 {
-    copious() << ".node" << n;
+    trace() << ".node(" << n << ")";
 
     if (n.isNull())
         return 0;
@@ -415,7 +415,7 @@ const NodeBase *NodeBase::nodeInFirstNamedParent(const QString n) const
 
 NodeBase *NodeBase::nodeInChildren(const QString n)
 {
-    copious() << ".nodeInChildren" << n;
+    trace() << ".nodeInChildren(" << n << ")";
     foreach (QObject *o, children()) {
         NodeBase* node = qobject_cast<NodeBase *>(o);
         if (node) {
@@ -430,7 +430,7 @@ NodeBase *NodeBase::nodeInChildren(const QString n)
 
 const NodeBase *NodeBase::nodeInChildren(const QString n) const
 {
-    copious() << ".nodeInChildren" << n;
+    trace() << ".nodeInChildren(" << n << ")";
     foreach (const QObject *o, children()) {
         const NodeBase* node = qobject_cast<const NodeBase *>(o);
         if (node) {
@@ -445,7 +445,6 @@ const NodeBase *NodeBase::nodeInChildren(const QString n) const
 
 const QList<const NodeBase *> NodeBase::upstream() const
 {
-    copious() << ".upstream";
     QList<const NodeBase *> result;
     // loop through inputs and find upstream nodes
     foreach (const Input *in, m_inputs) {
@@ -465,7 +464,6 @@ const QList<const NodeBase *> NodeBase::upstream() const
 
 const QVariantList NodeBase::upstreamNodes()
 {
-    copious() << ".upstream";
     QVariantList result;
     // loop through inputs and find upstream nodes
     foreach (const Input *in, m_inputs) {
@@ -485,7 +483,7 @@ const QVariantList NodeBase::upstreamNodes()
 
 const QList<NodeBase *> NodeBase::upstream()
 {
-    copious() << ".upstream";
+    trace() << ".upstream()";
     QList<NodeBase *> result;
     // loop through inputs and find upstream nodes
     foreach (const Input *in, m_inputs) {
@@ -674,6 +672,7 @@ void NodeBase::addOutput(const QString name)
 
 void NodeBase::componentComplete()
 {
+    trace() << "componentComplete()";
     m_details = newArray();
 }
 

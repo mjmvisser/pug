@@ -63,7 +63,7 @@ void FileOpQueue::run()
 
 void FileOpQueue::continueRunning()
 {
-    //qDebug() << this << ".continueRunning" << "queue size" << m_workQueue.length();
+    trace() << ".continueRunning() [queue size " << m_workQueue.length() << "]";
     if (!m_workQueue.isEmpty()) {
         // get the next item
         FileOpQueue::Item item = m_workQueue.dequeue();
@@ -100,7 +100,7 @@ void FileOpQueue::continueRunning()
             argv = m_sudo->wrapCommand(argv);
         }
 
-        copious() << argv;
+        debug() << "running:" << argv;
 
         const QString program = argv.takeFirst();
         m_process->start(program, argv);

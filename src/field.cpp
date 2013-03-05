@@ -41,7 +41,6 @@ void Field::setRegexp(const QString regexp)
         }
 
         m_regexp = regexp;
-        copious() << "regexp set to" << regexp;
         emit regexpChanged(regexp);
     }
 }
@@ -55,7 +54,6 @@ void Field::setType(Field::Type t)
 {
     if (m_type != t) {
         m_type = t;
-        copious() << "type set to" << t;
         emit typeChanged(m_type);
     }
 }
@@ -74,7 +72,6 @@ void Field::setWidth(int width)
         }
 
         m_width = width;
-        copious() << "width set to" << width;
         emit widthChanged(m_width);
     }
 }
@@ -91,7 +88,6 @@ void Field::setValues(const QStringList values)
             // reset our regular expression
             setRegexp(DEFAULT_REGEXP);
             m_values = values;
-            copious() << "values set to" << values;
             emit valuesChanged(values);
         } else {
             // if we have a default value, it better be in the new values
@@ -103,13 +99,11 @@ void Field::setValues(const QStringList values)
             // build the new regular expression
             QStringList regexpParts;
             foreach (const QString value, values) {
-                copious() << "escaped" << value << "is" << QRegularExpression::escape(value);
                 regexpParts << ("(?:" + QRegularExpression::escape(value) + ")");
             }
             setRegexp(regexpParts.join("|"));
 
             m_values = values;
-            copious() << "values set to" << values;
             emit valuesChanged(m_values);
         }
     }
@@ -131,7 +125,6 @@ void Field::setDefaultValue(const QString defaultValue)
 //            return;
 //        }
 
-        copious() << "defaultValue set to" << defaultValue;
         m_defaultValue = defaultValue;
         emit defaultValueChanged(defaultValue);
     }
@@ -146,7 +139,6 @@ void Field::setFormatSpec(const QString spec)
 {
     if (m_formatSpec != spec) {
         m_formatSpec = spec;
-        copious() << "formatSpec to" << spec;
         emit formatSpecChanged(m_formatSpec);
     }
 }

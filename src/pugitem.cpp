@@ -152,18 +152,18 @@ bool PugItem::hasProperty(const char *prop) const
         return false;
 }
 
+Logger PugItem::trace() const
+{
+    Q_ASSERT(m_log);
+    m_log->setLevel(logLevel());
+    return Logger(m_log, Log::Trace);
+}
+
 Logger PugItem::debug() const
 {
     Q_ASSERT(m_log);
     m_log->setLevel(logLevel());
     return Logger(m_log, Log::Debug);
-}
-
-Logger PugItem::copious() const
-{
-    Q_ASSERT(m_log);
-    m_log->setLevel(logLevel());
-    return Logger(m_log, Log::Copious);
 }
 
 Logger PugItem::info() const
@@ -187,14 +187,14 @@ Logger PugItem::error() const
     return Logger(m_log, Log::Error);
 }
 
+void PugItem::trace(const QString message) const
+{
+    trace() << message.toUtf8().constData();
+}
+
 void PugItem::debug(const QString message) const
 {
     debug() << message.toUtf8().constData();
-}
-
-void PugItem::copious(const QString message) const
-{
-    copious() << message.toUtf8().constData();
 }
 
 void PugItem::info(const QString message) const

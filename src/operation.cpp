@@ -46,13 +46,13 @@ NodeBase* OperationAttached::node()
 
 void OperationAttached::resetStatus()
 {
-    debug() << "resetting status to" << OperationAttached::None;
+    trace() << node() << "resetStatus()";
     setStatus(OperationAttached::None);
 }
 
 void OperationAttached::reset()
 {
-    debug() << "resetting status to" << OperationAttached::None;
+    trace() << node() << "reset()";
     setStatus(OperationAttached::None);
 }
 
@@ -143,7 +143,8 @@ void OperationAttached::resetAllStatus()
     if (status() == OperationAttached::None)
         return;
 
-    debug() << node() << "resetAllStatus";
+    debug() << node() << ".resetAllStatus()";
+
 
     // reset ourself
     resetStatus();
@@ -200,7 +201,7 @@ void OperationAttached::resetAll()
 
 void OperationAttached::run(Operation *op, const QVariant context)
 {
-    debug() << node() << ".run" << op;
+    trace() << node() << ".run(" << op << "," << context << ")";
     Q_ASSERT(op);
 
     // possible values of status:
@@ -210,20 +211,23 @@ void OperationAttached::run(Operation *op, const QVariant context)
     Q_ASSERT(status() == OperationAttached::None
             || status() == OperationAttached::Idle
             || status() == OperationAttached::Finished);
-    debug() << "setting status to" << OperationAttached::Idle;
-    setStatus(OperationAttached::Idle);
 
-    m_context = context.toMap();
-    m_operation = op;
+    if (status() == OperationAttached::None) {
+        // we haven't been run yet
+        debug() << node() <<  "setting status to" << OperationAttached::Idle;
+        setStatus(OperationAttached::Idle);
+
+        m_context = context.toMap();
+        m_operation = op;
+    }
 
     continueRunning();
 }
 
 void OperationAttached::continueRunning()
 {
+    trace() << node() << ".continueRunning()";
     Q_ASSERT(m_operation);
-
-    debug() << node() << ".continueRunning";
 
     OperationAttached::Status depStatus = dependenciesStatus();
     OperationAttached::Status childStatus = childrenStatus();
@@ -262,7 +266,7 @@ void OperationAttached::continueRunning()
             break;
 
         case OperationAttached::Idle:
-            debug() << "setting status to" << OperationAttached::Running;
+            debug() << node() << "setting status to" << OperationAttached::Running;
             setStatus(OperationAttached::Running);
             debug() << node() << "calling run()";
             run();
@@ -314,17 +318,17 @@ void OperationAttached::continueRunning()
 
 void OperationAttached::runInputs()
 {
+    trace() << node() << "runInputs()";
     Q_ASSERT(m_operation);
-
-    debug() << node() << "runInputs";
 
     // run inputs and connect their finished signal to ourself
     foreach (NodeBase * input, node()->upstream()) {
-        debug() << "got" << input;
         OperationAttached *inputAttached = input->attachedPropertiesObject
                 < OperationAttached > (operationMetaObject());
 
         OperationAttached::Status inputStatus = inputAttached->status();
+
+        debug() << node() << "input" << input << "has status" << inputStatus;
 
         if (inputStatus == OperationAttached::None
                 || inputStatus == OperationAttached::Idle
@@ -334,16 +338,17 @@ void OperationAttached::runInputs()
         }
 
         if (inputStatus == OperationAttached::None
-                || inputStatus == OperationAttached::Idle)
+                || inputStatus == OperationAttached::Idle) {
+            debug() << node() << "running input" << input;
             inputAttached->run(m_operation, m_context);
+        }
     }
 }
 
 void OperationAttached::runChildren()
 {
+    trace() << node() << ".runChildren()";
     Q_ASSERT(m_operation);
-
-    debug() << node() << "runChildren";
 
     // run children with active flag and connect their finished signal to ourself
     foreach (QObject * o, node()->children())
@@ -376,6 +381,7 @@ void OperationAttached::runExtra()
 
 void OperationAttached::runDependencies()
 {
+    trace() << node() << ".runDependencies()";
     Q_ASSERT(m_operation);
     // TODO: check for cycles
 
@@ -385,7 +391,7 @@ void OperationAttached::runDependencies()
 
 void OperationAttached::onInputFinished(OperationAttached *attached)
 {
-    debug() << node() << operation() << ".onInputFinished" << attached->node();
+    trace() << node() << ".onInputFinished(" << attached->node() << ")";
     disconnect(attached, SIGNAL(finished(OperationAttached *)),
             this, SLOT(onInputFinished(OperationAttached *)));
     // continue cooking
@@ -394,7 +400,7 @@ void OperationAttached::onInputFinished(OperationAttached *attached)
 
 void OperationAttached::onChildFinished(OperationAttached *attached)
 {
-    debug() << node() << operation() << ".onChildFinished" << attached->node();
+    trace() << node() << ".onChildFinished(" << attached->node() << ")";
     disconnect(attached, &OperationAttached::finished, this,
             &OperationAttached::onChildFinished);
     // continue cooking
@@ -403,7 +409,7 @@ void OperationAttached::onChildFinished(OperationAttached *attached)
 
 void OperationAttached::onExtraFinished(OperationAttached *attached)
 {
-    debug() << node() << operation() << ".onExtraFinished" << attached->node();
+    trace() << node() << ".onExtraFinished(" << attached->node() << ")";
     disconnect(attached, SIGNAL(finished(OperationAttached *)),
             this, SLOT(onExtraFinished(OperationAttached *)));
     // continue cooking
@@ -495,6 +501,7 @@ void Operation::setStatus(OperationAttached::Status s)
 
 void Operation::resetAll(NodeBase *node)
 {
+    trace() << ".resetAll(" << node << ")";
     // TODO: cycle detection
 
     // reset dependencies
@@ -518,6 +525,7 @@ void Operation::resetAll(NodeBase *node)
 
 void Operation::run(NodeBase *node, const QVariant context, bool reset)
 {
+    trace() << ".run(" << node << "," << context << "," << reset << ")";
     if (!node)
         return;
 
@@ -533,7 +541,7 @@ void Operation::run(NodeBase *node, const QVariant context, bool reset)
 
 void Operation::startRunning(NodeBase *node, const QVariant context)
 {
-    debug() << ".startRunning" << node;
+    trace() << ".startRunning(" << node << ")";
     Q_ASSERT(node);
     Q_ASSERT(status() == OperationAttached::None);
 
@@ -561,7 +569,7 @@ OperationAttached::Status Operation::dependenciesStatus() const
 
 void Operation::runDependencies()
 {
-    debug() << ".runDependencies";
+    trace() << ".runDependencies()";
     // TODO: check for cycles in triggers and dependencies
 
     foreach (Operation * op, m_dependencies)
@@ -596,7 +604,7 @@ OperationAttached::Status Operation::triggersStatus() const
 
 void Operation::runTriggers()
 {
-    debug() << ".runTriggers";
+    trace() << ".runTriggers()";
     // TODO: check for cycles in triggers and dependencies
 
     foreach (Operation * op, m_triggers)
@@ -614,7 +622,7 @@ void Operation::runTriggers()
 
 void Operation::continueRunning()
 {
-    debug() << ".continueRunning";
+    trace() << ".continueRunning()";
     OperationAttached::Status depStatus = dependenciesStatus();
 
     debug() << "-- depStatus" << depStatus;
@@ -661,7 +669,7 @@ void Operation::continueRunning()
 
         case OperationAttached::None:
             // run this operation
-            debug() << "setting status to running" << attached;
+            debug() << node() <<  "setting status to running" << attached;
             setStatus(OperationAttached::Running);
 
             // reset the attachment statuses
@@ -730,7 +738,7 @@ void Operation::continueRunning()
 void Operation::onDependencyFinished()
 {
     Operation *op = qobject_cast<Operation *>(QObject::sender());
-    debug() << "onDependencyFinished" << op;
+    trace() << ".onDependencyFinished() [signal from" << op << "]";
     if (op) {
         disconnect(op, SIGNAL(finished(OperationAttached::Status)), this,
                 SLOT(onDependencyFinished()));
@@ -744,7 +752,7 @@ void Operation::onDependencyFinished()
 void Operation::onTriggerFinished()
 {
     Operation *op = qobject_cast<Operation *>(QObject::sender());
-    debug() << "onTriggerFinished" << op;
+    trace() << ".onTriggerFinished() [signal from" << op << "]";
     if (op) {
         disconnect(op, SIGNAL(finished(OperationAttached::Status)), this,
                 SLOT(onTriggerFinished()));
@@ -757,11 +765,11 @@ void Operation::onTriggerFinished()
 
 void Operation::onFinished(OperationAttached *attached)
 {
-    debug() << attached << attached->node() << "finished";
+    trace() << ".onFinished(" << attached << ")";
     disconnect(attached, SIGNAL(finished(OperationAttached*)),
             this, SLOT(onFinished(OperationAttached*)));
 
-    debug() << "onFinished, setting status to" << attached->status();
+    debug() << node() <<  "onFinished, setting status to" << attached->status();
     setStatus(attached->status());
 
     continueRunning();

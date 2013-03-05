@@ -212,29 +212,29 @@ inline QDebug operator<<(QDebug dbg, OperationAttached::Status s)
 {
     switch (s) {
     case OperationAttached::Invalid:
-        dbg.nospace() << "Invalid";
+        dbg << "Invalid";
         break;
     case OperationAttached::Finished:
-        dbg.nospace() << "Finished";
+        dbg << "Finished";
         break;
     case OperationAttached::None:
-        dbg.nospace() << "None";
+        dbg << "None";
         break;
     case OperationAttached::Idle:
-        dbg.nospace() << "Idle";
+        dbg << "Idle";
         break;
     case OperationAttached::Running:
-        dbg.nospace() << "Running";
+        dbg << "Running";
         break;
     case OperationAttached::Error:
-        dbg.nospace() << "Error";
+        dbg << "Error";
         break;
     default:
-        dbg.nospace() << "Unknown!";
+        dbg << "Unknown!";
         break;
     }
 
-    return dbg.space();
+    return dbg;
 }
 
 #endif
