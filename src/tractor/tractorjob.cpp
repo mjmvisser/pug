@@ -1,4 +1,7 @@
 #include <QTextStream>
+#include <QTemporaryFile>
+#include <QProcess>
+#include <QDebug>
 
 #include "tractorjob.h"
 #include "tractortask.h"
@@ -148,19 +151,19 @@ const QString TractorJob::asString(int indent) const
     stream << spaces << "Job";
 
     if (m_envKey.length() > 0)
-        stream << " -envkey { " << m_envKey << " }";
+        stream << " -envkey {" << m_envKey << "}";
 
     if (m_service.length() > 0)
-        stream << " -service { " << m_service << " }";
+        stream << " -service {" << m_service << "}";
 
     if (m_title.length() > 0)
-        stream << " -title { " << m_title << " }";
+        stream << " -title {" << m_title << "}";
 
     if (m_comment.length() > 0)
-        stream << " -comment { " << m_comment << " }";
+        stream << " -comment {" << m_comment << "}";
 
     //if (m_metadata.length() > 0)
-    //    stream << " -metadata { " << m_metadata << " }";
+    //    stream << " -metadata {" << m_metadata << "}";
 
     if (m_serialSubtasksFlag)
         stream << " -serialsubtasks {1}";
@@ -171,7 +174,28 @@ const QString TractorJob::asString(int indent) const
         foreach (const TractorTask *subtask, m_subtasks) {
             stream << subtask->asString(indent + 4);
         }
+
+        stream << spaces << "}" << endl;
     }
 
     return s;
+}
+
+void TractorJob::submit()
+{
+    QTemporaryFile jobFile("tractorXXXXXX.job");
+    if (jobFile.open()) {
+        QTextStream stream(&jobFile);
+        stream << this->asString();
+        qDebug() << this->asString();
+        jobFile.close();
+        QStringList args;
+        args << jobFile.fileName();
+        int result = QProcess::execute("tractor-spool.py", args);
+        if (result != 0) {
+            qWarning() << "tractor-spool.py" << args << "returned" << result;
+        }
+    } else {
+        qWarning() << "unable to create temporary file";
+    }
 }

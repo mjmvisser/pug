@@ -74,6 +74,6 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 
         qDebug() << status;
     } else {
-        qDebug() << "usage:" << app.arguments()[0] << "COMMAND" << "[-properties KEY=VALUE ...]" << "[-context KEY=VALUE ...]" << "[PATH]";
+        qDebug() << "usage:" << app.arguments()[0].toUtf8().constData() << "COMMAND" << "[-properties KEY=VALUE ...]" << "[-context KEY=VALUE ...]" << "[PATH]";
     }
 }

@@ -501,6 +501,7 @@ bool BranchBase::fieldsComplete(const QString pattern, const QVariantMap fields)
 const QString BranchBase::map(const QVariant fields) const
 {
     trace() << ".map(" << fields << ")";
+
     if (fields.isValid() && fields.canConvert<QVariantMap>() && fieldsComplete(m_pattern, fields.toMap())) {
         QString mappedParent;
         if (m_pattern.length() == 0 || m_pattern[0] != '/') {

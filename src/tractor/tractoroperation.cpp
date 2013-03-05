@@ -3,6 +3,7 @@
 #include <QVariant>
 #include <QFile>
 #include <QDir>
+#include <QCoreApplication>
 
 #include "tractoroperation.h"
 #include "tractortask.h"
@@ -62,6 +63,7 @@ void TractorOperationAttached::run()
 
     switch(operation<TractorOperation>()->mode()) {
     case TractorOperation::Submit:
+    case TractorOperation::Generate:
         generateTask();
         break;
     case TractorOperation::Execute:
@@ -112,8 +114,11 @@ void TractorOperationAttached::generateTask()
     // build a unique path for this tractor job and node (%j is replaced by tractor with job id)
     QString tractorDataDir = QDir(QDir(branchPath).filePath("tractor")).filePath("%j");
 
+    // get the executable path
+    QString pugExecutable = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("pug");
+
     TractorRemoteCmd *cmd = new TractorRemoteCmd(m_tractorTask);
-    cmd->setCmd(QString("pug %1 %2 -properties mode=Execute -context TRACTOR_DATA_DIR=%3").arg(operation()->objectName()).arg(node()->path()).arg(tractorDataDir));
+    cmd->setCmd(QString("%1 %2 -properties mode=Execute -context TRACTOR_DATA_DIR=%4 %3").arg(pugExecutable).arg(operation()->objectName()).arg(node()->path()).arg(tractorDataDir));
     m_tractorTask->addCmd(cmd);
 
     setStatus(OperationAttached::Finished);
@@ -324,8 +329,11 @@ void TractorOperation::run(NodeBase *node, const QVariant context, bool reset)
     m_target->resetAll(node);
     Operation::run(node, context, reset);
 
-    if (m_mode == TractorOperation::Submit) {
+    if (m_mode == TractorOperation::Generate || m_mode == TractorOperation::Submit) {
         m_tractorJob = buildTractorJob(node, context);
+        if (m_mode == TractorOperation::Submit) {
+            m_tractorJob->submit();
+        }
     } else {
         m_tractorJob = 0;
     }

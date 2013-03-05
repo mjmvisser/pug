@@ -85,6 +85,7 @@ Branch {
         fields: Field { name: "FILENAME" }
         
         File {
+            name: "workScene"
             id: workMayaMaster
             pattern: "scenes/{FILENAME}.mb"
             ReleaseOperation.target: releaseMayaMaster 

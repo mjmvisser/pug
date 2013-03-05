@@ -200,6 +200,8 @@ const QString TractorTask::asString(int indent) const
         foreach (const TractorTask *subtask, m_subtasks) {
             stream << subtask->asString(indent + 4);
         }
+
+        stream << spaces << "}" << endl;
     }
 
     if (m_cmds.length() > 0) {
@@ -208,6 +210,8 @@ const QString TractorTask::asString(int indent) const
         foreach (const TractorCmd *cmd, m_cmds) {
             stream << cmd->asString(indent + 4);
         }
+
+        stream << spaces << "}" << endl;
     }
 
     if (m_cleanup.length() > 0) {
@@ -216,6 +220,8 @@ const QString TractorTask::asString(int indent) const
         foreach (const TractorCmd *cmd, m_cleanup) {
             stream << cmd->asString(indent + 4);
         }
+
+        stream << spaces << "}" << endl;
     }
 
     return s;

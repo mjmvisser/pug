@@ -45,6 +45,8 @@ public:
 
     Q_INVOKABLE virtual const QString asString(int indent = 0) const;
 
+    Q_INVOKABLE void submit();
+
 signals:
     void envKeyChanged(const QString &envKey);
     void serviceChanged(const QString &service);

@@ -65,7 +65,7 @@ class TractorOperation : public Operation
     Q_PROPERTY(TractorJob *tractorJob READ tractorJob NOTIFY tractorJobChanged)
     Q_ENUMS(Mode)
 public:
-    enum Mode { Submit, Execute, Cleanup };
+    enum Mode { Generate, Submit, Execute, Cleanup };
 
     explicit TractorOperation(QObject *parent = 0);
 

@@ -100,12 +100,13 @@ PugTestCase {
     function test_tractorOperationGenerate() {
         var context = {ROOT: tmpDir, FOO: "foo", TITLE: "title of record"};
 
-        tractor.mode = TractorOperation.Submit;
+        tractor.mode = TractorOperation.Generate;
         
         tractor.run(cookFile, context);
         tractorSpy.wait(1000);
         compare(tractor.status, Operation.Finished);
         var tractor_data_dir = tractor.tractorJob.asString().match(/TRACTOR_DATA_DIR=([^ ]*)/)[1];
+        console.log(tractor.tractorJob.asString());
         verify(tractor_data_dir);
     }
     

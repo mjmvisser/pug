@@ -79,12 +79,14 @@ const QString TractorCmd::asString(int indent) const
         stream << " -expand {1}";
 
     if (m_service.length() > 0)
-        stream << " -service { " << m_service << " }";
+        stream << " -service {" << m_service << "}";
+    else
+        stream << " -service {Generic}";
 
     if (m_tags.length() > 0)
-        stream << " -tags { " << m_tags << " }";
+        stream << " -tags {" << m_tags << "}";
 
-    stream << " { " << m_cmd << " }" << endl;
+    stream << " {" << m_cmd << "}" << endl;
 
     return s;
 }

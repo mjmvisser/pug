@@ -45,6 +45,12 @@ Root {
             name: "shotgunPush"
             mode: ShotgunOperation.Push
             shotgun: shotgun
+        },
+        TractorOperation {
+            id: tractor
+            name: "tractor"
+            mode: TractorOperation.Submit
+            target: update
         }
     ]
 
