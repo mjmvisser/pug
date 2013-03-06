@@ -3,10 +3,10 @@ import Pug 1.0
 
 Process {
     id: self
-    count: input !== null ? input.numDetails() : 0
-
     property var input
     property bool filmstrip: false 
+
+    count: input && input.details ? input.details.length : 0
 
     inputs: Input { name: "input" }
     params: Param { name: "filmstrip" }
