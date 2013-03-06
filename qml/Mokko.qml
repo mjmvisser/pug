@@ -37,6 +37,9 @@ Root {
         ReleaseOperation {
             id: release
             name: "release"
+            sudo: Sudo {
+                user: "prod"
+            }
             dependencies: cook
             triggers: shotgunPush
         },
