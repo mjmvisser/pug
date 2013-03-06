@@ -12,7 +12,7 @@ Branch {
     Branch {
         id: release
         name: "release"
-        pattern: "release/{VARIATION}/v{VERSION}"
+        pattern: "release/{VARIATION}/v{VERSION}/"
         ReleaseOperation.versionField: "VERSION"
         ShotgunOperation.action: ShotgunOperation.Create
         
