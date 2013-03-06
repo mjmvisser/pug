@@ -36,6 +36,12 @@ void FileOpQueue::chmod(const QString mode, const QString target)
     m_workQueue.enqueue(FileOpQueue::Item(FileOpQueue::Item::Chmod, mode, target));
 }
 
+void FileOpQueue::chown(const QString user, const QString group, const QString target)
+{
+    m_workQueue.enqueue(FileOpQueue::Item(FileOpQueue::Item::Chown,
+                                          user + (group.isEmpty() ? "" : (":" + group)), target));
+}
+
 void FileOpQueue::copy(const QString src, const QString dest)
 {
     m_workQueue.enqueue(FileOpQueue::Item(FileOpQueue::Item::Copy, src, dest));
@@ -79,6 +85,12 @@ void FileOpQueue::continueRunning()
         case FileOpQueue::Item::Mkdir:
             argv << "mkdir" << "-p" << item.args;
             break;
+        case FileOpQueue::Item::Chmod:
+            argv << "chmod" << item.args;
+            break;
+        case FileOpQueue::Item::Chown:
+            argv << "chown" << item.args;
+            break;
         case FileOpQueue::Item::Copy:
             argv << "cp" << item.args;
             break;
@@ -92,7 +104,7 @@ void FileOpQueue::continueRunning()
             argv << "ln" << item.args;
             break;
         default:
-            qWarning() << this << "unknown file mode " << item.type;
+            PugItem::error() << this << "unknown file mode " << item.type;
             break;
         }
 
