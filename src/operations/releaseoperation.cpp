@@ -67,19 +67,6 @@ const QJSValue ReleaseOperationAttached::details() const
     return m_details;
 }
 
-Sudo *ReleaseOperationAttached::sudo()
-{
-    return m_queue->sudo();
-}
-
-void ReleaseOperationAttached::setSudo(Sudo *sudo)
-{
-    if (m_queue->sudo() != sudo) {
-        m_queue->setSudo(sudo);
-        emit sudoChanged(sudo);
-    }
-}
-
 void ReleaseOperationAttached::reset()
 {
     OperationAttached::reset();
@@ -197,24 +184,24 @@ int ReleaseOperationAttached::findLastVersion(const QVariant data) const
 
 void ReleaseOperationAttached::run()
 {
-    trace() << ".run()";
+    trace() << node() << ".run()";
     Q_ASSERT(operation());
 
     const BranchBase *branch = qobject_cast<const BranchBase *>(node());
 
     if (branch && m_target) {
+        m_queue->setSudo(operation<ReleaseOperation>()->sudo());
+
+        info() << "Releasing" << node() << "to" << m_target;
         // we can safely assume that our details are up-to-date
         Q_ASSERT(m_details.isArray());
         Q_ASSERT(branch->details().isArray());
         Q_ASSERT(m_details.property("length").toInt() == branch->details().property("length").toInt());
 
+        // copy the local detail to the target detail
         m_target->setCount(m_details.property("length").toInt());
         for (int i = 0; i < m_details.property("length").toInt(); i++) {
             m_target->details().setProperty(i, m_details.property(i));
-            const Element *element = qjsvalue_cast<Element *>(m_target->details().property(i).property("element"));
-            const QVariantMap context = qjsvalue_cast<QVariantMap>(m_target->details().property(i).property("context"));
-
-            debug() << "detail" << i << "copying element" << element->toString() << "context" << context;
         }
         emit m_target->detailsChanged();
 
@@ -235,7 +222,9 @@ void ReleaseOperationAttached::run()
 
 void ReleaseOperationAttached::releaseElement(const Element *srcElement, const Element *destElement)
 {
+    info() << "Releasing" << srcElement << "to" << destElement;
     trace() << ".releaseElement(" << srcElement << "," << destElement << ")";
+
     if (srcElement->frameList()) {
         const QStringList srcPaths = srcElement->paths();
         const QStringList destPaths = destElement->paths();
@@ -316,28 +305,22 @@ const QMetaObject *ReleaseOperationAttached::operationMetaObject() const
 }
 
 ReleaseOperation::ReleaseOperation(QObject *parent) :
-    Operation(parent)
+    Operation(parent),
+    m_sudo()
 {
 }
 
-const QString ReleaseOperation::user() const
+Sudo *ReleaseOperation::sudo()
 {
-    return m_user;
+    return m_sudo;
 }
 
-void ReleaseOperation::setUser(const QString u)
+void ReleaseOperation::setSudo(Sudo *sudo)
 {
-    m_user = u;
-}
-
-const QString ReleaseOperation::group() const
-{
-    return m_group;
-}
-
-void ReleaseOperation::setGroup(const QString g)
-{
-    m_group = g;
+    if (m_sudo != sudo) {
+        m_sudo = sudo;
+        emit sudoChanged(sudo);
+    }
 }
 
 ReleaseOperationAttached *ReleaseOperation::qmlAttachedProperties(QObject *object)

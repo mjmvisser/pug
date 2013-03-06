@@ -18,7 +18,6 @@ class ReleaseOperationAttached : public OperationAttached
     Q_PROPERTY(QString versionField READ versionFieldName WRITE setVersionFieldName NOTIFY versionFieldChanged)
     Q_PROPERTY(QJSValue details READ details NOTIFY detailsChanged)
     Q_PROPERTY(Mode mode READ mode WRITE setMode NOTIFY modeChanged)
-    Q_PROPERTY(Sudo *sudo READ sudo WRITE setSudo NOTIFY sudoChanged)
 public:
     enum Mode { Copy, Move };
 
@@ -37,9 +36,6 @@ public:
     const QJSValue details() const;
     QJSValue details();
 
-    Sudo *sudo();
-    void setSudo(Sudo *);
-
     Q_INVOKABLE virtual void reset();
     Q_INVOKABLE virtual void run();
 
@@ -51,7 +47,6 @@ signals:
     void versionFieldChanged(const QString versionField);
     void detailsChanged();
     void modeChanged(Mode mode);
-    void sudoChanged(Sudo *sudo);
 
 protected:
     void releaseElement(const Element *srcElement, const Element *destElement);
@@ -76,26 +71,20 @@ private:
 class ReleaseOperation : public Operation
 {
     Q_OBJECT
-    Q_PROPERTY(QString user READ user WRITE setUser NOTIFY userChanged)
-    Q_PROPERTY(QString group READ group WRITE setGroup NOTIFY groupChanged)
+    Q_PROPERTY(Sudo *sudo READ sudo WRITE setSudo NOTIFY sudoChanged)
 public:
     explicit ReleaseOperation(QObject *parent = 0);
 
-    const QString user() const;
-    void setUser(const QString);
-
-    const QString group() const;
-    void setGroup(const QString);
+    Sudo *sudo();
+    void setSudo(Sudo *);    
 
     static ReleaseOperationAttached *qmlAttachedProperties(QObject *);
 
 signals:
-    void userChanged(const QString user);
-    void groupChanged(const QString group);
+    void sudoChanged(Sudo *sudo);
 
 private:
-    QString m_user;
-    QString m_group;
+    Sudo *m_sudo;
 };
 
 QML_DECLARE_TYPEINFO(ReleaseOperation, QML_HAS_ATTACHED_PROPERTIES)
