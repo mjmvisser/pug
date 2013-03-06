@@ -65,8 +65,6 @@ public:
     const QJSValue details() const;
     void setDetails(const QJSValue &);
 
-    Q_INVOKABLE int numDetails() const;
-
     const NodeBase *rootBranch() const;
     NodeBase *rootBranch();
 
@@ -81,6 +79,10 @@ public:
     void setX(qreal);
     qreal y() const;
     void setY(qreal);
+
+//    // adds/removes an extra dependency
+//    Q_INVOKABLE void addExtraDependency(NodeBase *other);
+//    Q_INVOKABLE void removeExtraDependency(NodeBase *other);
 
 signals:
     void paramsChanged();
@@ -143,6 +145,7 @@ private:
     int m_count;
     int m_index;
     qreal m_x, m_y; // should this be QVector2D? does it matter?
+//    QList<NodeBase *> m_extraDependencies;
 };
 
 Q_DECLARE_METATYPE(NodeBase*) // makes available to QVariant

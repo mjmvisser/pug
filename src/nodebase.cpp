@@ -226,14 +226,6 @@ void NodeBase::setDetails(const QJSValue &details)
     }
 }
 
-int NodeBase::numDetails() const
-{
-    if (m_details.isArray())
-        return m_details.property("length").toInt();
-    else
-        return 0;
-}
-
 int NodeBase::childIndex() const
 {
     const NodeBase *p = parent<NodeBase>();
@@ -300,8 +292,6 @@ const NodeBase *NodeBase::firstNamedParent() const
 
 NodeBase *NodeBase::node(const QString n)
 {
-    trace() << ".node(" << n << ")";
-
     if (n.isNull())
         return 0;
 
@@ -341,8 +331,6 @@ NodeBase *NodeBase::node(const QString n)
 
 const NodeBase *NodeBase::node(const QString n) const
 {
-    trace() << ".node(" << n << ")";
-
     if (n.isNull())
         return 0;
 
@@ -383,13 +371,11 @@ const NodeBase *NodeBase::node(const QString n) const
 const QString NodeBase::path() const
 {
     QString path = objectName();
-    path.prepend("/");
 
     const NodeBase *p = firstNamedParent();
-    while (p) {
-        path.prepend(p->objectName());
+    if (p) {
         path.prepend("/");
-        p = p->firstNamedParent();
+        path.prepend(p->path());
     }
 
     return path;
@@ -415,7 +401,6 @@ const NodeBase *NodeBase::nodeInFirstNamedParent(const QString n) const
 
 NodeBase *NodeBase::nodeInChildren(const QString n)
 {
-    trace() << ".nodeInChildren(" << n << ")";
     foreach (QObject *o, children()) {
         NodeBase* node = qobject_cast<NodeBase *>(o);
         if (node) {
@@ -430,7 +415,6 @@ NodeBase *NodeBase::nodeInChildren(const QString n)
 
 const NodeBase *NodeBase::nodeInChildren(const QString n) const
 {
-    trace() << ".nodeInChildren(" << n << ")";
     foreach (const QObject *o, children()) {
         const NodeBase* node = qobject_cast<const NodeBase *>(o);
         if (node) {
@@ -459,6 +443,11 @@ const QList<const NodeBase *> NodeBase::upstream() const
         }
     }
 
+//    // add hard dependencies
+//    foreach (const NodeBase *dep, m_extraDependencies) {
+//        result.append(dep);
+//    }
+
     return result;
 }
 
@@ -477,6 +466,11 @@ const QVariantList NodeBase::upstreamNodes()
             }
         }
     }
+
+//    // add hard dependencies
+//    foreach (NodeBase *dep, m_extraDependencies) {
+//        result.append(QVariant::fromValue(dep));
+//    }
 
     return result;
 }
@@ -497,6 +491,11 @@ const QList<NodeBase *> NodeBase::upstream()
             }
         }
     }
+
+//    // add hard dependencies
+//    foreach (NodeBase *dep, m_extraDependencies) {
+//        result.append(dep);
+//    }
 
     return result;
 }
@@ -701,3 +700,15 @@ void NodeBase::setY(qreal y)
         emit yChanged(y);
     }
 }
+
+//void NodeBase::addExtraDependency(NodeBase *other)
+//{
+//    if (!m_extraDependencies.contains(other))
+//        m_extraDependencies.append(other);
+//}
+//
+//void NodeBase::removeExtraDependency(NodeBase *other)
+//{
+//    if (m_extraDependencies.contains(other))
+//        m_extraDependencies.removeAll(other);
+//}
