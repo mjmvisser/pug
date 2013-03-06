@@ -500,22 +500,30 @@ bool BranchBase::fieldsComplete(const QString pattern, const QVariantMap fields)
 
 const QString BranchBase::map(const QVariant fields) const
 {
+    debug() << "mapping" << m_pattern << "with" << fields;
     trace() << ".map(" << fields << ")";
 
-    if (fields.isValid() && fields.canConvert<QVariantMap>() && fieldsComplete(m_pattern, fields.toMap())) {
-        QString mappedParent;
-        if (m_pattern.length() == 0 || m_pattern[0] != '/') {
-            // not absolute
-            const BranchBase *rootBranch = qobject_cast<const BranchBase *>(root());
-            debug() << "root" << rootBranch;
-            // recurse
-            if (rootBranch)
-                mappedParent = rootBranch->map(fields);
-        }
-        return mappedParent + formatFields(m_pattern, fields.toMap());
+    if (!fields.isValid()) {
+        error() << "Can't map" << m_pattern << "with invalid fields";
+        return QString();
+    } else if (!fields.canConvert<QVariantMap>()) {
+        error() << "Can't map" << m_pattern << "with non-map fields" << fields;
+        return QString();
+    } else if (!fieldsComplete(m_pattern, fields.toMap())) {
+        error() << "Can't map" << m_pattern << "with incomplete fields" << fields.toMap();
+        return QString();
     }
 
-    return QString();
+    QString mappedParent;
+    if (m_pattern.length() == 0 || m_pattern[0] != '/') {
+        // not absolute
+        const BranchBase *rootBranch = qobject_cast<const BranchBase *>(root());
+        debug() << "root" << rootBranch;
+        // recurse
+        if (rootBranch)
+            mappedParent = rootBranch->map(fields);
+    }
+    return mappedParent + formatFields(m_pattern, fields.toMap());
 }
 
 const QStringList BranchBase::listMatchingPaths(const QVariantMap context) const
@@ -523,33 +531,39 @@ const QStringList BranchBase::listMatchingPaths(const QVariantMap context) const
     trace() << ".listMatchingPaths(" << context << ")";
     QStringList result;
 
-    QString path = map(context);
+    // cases to handle:
+    // 1. we have all the fields we need to match a single path
+    // 2. we have all the fields we need to match a single sequence
+    // 3. we are missing some fields and thus will match multiple paths/sequences
 
-    debug() << "initial map got" << path;
+    if (fieldsComplete(m_pattern, context)) {
+        // case 1 or 2
+        QString path = map(context);
+        debug() << "listing paths, map of" << context << "got" << path;
+        Q_ASSERT(!path.isEmpty());
 
-    if (!path.isEmpty()) {
+        // check for case 1
         QFileInfo pathInfo(path);
-        debug() << "hidden:" << pathInfo.isHidden();
-        debug() << "dir:" << pathInfo.isDir();
-        debug() << "file:" << pathInfo.isFile();
-        debug() << "exists:" << pathInfo.exists();
-        debug() << "m_exactMatchFlag:" << m_exactMatchFlag;
-        if (!pathInfo.isHidden()) {
-            if ((pathInfo.isDir() && !m_exactMatchFlag) ||
-                (pathInfo.isFile() && m_exactMatchFlag)) {
-                result << path;
-                debug() << "returning" << result;
-                return result;
-            }
+        if (!pathInfo.isHidden() &&
+              ((pathInfo.isDir() && !m_exactMatchFlag) ||
+               (pathInfo.isFile() && m_exactMatchFlag)))
+        {
+            result << path;
+            // early exit, we map to a single path exactly that exists
+            return result;
+        }
+
+        // check for case 2
+        if (m_pattern.length() > 0 && m_pattern[0] == '/') {
+            // absolute
+            debug() << "absolute file path detected";
+            QFileInfo pathInfo(path);
+            result = listMatchingPathsHelper(pathInfo.absoluteDir(), context);
+            return result;
         }
     }
 
-    if (m_pattern.length() > 0 && m_pattern[0] == '/') {
-        // absolute
-        debug() << "absolute file path detected";
-        QFileInfo pathInfo(path);
-        result = listMatchingPathsHelper(pathInfo.absoluteDir(), context);
-    } else if (root()) {
+    if (root()) {
         QString parentPath = root()->map(context);
 
         if (!parentPath.isEmpty()) {
@@ -563,6 +577,7 @@ const QStringList BranchBase::listMatchingPaths(const QVariantMap context) const
             warning() << ".map returned an empty path!";
         }
     }
+
     return result;
 }
 
