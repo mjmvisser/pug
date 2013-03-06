@@ -82,6 +82,8 @@ private:
     QVariant m_runningEnv;
 };
 
+QDebug operator<<(QDebug dbg, ShotgunOperation::Mode mode);
+
 QML_DECLARE_TYPEINFO(ShotgunOperation, QML_HAS_ATTACHED_PROPERTIES)
 
 #endif

@@ -16,11 +16,11 @@ Branch::Branch(QObject *parent) :
 
 void Branch::onUpdate(const QVariant context)
 {
-    trace() << "onUpdate" << context;
+    trace() << ".onUpdate(" << context << ")";
 
     QStringList paths = listMatchingPaths(context.toMap());
 
-    debug() << this << "onUpdate got" << paths;
+    info() << "Update matched" << paths << "from" << pattern();
 
     setPaths(paths, context.toMap());
     emit updated(OperationAttached::Finished);

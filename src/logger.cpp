@@ -112,5 +112,5 @@ QDebug operator<<(QDebug dbg, const QJSValue jsvalue)
         }
     }
 
-    return dbg.maybeSpace();
+    return dbg.space();
 }

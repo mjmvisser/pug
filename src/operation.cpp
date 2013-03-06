@@ -525,6 +525,7 @@ void Operation::resetAll(NodeBase *node)
 
 void Operation::run(NodeBase *node, const QVariant context, bool reset)
 {
+    info() << "Running" << name() << "on" << node->path();
     trace() << ".run(" << node << "," << context << "," << reset << ")";
     if (!node)
         return;

@@ -5,6 +5,7 @@ TestOperationAttached::TestOperationAttached(QObject *parent) :
 }
 
 void TestOperationAttached::run() {
+    info() << "Testing" << node();
     trace() << node() << operation() << ".run()";
     if (context().value("error").toBool()) {
         error() << "intentionally generating an error for test purposes";

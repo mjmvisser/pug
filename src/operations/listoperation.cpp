@@ -10,6 +10,8 @@ ListOperationAttached::ListOperationAttached(QObject *parent) :
 
 void ListOperationAttached::run()
 {
+    info() << "Listing" << node();
+    trace() << node() << ".run()";
     BranchBase *branch = qobject_cast<BranchBase *>(node());
 
     if (branch) {

@@ -64,7 +64,7 @@ void File::onUpdate(const QVariant context)
 
     setPaths(paths, context.toMap());
 
-    debug() << "onUpdate set paths" << paths;
+    info() << "Update matched" << paths << "from" << pattern();
 
     emit updated(OperationAttached::Finished);
 }
@@ -161,6 +161,8 @@ void File::onCook(const QVariant context)
                     details().property(index).setProperty("element", newQObject(destElement));
                     details().property(index).setProperty("context", toScriptValue(destContext));
                     debug() << "set detail[" << index << "] to " << details().property(index);
+
+                    info() << "Cook generated:" << destElement->paths();
 
                 } else if (!inputDetail.property("element").isQObject()) {
                     error() << "input.details[" << index << "].element does not exist or is not an Element";

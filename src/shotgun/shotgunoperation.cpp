@@ -36,9 +36,11 @@ void ShotgunOperationAttached::reset()
 
 void ShotgunOperationAttached::run()
 {
-    debug() << node() << operation() << ".run";
-
     ShotgunOperation *sgop = operation<ShotgunOperation>();
+    Q_ASSERT(sgop);
+
+    info() << "Shotgun" << sgop->mode() << "on" << node();
+    trace() << node() << operation() << ".run [mode is" << sgop->node() << "]";
 
     if (!sgop->shotgun()) {
         error() << sgop << "has no shotgun object";
@@ -138,7 +140,6 @@ void ShotgunOperationAttached::createEntity(const ShotgunEntity* sge, const QVar
 
     QVariantMap data = sge->buildData(context);
 
-    debug() << node() << operation() << ".createEntity" << sge;
     debug() << "--type" << sge->name() << "data" << QJsonDocument::fromVariant(data);
 
     ShotgunReply *reply = sgop->shotgun()->create(sge->name(), data, sge->buildFields());
@@ -170,7 +171,6 @@ void ShotgunOperationAttached::batchCreateEntities(ShotgunEntity *sge, const QVa
         batchRequests.append(batchRequest);
     }
 
-    debug() << node() << operation() << ".batchCreateEntities" << sge;
     debug() << "requests:" << batchRequests;
 
     ShotgunReply *reply = sgop->shotgun()->batch(batchRequests);
@@ -209,7 +209,6 @@ void ShotgunOperationAttached::onReadCreateEntityFinished(const QVariant result)
 
     QObject::sender()->deleteLater();
 
-    debug() << node() << operation() << ".onReadCreateEntityFinished";
     debug() << "received" << QJsonDocument::fromVariant(result);
 
     m_pendingTransactions--;
@@ -234,7 +233,6 @@ void ShotgunOperationAttached::onBatchCreateEntitiesFinished(const QVariant resu
 
     QObject::sender()->deleteLater();
 
-    debug() << node() << operation() << ".onReadCreateEntityFinished";
     debug() << "received" << QJsonDocument::fromVariant(result);
 
     m_pendingTransactions--;
@@ -369,4 +367,21 @@ void ShotgunOperation::setShotgun(Shotgun *sg)
 ShotgunOperationAttached *ShotgunOperation::qmlAttachedProperties(QObject *object)
 {
     return new ShotgunOperationAttached(object);
+}
+
+QDebug operator<<(QDebug dbg, ShotgunOperation::Mode mode)
+{
+    switch(mode) {
+    case ShotgunOperation::Pull:
+        dbg << "Pull";
+        break;
+    case ShotgunOperation::Push:
+        dbg << "Push";
+        break;
+    default:
+        dbg << "Unknown!";
+        break;
+    }
+
+    return dbg;
 }

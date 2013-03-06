@@ -43,7 +43,8 @@ CookOperationAttached::Mode CookOperationAttached::mode() const
 
 void CookOperationAttached::run()
 {
-    trace() << ".run() [cook mode is" << m_mode << "]";
+    info() << "Cooking" << node();
+    trace() << node() << ".run() [cook mode is" << m_mode << "]";
     m_indexStatus.clear();
     if (m_mode == CookOperationAttached::Cook) {
         emit cook(context());
@@ -54,7 +55,7 @@ void CookOperationAttached::run()
                 emit cookAtIndex(i, context());
             }
         } else {
-            warning() << "nothing to cook";
+            warning() << node() << "nothing to cook";
             setStatus(OperationAttached::Finished);
             continueRunning();
         }

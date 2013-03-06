@@ -367,7 +367,7 @@ QDebug &operator<<(QDebug &dbg, const Element *element)
         dbg.nospace() << "name = " << element->objectName() << ", ";
     dbg.nospace() << "value = " << element->toString() << ")";
 
-    return dbg.maybeSpace();
+    return dbg.space();
 }
 
 QDataStream &operator<<(QDataStream &stream, const Element *element)

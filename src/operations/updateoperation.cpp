@@ -37,6 +37,8 @@ void UpdateOperationAttached::setUpdatable(bool c)
 
 void UpdateOperationAttached::run()
 {
+    info() << "Updating" << node();
+    trace() << node() << ".update()";
     if (m_updatableFlag) {
         emit update(context());
     } else {

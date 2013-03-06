@@ -96,6 +96,8 @@ private:
     TractorJob *m_tractorJob;
 };
 
+QDebug operator<<(QDebug dbg, TractorOperation::Mode mode);
+
 QML_DECLARE_TYPEINFO(TractorOperation, QML_HAS_ATTACHED_PROPERTIES)
 
 #endif

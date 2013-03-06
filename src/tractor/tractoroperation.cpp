@@ -59,7 +59,8 @@ void TractorOperationAttached::setSerialSubtasks(bool flag)
 
 void TractorOperationAttached::run()
 {
-    trace() << node() << ".run()";
+    info() << "Tractor" << operation<TractorOperation>()->mode() << "on" << node();
+    trace() << node() << ".run() [mode is" << operation<TractorOperation>()->mode() << "on" << node() << "]";
 
     switch(operation<TractorOperation>()->mode()) {
     case TractorOperation::Submit:
@@ -355,4 +356,27 @@ TractorJob *TractorOperation::buildTractorJob(NodeBase *node, const QVariant con
 TractorOperationAttached *TractorOperation::qmlAttachedProperties(QObject *object)
 {
     return new TractorOperationAttached(object);
+}
+
+QDebug operator<<(QDebug dbg, TractorOperation::Mode mode)
+{
+    switch(mode) {
+    case TractorOperation::Submit:
+        dbg << "Submit";
+        break;
+    case TractorOperation::Generate:
+        dbg << "Generate";
+        break;
+    case TractorOperation::Execute:
+        dbg << "Execute";
+        break;
+    case TractorOperation::Cleanup:
+        dbg << "Cleanup";
+        break;
+    default:
+        dbg << "Unknown!";
+        break;
+    }
+
+    return dbg;
 }
