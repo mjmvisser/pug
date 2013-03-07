@@ -54,6 +54,11 @@ protected:
 
     virtual const QMetaObject *operationMetaObject() const;
 
+    // current version for a node with a version field
+    int version(const QVariant context);
+
+    void resetVersion();
+
 private slots:
     void onFileOpQueueFinished();
     void onFileOpQueueError();
@@ -63,6 +68,7 @@ private slots:
 private:
     BranchBase *m_target;
     QString m_versionFieldName;
+    int m_version;
     QJSValue m_details;
     Mode m_mode;
     FileOpQueue* m_queue;
