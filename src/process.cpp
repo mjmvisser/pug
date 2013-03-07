@@ -68,20 +68,18 @@ void Process::setIgnoreExitCode(bool flag)
     }
 }
 
-const QString Process::stdout(int i) const
-{
-    if (i < m_processes.count() && m_processes.at(i) && m_processes[i]->state() == QProcess::NotRunning) {
-        return m_processes[i]->readAllStandardOutput();
-    }
-
-    return QString();
-}
-
 void Process::onCookAtIndex(int i, const QVariant context)
 {
     trace() << ".onCookAtIndex(" << i << "," << context << ")";
 
     setIndex(i);
+
+    Q_ASSERT(details().isArray());
+    Q_ASSERT(details().property(i).isUndefined());
+
+    // save the context in the detail
+    details().setProperty(i, newObject());
+    details().property(i).setProperty("context", toScriptValue(context));
 
     if (m_processes.size() != count())
         m_processes.resize(count());
@@ -102,6 +100,7 @@ void Process::onCookAtIndex(int i, const QVariant context)
 
     m_processes[i] = new QProcess(this);
 
+    connect(m_processes[i], &QProcess::readyReadStandardOutput, this, &Process::onReadyReadStandardOutput);
     connect(m_processes[i], &QProcess::readyReadStandardError, this, &Process::onReadyReadStandardError);
     connect(m_processes[i], static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             this, &Process::onProcessFinished);
@@ -142,10 +141,9 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     Q_ASSERT(i >= 0);
 
     Q_ASSERT(details().isArray());
+    Q_ASSERT(!details().property(i).isUndefined());
 
-    QString stdout = process->readAllStandardOutput();
-    if (details().property(i).isUndefined())
-        details().setProperty(i, newObject());
+    QString stdout = m_stdouts.take(process);
     if (details().property(i).property("process").isUndefined())
         details().property(i).setProperty("process", newObject());
     details().property(i).property("process").setProperty("stdout", stdout);
@@ -164,6 +162,7 @@ void Process::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
     trace() << ".onProcessFinished(" << exitCode << "," << exitStatus << ") [signal from" << process << "]";
 
     if (exitStatus == QProcess::CrashExit || (!m_ignoreExitCode && exitCode != 0)) {
+        error() << "process failed:" << m_argv;
         handleFinishedProcess(process, OperationAttached::Error);
     } else {
         handleFinishedProcess(process, OperationAttached::Finished);
@@ -177,13 +176,20 @@ void Process::onProcessError(QProcess::ProcessError err)
     QProcess *process = qobject_cast<QProcess *>(QObject::sender());
     trace() << ".onProcessError(" << process->errorString() << ")";
 
+    error() << "process failed:" << m_argv;
     handleFinishedProcess(process, OperationAttached::Error);
+}
+
+void Process::onReadyReadStandardOutput()
+{
+    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
+    m_stdouts[process].append(process->readAllStandardOutput());
 }
 
 void Process::onReadyReadStandardError()
 {
     QProcess *process = qobject_cast<QProcess *>(QObject::sender());
-    warning() << process->readAllStandardError();
+    debug() << process->readAllStandardError();
 }
 
 void Process::componentComplete()

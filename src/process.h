@@ -31,8 +31,6 @@ public:
     bool ignoreExitCode() const;
     void setIgnoreExitCode(bool);
 
-    Q_INVOKABLE const QString stdout(int index) const;
-
 signals:
     void argvChanged(const QStringList argv);
     void envChanged();
@@ -45,6 +43,7 @@ protected slots:
     void onCookAtIndex(int index, const QVariant context);
     void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onProcessError(QProcess::ProcessError);
+    void onReadyReadStandardOutput();
     void onReadyReadStandardError();
 
     void handleFinishedProcess(QProcess *process, OperationAttached::Status status);
@@ -57,6 +56,7 @@ private:
     QJSValue m_env;
     bool m_ignoreExitCode;
     QVector<QProcess *> m_processes;
+    QHash<QProcess *, QString> m_stdouts;
 };
 //Q_DECLARE_METATYPE(Node*) // makes available to QVariant
 
