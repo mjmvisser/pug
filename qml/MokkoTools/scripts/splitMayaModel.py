@@ -21,7 +21,7 @@ if len(args) != 2:
 if not "{lod}" in args[1]:
     parser.error("OUTPUT must contain {lod}")
 
-sys.stderr.write("inputs are" + str(options) + " " + str(args))
+sys.stderr.write("inputs are " + str(options) + " " + str(args))
 
 import pymel.core as pm
 
@@ -39,13 +39,16 @@ for transform in pm.listTransforms():
             pm.parent(transform, world=True)
             pm.exportSelected(path, preserveReferences=True, force=True)
             details.append({"element": {"path": path},
-                            "context": {"lod": lod}})
+                            "context": {"LOD": lod}})
     except AttributeError:
         pass
 
-sys.stderr.write("output is " + str(details))
-
 # pass outputs back
-print json.dumps(details)
+print "begin-json details"
+print json.dumps(details, indent=4)
+print "===="
+
+# flush stdout, as os._exit does not do so
+sys.stdout.flush()
 
 os._exit(0)
