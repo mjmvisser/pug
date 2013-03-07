@@ -5,18 +5,20 @@ UpdateOperationAttached::UpdateOperationAttached(QObject *parent) :
     OperationAttached(parent),
     m_updatableFlag(false)
 {
-    if (node()->hasSignal(SIGNAL(update(const QVariant))) &&
-        node()->hasSignal(SIGNAL(updated(int))))
-    {
+    bool haveUpdateSignal = node()->hasSignal(SIGNAL(update(const QVariant)));
+    bool haveUpdatedSignal = node()->hasSignal(SIGNAL(updated(int)));
+
+    if (haveUpdateSignal && haveUpdatedSignal) {
         connect(this, SIGNAL(update(const QVariant)),
                 node(), SIGNAL(update(const QVariant)));
         connect(node(), SIGNAL(updated(int)),
                 this, SLOT(onUpdated(int)));
         m_updatableFlag = true;
         debug() << node() << "is updatable";
-    } else if (node()->hasSignal(SIGNAL(update(const QVariant))) ||
-               node()->hasSignal(SIGNAL(updated(int)))) {
-        error() << node() << "is missing the update or updated signal";
+    } else if (!haveUpdateSignal && haveUpdatedSignal) {
+        error() << node() << "is missing the update signal";
+    } else if (haveUpdateSignal && !haveUpdatedSignal) {
+        error() << node() << "is missing the updated signal";
     } else {
         debug() << node() << "is not updatable";
     }
@@ -37,8 +39,9 @@ void UpdateOperationAttached::setUpdatable(bool c)
 
 void UpdateOperationAttached::run()
 {
-    info() << "Updating" << node();
+    info() << "Updating" << node() << "with" << context();
     trace() << node() << ".update()";
+
     if (m_updatableFlag) {
         emit update(context());
     } else {
