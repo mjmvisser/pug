@@ -31,7 +31,7 @@ Process {
 
     onCookedAtIndex: {
         debug("MakeThumbnail.onCooked");
-        var newElement = Util.newElement();
+        var newElement = Util.element();
         newElement.pattern = __outputPath;
         details[index].element = newElement;
         details[index].fields = input.details[index].fields;
