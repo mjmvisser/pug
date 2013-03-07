@@ -20,7 +20,7 @@ class NodeBase : public PugItem
     Q_PROPERTY(QQmlListProperty<Output> outputs READ outputs_ NOTIFY outputsChanged)
     Q_PROPERTY(QQmlListProperty<NodeBase> children READ nodes_ NOTIFY nodesChanged)
     Q_PROPERTY(bool active READ isActive WRITE setActive NOTIFY activeChanged)
-    Q_PROPERTY(QJSValue details READ details NOTIFY detailsChanged)
+    Q_PROPERTY(QJSValue details READ details WRITE setDetails NOTIFY detailsChanged)
     Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(int index READ index WRITE setIndex NOTIFY indexChanged)
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
@@ -80,10 +80,6 @@ public:
     qreal y() const;
     void setY(qreal);
 
-//    // adds/removes an extra dependency
-//    Q_INVOKABLE void addExtraDependency(NodeBase *other);
-//    Q_INVOKABLE void removeExtraDependency(NodeBase *other);
-
 signals:
     void paramsChanged();
     void nodesChanged();
@@ -91,7 +87,7 @@ signals:
     void outputsChanged();
     void activeChanged(bool active);
     void detailsChanged();
-    void countChanged(int index);
+    void countChanged(int count);
     void indexChanged(int index);
     void xChanged(qreal x);
     void yChanged(qreal y);

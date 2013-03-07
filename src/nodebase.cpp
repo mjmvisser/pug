@@ -700,15 +700,3 @@ void NodeBase::setY(qreal y)
         emit yChanged(y);
     }
 }
-
-//void NodeBase::addExtraDependency(NodeBase *other)
-//{
-//    if (!m_extraDependencies.contains(other))
-//        m_extraDependencies.append(other);
-//}
-//
-//void NodeBase::removeExtraDependency(NodeBase *other)
-//{
-//    if (m_extraDependencies.contains(other))
-//        m_extraDependencies.removeAll(other);
-//}
