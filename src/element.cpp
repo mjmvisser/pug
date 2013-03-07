@@ -342,11 +342,14 @@ const QRegularExpression Element::regExpFromPattern(const QString pattern)
     if (pattern.isNull())
         return QRegularExpression();
 
+    static const QRegularExpression MATCH_PATTERN_DIRECTORY("^(.*/)$");
     static const QRegularExpression MATCH_PATTERN_FILE("^(.*/)?([^.]*)?(?:[.]([^.]*))?$");
     static const QRegularExpression MATCH_PATTERN_SEQUENCE("^(.*/)?(?:([^.]*))(?:[.](?:%0(\\d+)d))(?:[.]([^.]*))?$");
 
     QString regExpStr = pattern;
-    if (MATCH_PATTERN_FILE.match(pattern).hasMatch()) {
+    if (MATCH_PATTERN_DIRECTORY.match(pattern).hasMatch()) {
+        regExpStr.replace(MATCH_PATTERN_FILE, "^(?<directory>\\1)$");
+    } else if (MATCH_PATTERN_FILE.match(pattern).hasMatch()) {
         regExpStr.replace(MATCH_PATTERN_FILE, "^(?<directory>\\1)(?<baseName>\\2)[.](?<extension>\\3)$");
     } else if (MATCH_PATTERN_SEQUENCE.match(pattern).hasMatch()) {
         regExpStr.replace(MATCH_PATTERN_SEQUENCE, "^(?<directory>\\1)(?<baseName>\\2)[.]((?<frame>[0-9.]{\\3}?)|(?<frameSpec>%0\\d+d))[.](?<extension>\\4)$");
@@ -365,7 +368,7 @@ QDebug &operator<<(QDebug &dbg, const Element *element)
     dbg.nospace() << "Element(" << (void *)element;
     if (!element->objectName().isEmpty())
         dbg.nospace() << "name = " << element->objectName() << ", ";
-    dbg.nospace() << "value = " << element->toString() << ")";
+    dbg.nospace() << ", value = " << element->toString() << ")";
 
     return dbg.space();
 }
