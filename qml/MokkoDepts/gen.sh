@@ -44,8 +44,8 @@ if [[ -z "$input_plate" ]]; then
     exit 1
 fi
 
-~/workspace/pug/configs/MokkoConfig/genundist2 --platePath $input_plate --outputFormat serena_2k --outputPath exports/${MOKKO_SEQUENCE}_${MOKKO_SHOT}_plate_main_${version}_2048x1080.%04d.jpg
-~/workspace/pug/configs/MokkoConfig/genundist2 --platePath $input_plate --outputFormat serena_1k --outputPath exports/${MOKKO_SEQUENCE}_${MOKKO_SHOT}_plate_main_${version}_1024x540.%04d.jpg
+~/workspace/pug/qml/MokkoDepts/genundist2 --platePath $input_plate --outputFormat serena_2k --outputPath exports/${MOKKO_SEQUENCE}_${MOKKO_SHOT}_plate_main_${version}_2048x1080.%04d.jpg
+~/workspace/pug/qml/MokkoDepts/genundist2 --platePath $input_plate --outputFormat serena_1k --outputPath exports/${MOKKO_SEQUENCE}_${MOKKO_SHOT}_plate_main_${version}_1024x540.%04d.jpg
 
 sudo -u prod mv exports/${MOKKO_SEQUENCE}_${MOKKO_SHOT}_plate_main_${version}_2048x1080.* ../../release/main/${version}/render/2048x1080/jpg/.
 sudo -u prod mv exports/${MOKKO_SEQUENCE}_${MOKKO_SHOT}_plate_main_${version}_1024x540.* ../../release/main/${version}/render/1024x540/jpg/.
