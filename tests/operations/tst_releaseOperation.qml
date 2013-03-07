@@ -139,7 +139,7 @@ PugTestCase {
 
     function test_lastVersion() {
         var context = {ROOT: tmpDir, FOO: "foo", BAR: "bar"};
-        compare(releaseFile.ReleaseOperation.findLastVersion(context), 2);
+        compare(releaseBranch.ReleaseOperation.findLastVersion(context), 2);
     }
 
     function test_releaseFile() {
@@ -186,10 +186,10 @@ PugTestCase {
         
         var releasePath = tmpDir + "releasetests/abc/foo/release/main/v003/dag.%04d.txt";
         
-        console.log(workSeq.details.length);
-        for (var i = 0; i < workSeq.details.length; i++) {
-            console.log("detail " + i + " " + workSeq.details[i].pattern);
-        }
+        // console.log(workSeq.details.length);
+        // for (var i = 0; i < workSeq.details.length; i++) {
+            // console.log("detail " + i + " " + workSeq.details[i].pattern);
+        // }
         
         compare(workSeq.details.length, 1);
         compare(releaseSeq.details.length, 1);
