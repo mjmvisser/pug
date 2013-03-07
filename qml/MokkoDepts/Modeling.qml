@@ -93,6 +93,7 @@ Branch {
         }
 
         SplitMayaModel {
+            name: "workLodScene"
             id: workMayaLod
             input: workMayaMaster
             ReleaseOperation.target: releaseMayaLod 
