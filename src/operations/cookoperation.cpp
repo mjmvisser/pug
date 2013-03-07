@@ -5,32 +5,34 @@ CookOperationAttached::CookOperationAttached(QObject *parent) :
     OperationAttached(parent),
     m_mode(CookOperationAttached::Skip)
 {
-    if (node()->hasSignal(SIGNAL(cookAtIndex(int, const QVariant))) &&
-        node()->hasSignal(SIGNAL(cookedAtIndex(int, int))))
-    {
+    bool haveCookAtIndexSignal = node()->hasSignal(SIGNAL(cookAtIndex(int, const QVariant)));
+    bool haveCookedAtIndexSignal = node()->hasSignal(SIGNAL(cookedAtIndex(int, int)));
+
+    bool haveCookSignal = node()->hasSignal(SIGNAL(cook(const QVariant)));
+    bool haveCookedSignal = node()->hasSignal(SIGNAL(cooked(int)));
+
+    if (haveCookAtIndexSignal && haveCookedAtIndexSignal) {
         connect(this, SIGNAL(cookAtIndex(int, const QVariant)),
                 node(), SIGNAL(cookAtIndex(int, const QVariant)));
         connect(node(), SIGNAL(cookedAtIndex(int, int)),
                 this, SLOT(onCookedAtIndex(int, int)));
         m_mode = CookOperationAttached::CookAtIndex;
         debug() << node() << "found .cookAtIndex";
-    } else if (node()->hasSignal(SIGNAL(cookAtIndex(int index, const QVariant))) ||
-               node()->hasSignal(SIGNAL(cookedAtIndex(int index, int status))))
-    {
-        error() << node() << "is missing the cook or cooked signal";
-    } else if (node()->hasSignal(SIGNAL(cook(const QVariant))) &&
-               node()->hasSignal(SIGNAL(cooked(int))))
-    {
+    } else if (!haveCookAtIndexSignal && haveCookedAtIndexSignal) {
+        error() << node() << "is missing the cookAtIndex signal";
+    } else if (haveCookAtIndexSignal && !haveCookedAtIndexSignal) {
+        error() << node() << "is missing the cookedAtIndex signal";
+    } else if (haveCookSignal && haveCookedSignal) {
         connect(this, SIGNAL(cook(const QVariant)),
                 node(), SIGNAL(cook(const QVariant)));
         connect(node(), SIGNAL(cooked(int)),
                 this, SLOT(onCooked(int)));
         m_mode = CookOperationAttached::Cook;
         debug() << node() << "found .cook";
-    } else if (node()->hasSignal(SIGNAL(cook(const QVariant))) ||
-               node()->hasSignal(SIGNAL(cooked(int))))
-    {
-        error() << node() << "is missing the cook or cooked signal";
+    } else if (!haveCookSignal && haveCookedSignal) {
+        error() << node() << "is missing the cook signal";
+    } else if (haveCookSignal && !haveCookedSignal) {
+        error() << node() << "is missing the cooked signal";
     } else {
         debug() << node() << "is not cookable";
     }
@@ -43,8 +45,9 @@ CookOperationAttached::Mode CookOperationAttached::mode() const
 
 void CookOperationAttached::run()
 {
-    info() << "Cooking" << node();
+    info() << "Cooking" << node() << "with" << context();
     trace() << node() << ".run() [cook mode is" << m_mode << "]";
+
     m_indexStatus.clear();
     if (m_mode == CookOperationAttached::Cook) {
         emit cook(context());
@@ -55,7 +58,7 @@ void CookOperationAttached::run()
                 emit cookAtIndex(i, context());
             }
         } else {
-            warning() << node() << "nothing to cook";
+            warning() << node() << "has nothing to cook";
             setStatus(OperationAttached::Finished);
             continueRunning();
         }
