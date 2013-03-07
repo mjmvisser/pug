@@ -12,9 +12,9 @@ Node::Node(QObject *parent) :
 
 const QString Node::tempFile(const QString fileName) const
 {
-    const Branch *parentBranch = parent<Branch>();
+    const Branch *parentBranch = firstParent<Branch>();
     if (parentBranch) {
-        const Element *element = parentBranch->element(0);;
+        const Element *element = parentBranch->element(0);
 
         if (element) {
             return QDir(element->directory()).absoluteFilePath(fileName);
