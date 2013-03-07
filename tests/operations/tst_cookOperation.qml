@@ -122,6 +122,33 @@ PugTestCase {
                 }
             }
         }
+        
+        Node {
+            id: nodeA
+            name: "nodeA"
+    
+            // onInputsChanged: {
+                // inputChanged(self.input);
+            // }
+    
+            count: 5
+            
+            signal cookAtIndex(int index, var context)
+            signal cookedAtIndex(int index, int status)
+    
+            onCookAtIndex: {
+                details[index] = {"result": name + index,
+                                  "context": context};
+                detailsChanged();
+                cookedAtIndex(index, Operation.Finished);                              
+            }
+        }   
+        
+        TestCompound {
+            id: compound
+            name: "compound"
+            input: nodeA
+        }
     }
     
     SignalSpy {
@@ -169,5 +196,18 @@ PugTestCase {
         compare(cookFile.details[0].element.path, cookPaths[0]);
         compare(cookFile.details[1].element.path, cookPaths[1]);
         compare(cookFile.details[2].element.path, cookPaths[2]);
+    }
+    
+    function test_cookCompound() {
+        var context = {};
+        cook.run(compound, context);
+        cookSpy.wait(500);
+        compare(cook.status, Operation.Finished);
+        compare(compound.CookOperation.status, Operation.Finished);
+        compare(compound.details[0].result, "nodeA0 -> nodeB0 -> nodeC0");
+        compare(compound.details[1].result, "nodeA1 -> nodeB1 -> nodeC1");
+        compare(compound.details[2].result, "nodeA2 -> nodeB2 -> nodeC2");
+        compare(compound.details[3].result, "nodeA3 -> nodeB3 -> nodeC3");
+        compare(compound.details[4].result, "nodeA4 -> nodeB4 -> nodeC4");
     }
 }
