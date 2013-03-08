@@ -11,9 +11,9 @@ Process {
     inputs: Input { name: "input" }
     params: Param { name: "filmstrip" }
 
-    function __buildOutputPath() {
-        var directory = detail(index, "element", "directory");
-        var baseName = detail(index, "element", "baseName");
+    property string outputPath: {
+        var directory = input.detail(index, "element", "directory");
+        var baseName = input.detail(index, "element", "baseName");
         var ext = self.filmstrip ? "_filmstrip.jpg" : "_thumbnail.jpg";
         if (typeof directory !== "undefined" && typeof baseName !== "undefined")
             return directory + baseName + ext;
@@ -23,18 +23,18 @@ Process {
 
     argv: [ 
         Qt.resolvedUrl("scripts/makeThumbnail.py").replace("file://", ""),
-        "--inputPath", detail(index, "element", "pattern"),
-        "--outputPath", __buildOutputPath(),
-        "--firstFrame", detail(index, "element", "firstFrame"),
-        "--lastFrame", detail(index, "element", "lastFrame")
+        "--inputPath", input.detail(index, "element", "pattern"),
+        "--outputPath", outputPath,
+        "--firstFrame", input.detail(index, "element", "firstFrame"),
+        "--lastFrame", input.detail(index, "element", "lastFrame")
     ]
 
     onCookedAtIndex: {
-        debug("MakeThumbnail.onCooked");
+        info("Generating thumbnail " + argv[4] + " from " + argv[2]);
         var newElement = Util.element();
-        newElement.pattern = __outputPath;
+        newElement.pattern = outputPath;
         details[index].element = newElement;
-        details[index].fields = input.details[index].fields;
+        details[index].context = input.details[index].context
         detailsChanged();
         
         debug("new element " + newElement.pattern);

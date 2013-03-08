@@ -4,27 +4,34 @@
 #include <QString>
 #include <QtQml>
 
-#include "pugitem.h"
+#include "nodebase.h"
 
 class ShotgunEntity;
 class Field;
 class BranchBase;
 
-class ShotgunField : public PugItem
+class ShotgunField : public NodeBase
 {
     Q_OBJECT
+    Q_PROPERTY(ShotgunEntity *entity READ entity NOTIFY entityChanged)
     Q_PROPERTY(QString field READ fieldName WRITE setFieldName NOTIFY fieldNameChanged)
     Q_PROPERTY(Type type READ type WRITE setType NOTIFY typeChanged)
-    Q_PROPERTY(BranchBase *link READ link WRITE setLink NOTIFY linksChanged)
-    Q_PROPERTY(QString linkType READ linkType WRITE setLinkType NOTIFY linkTypesChanged)
-    Q_PROPERTY(QQmlListProperty<BranchBase> links READ links_ NOTIFY linksChanged)
-    Q_PROPERTY(QStringList linkTypes READ linkTypes WRITE setLinkTypes NOTIFY linkTypesChanged)
+    Q_PROPERTY(ShotgunEntity *link READ link WRITE setLink NOTIFY linksChanged)
+    Q_PROPERTY(QQmlListProperty<ShotgunEntity> links READ links_ NOTIFY linksChanged)
     Q_PROPERTY(QString pattern READ pattern WRITE setPattern NOTIFY patternChanged)
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
-    Q_ENUMS(Type)
+    Q_PROPERTY(NodeBase *file READ file WRITE setFile NOTIFY fileChanged)
+    Q_PROPERTY(QString displayName READ displayName WRITE setDisplayName NOTIFY displayNameChanged)
+    Q_PROPERTY(UrlType urlType READ urlType WRITE setUrlType NOTIFY urlTypeChanged)
+    Q_PROPERTY(QString contentType READ contentType WRITE setContentType NOTIFY contentTypeChanged)
+    Q_PROPERTY(QVariant localStorage READ localStorage WRITE setLocalStorage NOTIFY localStorageChanged)
+    Q_ENUMS(Type UrlType)
 public:
-    enum Type { String, Number, Path, Pattern, Link, MultiLink };
+    enum Type { String, Number, Path, Pattern, Link, MultiLink, Url };
+    enum UrlType { Upload, Local, Web };
     explicit ShotgunField(QObject *parent = 0);
+
+    ShotgunEntity *entity();
 
     const QString fieldName() const;
     void setFieldName(const QString);
@@ -32,17 +39,11 @@ public:
     Type type() const;
     void setType(Type);
 
-    BranchBase *link();
-    const BranchBase *link() const;
-    void setLink(BranchBase *);
+    ShotgunEntity *link();
+    const ShotgunEntity *link() const;
+    void setLink(ShotgunEntity *);
 
-    const QString linkType() const;
-    void setLinkType(const QString);
-
-    QQmlListProperty<BranchBase> links_();
-
-    const QStringList linkTypes() const;
-    void setLinkTypes(const QStringList);
+    QQmlListProperty<ShotgunEntity> links_();
 
     const QString pattern() const;
     void setPattern(const QString);
@@ -50,40 +51,14 @@ public:
     const QVariant value() const;
     void setValue(const QVariant);
 
-    virtual const QVariant buildValue(const BranchBase *branch, const QVariantMap fields) const;
+    NodeBase *file();
+    void setFile(NodeBase *);
 
-signals:
-    void fieldNameChanged(const QString field);
-    void typeChanged(Type type);
-    void linksChanged();
-    void linkTypesChanged();
-    void patternChanged(const QString pattern);
-    void valueChanged(const QVariant value);
+    const QString displayName() const;
+    void setDisplayName(const QString);
 
-private:
-    QString m_fieldName;
-    Type m_type;
-    QList<BranchBase *> m_links;
-    QStringList m_linkTypes;
-    QString m_pattern;
-    QVariant m_value;
-};
-
-class ShotgunUrlField : public ShotgunField
-{
-    Q_OBJECT
-    Q_PROPERTY(LinkType linkType READ linkType WRITE setLinkType NOTIFY linkTypeChanged)
-    Q_PROPERTY(QString contentType READ contentType WRITE setContentType NOTIFY contentTypeChanged)
-    Q_PROPERTY(QVariant localStorage READ localStorage WRITE setLocalStorage NOTIFY localStorageChanged)
-    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_ENUMS(LinkType)
-public:
-    enum LinkType { Upload, Local, Web };
-
-    explicit ShotgunUrlField(QObject *parent = 0);
-
-    LinkType linkType() const;
-    void setLinkType(LinkType);
+    UrlType urlType() const;
+    void setUrlType(UrlType);
 
     const QString contentType() const;
     void setContentType(const QString);
@@ -91,22 +66,50 @@ public:
     const QVariant localStorage() const;
     void setLocalStorage(const QVariant);
 
-    const QUrl url() const;
-    void setUrl(const QUrl);
-
-    virtual const QVariant buildValue(const BranchBase *branch, const QVariantMap fields) const;
+    Q_INVOKABLE const QVariant buildValue(int, const QVariantMap) const;
 
 signals:
-    void linkTypeChanged(LinkType linkType);
+    void fieldNameChanged(const QString field);
+    void typeChanged(Type type);
+    void linksChanged();
+    void patternChanged(const QString pattern);
+    void valueChanged(const QVariant value);
+    void fileChanged(NodeBase *file);
+    void displayNameChanged(const QString displayName);
+    void urlTypeChanged(UrlType urlType);
     void contentTypeChanged(const QString contentType);
     void localStorageChanged(const QVariant localStorage);
-    void urlChanged(const QUrl url);
+
+    void shotgunPullAtIndex(int index, const QVariant context, Shotgun *shotgun);
+    void shotgunPulledAtIndex(int index, int status);
+    void shotgunPushAtIndex(int index, const QVariant context, Shotgun *shotgun);
+    void shotgunPushedAtIndex(int index, int status);
+
+protected slots:
+    void onShotgunPullAtIndex(int index, const QVariant context, Shotgun *shotgun);
+    void onShotgunPushAtIndex(int index, const QVariant context, Shotgun *shotgun);
 
 private:
-    LinkType m_linkType;
+    const QVariant buildStringValue(const QVariantMap) const;
+    const QVariant buildNumberValue(const QVariantMap) const;
+    const QVariant buildPathValue(int) const;
+    const QVariant buildPatternValue(int, const QVariantMap) const;
+    const QVariant buildLinkValue(int) const;
+    const QVariant buildMultiLinkValue(int) const;
+    const QVariant buildUrlValue(int index) const;
+
+    const Field *field() const;
+
+    QString m_fieldName;
+    Type m_type;
+    QList<ShotgunEntity *> m_links;
+    QString m_pattern;
+    QVariant m_value;
+    NodeBase *m_file;
+    QString m_displayName;
+    UrlType m_urlType;
     QString m_contentType;
     QVariant m_localStorage;
-    QUrl m_url;
 };
 
 #endif

@@ -33,7 +33,7 @@ ShotgunEntity {
     }
     
     ShotgunField {
-        name: "publish_event_sg_files_publish_events"
+        name: "attachment_links"
         type: ShotgunField.MultiLink
         linkType: "PublishEvent"
         link: release

@@ -157,7 +157,6 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<ShotgunReply>(uri, 1, 0, "ShotgunReply");
     qmlRegisterType<ShotgunEntity>(uri, 1, 0, "ShotgunEntity");
     qmlRegisterType<ShotgunField>(uri, 1, 0, "ShotgunField");
-    qmlRegisterType<ShotgunUrlField>(uri, 1, 0, "ShotgunUrlField");
     qmlRegisterType<FileOpQueue>(uri, 1, 0, "FileOpQueue");
     qmlRegisterType<Log>(uri, 1, 0, "Log");
     qmlRegisterSingletonType<Util>(uri, 1, 0, "Util", Util_provider);

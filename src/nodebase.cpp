@@ -429,49 +429,31 @@ const NodeBase *NodeBase::nodeInChildren(const QString n) const
 
 const QList<const NodeBase *> NodeBase::upstream() const
 {
+    trace() << ".upstream()";
     QList<const NodeBase *> result;
     // loop through inputs and find upstream nodes
     foreach (const Input *in, m_inputs) {
         if (hasProperty(in->name().toUtf8())) {
-            QVariant v = QObject::property(in->name().toUtf8());
+            const QVariant v = QObject::property(in->name().toUtf8());
             if (v.canConvert<NodeBase *>()) {
+                // single input
                 const NodeBase *input = v.value<NodeBase*>();
                 if (input) {
                     result.append(input);
                 }
-            }
-        }
-    }
-
-//    // add hard dependencies
-//    foreach (const NodeBase *dep, m_extraDependencies) {
-//        result.append(dep);
-//    }
-
-    return result;
-}
-
-const QVariantList NodeBase::upstreamNodes()
-{
-    QVariantList result;
-    // loop through inputs and find upstream nodes
-    foreach (const Input *in, m_inputs) {
-        if (hasProperty(in->name().toUtf8())) {
-            QVariant v = QObject::property(in->name().toUtf8());
-            if (v.canConvert<NodeBase *>()) {
-                NodeBase *input = v.value<NodeBase*>();
-                if (input) {
-                    result.append(QVariant::fromValue(input));
+            } else if (v.canConvert<QVariantList>()) {
+                // multi-input
+                foreach (const QVariant w, v.toList()) {
+                    if (v.canConvert<NodeBase *>()) {
+                        const NodeBase *input = w.value<NodeBase*>();
+                        if (input) {
+                            result.append(input);
+                        }
+                    }
                 }
             }
         }
     }
-
-//    // add hard dependencies
-//    foreach (NodeBase *dep, m_extraDependencies) {
-//        result.append(QVariant::fromValue(dep));
-//    }
-
     return result;
 }
 
@@ -484,30 +466,63 @@ const QList<NodeBase *> NodeBase::upstream()
         if (hasProperty(in->name().toUtf8())) {
             QVariant v = QObject::property(in->name().toUtf8());
             if (v.canConvert<NodeBase *>()) {
+                // single input
                 NodeBase *input = v.value<NodeBase*>();
                 if (input) {
                     result.append(input);
+                }
+            } else if (v.canConvert<QVariantList>()) {
+                // multi-input
+                foreach (QVariant w, v.toList()) {
+                    if (v.canConvert<NodeBase *>()) {
+                        NodeBase *input = w.value<NodeBase*>();
+                        if (input) {
+                            result.append(input);
+                        }
+                    }
                 }
             }
         }
     }
 
-//    // add hard dependencies
-//    foreach (NodeBase *dep, m_extraDependencies) {
-//        result.append(dep);
-//    }
+    return result;
+}
+
+const QVariantList NodeBase::upstreamNodes()
+{
+    trace() << ".upstreamNodes()";
+    QVariantList result;
+    foreach (NodeBase *input, upstream()) {
+        result.append(QVariant::fromValue(input));
+    }
 
     return result;
 }
 
 const QList<NodeBase *> NodeBase::downstream()
 {
+    trace() << ".downstream()";
     QList<NodeBase *> result;
-
     if (parent<NodeBase>()) {
         // loop through siblings params and find inputs
         foreach (QObject *o, QObject::parent()->children()) {
             NodeBase *n = qobject_cast<NodeBase*>(o);
+            if (n && n->upstream().contains(this))
+                result.append(n);
+        }
+    }
+
+    return result;
+}
+
+const QList<const NodeBase *> NodeBase::downstream() const
+{
+    trace() << ".downstream()";
+    QList<const NodeBase *> result;
+    if (parent<NodeBase>()) {
+        // loop through siblings params and find inputs
+        foreach (const QObject *o, QObject::parent()->children()) {
+            const NodeBase *n = qobject_cast<const NodeBase*>(o);
             if (n && n->upstream().contains(this))
                 result.append(n);
         }
@@ -518,31 +533,10 @@ const QList<NodeBase *> NodeBase::downstream()
 
 const QVariantList NodeBase::downstreamNodes()
 {
+    trace() << ".downstreamNodes()";
     QVariantList result;
-
-    if (parent<NodeBase>()) {
-        // loop through siblings params and find inputs
-        foreach (QObject *o, QObject::parent()->children()) {
-            NodeBase *n = qobject_cast<NodeBase*>(o);
-            if (n && n->upstream().contains(this))
-                result.append(QVariant::fromValue(n));
-        }
-    }
-
-    return result;
-}
-
-const QList<const NodeBase *> NodeBase::downstream() const
-{
-    QList<const NodeBase *> result;
-
-    if (parent<NodeBase>()) {
-        // loop through siblings params and find inputs
-        foreach (const QObject *o, QObject::parent()->children()) {
-            const NodeBase *n = qobject_cast<const NodeBase*>(o);
-            if (n && n->upstream().contains(this))
-                result.append(n);
-        }
+    foreach (NodeBase *output, downstream()) {
+        result.append(QVariant::fromValue(output));
     }
 
     return result;
@@ -622,7 +616,7 @@ NodeBase *NodeBase::rootBranch()
 }
 
 QJSValue NodeBase::detail(int index, const QString arg1, const QString arg2,
-        const QString arg3, const QString arg4, const QString arg5)
+        const QString arg3, const QString arg4, const QString arg5) const
 {
     // access details[index]?.arg1?.arg2?.arg3?.arg4?.arg5? for each non-empty arg
     QJSValue result = m_details.property(index);

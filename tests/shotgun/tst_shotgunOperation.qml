@@ -60,6 +60,7 @@ PugTestCase {
     
     Root {
         id: root
+        logLevel: Log.Info
 
         Shotgun {
             id: shotgun
