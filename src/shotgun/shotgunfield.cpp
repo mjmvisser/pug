@@ -37,6 +37,19 @@ void ShotgunField::componentComplete()
     updateCount();
 }
 
+const QString ShotgunField::shotgunFieldName() const
+{
+    return m_shotgunFieldName;
+}
+
+void ShotgunField::setShotgunFieldName(const QString sfn)
+{
+    if (m_shotgunFieldName != sfn) {
+        m_shotgunFieldName = sfn;
+        emit shotgunFieldNameChanged(sfn);
+    }
+}
+
 const ShotgunEntity *ShotgunField::entity() const
 {
     return firstParent<ShotgunEntity>();
@@ -397,14 +410,13 @@ const QVariant ShotgunField::buildLinkValue(int index) const
         if (linkedEntity) {
             const QVariantMap sg_entity = qjsvalue_cast<QVariantMap>(linkedEntity->detail(index, "entity"));
 
-            if (sg_entity.contains("id")) {
-                // Shotgun entity type is the linked ShotgunEntity's name
+            if (sg_entity.contains("id") && sg_entity.contains("type")) {
                 QVariantMap link;
-                link["type"] = linkedEntity->name();
+                link["type"] = sg_entity["type"];
                 link["id"] = sg_entity["id"];
                 result = link;
             } else {
-                error() << "linked entity" << linkedEntity << "has no id";
+                error() << "linked entity" << linkedEntity << "has no id or type";
             }
         } else {
             result = QVariant(QVariant::String); // null
@@ -428,14 +440,13 @@ const QVariant ShotgunField::buildMultiLinkValue(int index) const
         if (m_links[i]) {
             const QVariantMap sg_entity = qjsvalue_cast<QVariantMap>(link()->detail(index, "entity"));
 
-            if (sg_entity.contains("id")) {
+            if (sg_entity.contains("id") && sg_entity.contains("type")) {
                 QVariantMap link;
-                // Shotgun entity type is the linked ShotgunEntity's name
-                link["type"] = m_links[i]->name();
+                link["type"] = sg_entity["type"];
                 link["id"] = sg_entity["id"];
                 result << link;
             } else {
-                error() << "linked entity" << i << m_links[i] << "has no id";
+                error() << "linked entity" << i << m_links[i] << "has no id or type";
             }
         } else {
             result << QVariant(QVariant::String); // null QVariant

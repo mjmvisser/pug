@@ -49,11 +49,13 @@ PugTestCase {
             
             ShotgunEntity {
                 id: sg_project
-                name: "Project"
+                name: "sg_project"
+                shotgunEntity: "Project"
                 
                 ShotgunField {
                     id: sg_projectName
-                    name: "name"
+                    name: "sg_projectName"
+                    shotgunField: "name"
                     field: "PROJECT"
                 }
             }
@@ -65,25 +67,25 @@ PugTestCase {
             pattern: "{FILENAME}"
             
             ShotgunEntity {
-                name: "PublishEvent"
+                shotgunEntity: "PublishEvent"
                 ShotgunOperation.action: ShotgunOperation.Create
                 id: sg_release
                 
                 ShotgunField {
-                    name: "code"
+                    shotgunField: "code"
                     type: ShotgunField.Pattern
                     file: file
                     pattern: "{FILENAME}_upload"
                 }
                 
                 ShotgunField {
-                    name: "image"
+                    shotgunField: "image"
                     type: ShotgunField.Path
                     file: file
                 }
                 
                 ShotgunField {
-                    name: "project"
+                    shotgunField: "project"
                     type: ShotgunField.Link
                     link: sg_project
                 }

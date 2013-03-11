@@ -12,10 +12,14 @@
 class ShotgunEntity : public NodeBase
 {
     Q_OBJECT
+    Q_PROPERTY(QString shotgunEntity READ shotgunEntityName WRITE setShotgunEntityName NOTIFY shotgunEntityNameChanged)
     Q_PROPERTY(BranchBase *branch READ branch NOTIFY branchChanged);
     Q_PROPERTY(QQmlListProperty<ShotgunField> shotgunFields READ shotgunFields_ NOTIFY shotgunFieldsChanged)
 public:
     explicit ShotgunEntity(QObject *parent = 0);
+
+    const QString shotgunEntityName() const;
+    void setShotgunEntityName(const QString);
 
     const BranchBase *branch() const;
     BranchBase *branch();
@@ -31,6 +35,7 @@ public:
     Q_INVOKABLE const QStringList buildFields() const;
 
 signals:
+    void shotgunEntityNameChanged(const QString shotgunEntity);
     void branchChanged(const BranchBase *branch);
     void shotgunFieldsChanged();
 
@@ -70,6 +75,7 @@ private:
     static ShotgunField *shotgunFields_at(QQmlListProperty<ShotgunField> *, int);
     static void shotgunFields_clear(QQmlListProperty<ShotgunField> *);
 
+    QString m_shotgunEntityName;
     OperationAttached::Status m_status;
 };
 

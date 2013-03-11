@@ -25,6 +25,19 @@ void ShotgunEntity::componentComplete()
     updateCount();
 }
 
+const QString ShotgunEntity::shotgunEntityName() const
+{
+    return m_shotgunEntityName;
+}
+
+void ShotgunEntity::setShotgunEntityName(const QString sen)
+{
+    if (m_shotgunEntityName != sen) {
+        m_shotgunEntityName = sen;
+        emit shotgunEntityNameChanged(sen);
+    }
+}
+
 const BranchBase *ShotgunEntity::branch() const
 {
     // TODO: how do we emit branchChanged() when the parent changes?
@@ -96,7 +109,7 @@ void ShotgunEntity::onShotgunPull(const QVariant context, Shotgun *shotgun)
     Q_ASSERT(shotgun);
 
     if (branch()->count() == 1) {
-        ShotgunReply *reply = shotgun->findOne(name(), filters(), fields());
+        ShotgunReply *reply = shotgun->findOne(shotgunEntityName(), filters(), fields());
         debug() << "filters are" << filters();
         connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onReadFinished);
         connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
@@ -116,7 +129,7 @@ void ShotgunEntity::onShotgunPush(const QVariant context, Shotgun *shotgun)
     Q_ASSERT(shotgun);
 
     if (branch()->count() == 1) {
-        ShotgunReply *reply = shotgun->create(name(), data()[0].toMap(), fields());
+        ShotgunReply *reply = shotgun->create(shotgunEntityName(), data()[0].toMap(), fields());
         connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onCreateFinished);
         connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
                 this, &ShotgunEntity::onShotgunCreateError);
@@ -126,7 +139,7 @@ void ShotgunEntity::onShotgunPush(const QVariant context, Shotgun *shotgun)
             QVariantMap batchRequest;
 
             batchRequest["request_type"] = "create";
-            batchRequest["entity_type"] = name();
+            batchRequest["entity_type"] = shotgunEntityName();
             batchRequest["data"] = d;
             QStringList returnFields = fields();
             if (returnFields.length() > 0)
@@ -173,7 +186,7 @@ const QVariantList ShotgunEntity::data() const
                 Q_ASSERT(value.isValid());
                 // skip null values
                 if (!value.isNull()) {
-                    d.insert(sgf->name(), value);
+                    d.insert(sgf->shotgunFieldName(), value);
                 }
             }
         }
@@ -212,7 +225,7 @@ const QVariantList ShotgunEntity::filters() const
             // we also skip null fields
             if (!value.isNull()) {
                 QVariantList filter;
-                filter << sgf->name() << "is" << value;
+                filter << sgf->shotgunFieldName() << "is" << value;
                 result << QVariant(filter);
             }
         }
@@ -235,7 +248,7 @@ const QStringList ShotgunEntity::fields() const
     foreach (const QObject *o, children()) {
         const ShotgunField *sgf = qobject_cast<const ShotgunField *>(o);
         if (sgf) {
-            result << sgf->name();
+            result << sgf->shotgunFieldName();
         }
     }
 

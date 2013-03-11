@@ -14,6 +14,7 @@ Branch {
         ShotgunOperation.action: ShotgunOperation.Create
 
         ShotgunPublishEvent {
+            id: sg_releasePublishEvent
             project: node("/project")
             entity { link: node("/shot"); linkType: "Shot" }
             user: node("/prod")

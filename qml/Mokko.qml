@@ -77,13 +77,8 @@ Root {
     	name: "root"
     	pattern: "/prod/projects/"
 
-        ShotgunEntity {
-            name: "HumanUser"
-            
-            ShotgunField {
-                name: "login"
-                field: "USER"
-            }
+        ShotgunHumanUser {
+            id: sg_user
         }
     }
     
@@ -93,13 +88,8 @@ Root {
     	pattern: "{PROJECT}/"
         root: prod
 
-        ShotgunEntity {
-            name: "Project"
-            
-            ShotgunField {
-                name: "name"
-                field: "PROJECT"
-            } 
+        ShotgunProject {
+            id: sg_project
         }
     }
     
@@ -116,7 +106,8 @@ Root {
     	root: project
 
         ShotgunScene {
-            project: project
+            id: sg_scene
+            project: sg_project
         }
     }
     
@@ -127,8 +118,8 @@ Root {
     	root: scene
 
         ShotgunShot {
-            project: project
-            scene: scene
+            project: sg_project
+            scene: sg_scene
         }
     }
     

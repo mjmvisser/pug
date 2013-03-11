@@ -1,10 +1,10 @@
 import Pug 1.0
 
 ShotgunEntity {
-    name: "Step"
+    shotgunEntity: "Step"
     
     ShotgunField {
-        name: "code"
+        shotgunField: "code"
         field: "STEP"
     }
 }

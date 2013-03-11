@@ -1,10 +1,10 @@
 import Pug 1.0
 
 ShotgunEntity {
-    name: "HumanUser"
+    shotgunEntity: "HumanUser"
     
     ShotgunField {
-        name: "login"
+        shotgunField: "login"
         field: "USER"
     }
 }

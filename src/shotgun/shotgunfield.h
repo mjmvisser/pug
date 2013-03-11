@@ -14,6 +14,7 @@ class BranchBase;
 class ShotgunField : public NodeBase
 {
     Q_OBJECT
+    Q_PROPERTY(QString shotgunField READ shotgunFieldName WRITE setShotgunFieldName NOTIFY shotgunFieldNameChanged)
     Q_PROPERTY(ShotgunEntity *entity READ entity NOTIFY entityChanged)
     Q_PROPERTY(QString field READ fieldName WRITE setFieldName NOTIFY fieldNameChanged)
     Q_PROPERTY(Type type READ type WRITE setType NOTIFY typeChanged)
@@ -31,6 +32,9 @@ public:
     enum Type { String, Number, Path, Pattern, Link, MultiLink, Url };
     enum UrlType { Upload, Local, Web };
     explicit ShotgunField(QObject *parent = 0);
+
+    const QString shotgunFieldName() const;
+    void setShotgunFieldName(const QString);
 
     const ShotgunEntity *entity() const;
     ShotgunEntity *entity();
@@ -72,6 +76,7 @@ public:
     Q_INVOKABLE const QVariant buildValue(int, const QVariantMap) const;
 
 signals:
+    void shotgunFieldNameChanged(const QString shotgunField);
     void entityChanged(ShotgunEntity *entity);
     void fieldNameChanged(const QString field);
     void typeChanged(Type type);
@@ -110,6 +115,7 @@ private:
 
     const Field *field() const;
 
+    QString m_shotgunFieldName;
     QString m_fieldName;
     Type m_type;
     QList<ShotgunEntity *> m_links;
