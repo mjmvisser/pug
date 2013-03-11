@@ -15,7 +15,6 @@ ShotgunEntity {
     ShotgunField {
         name: "project"
         type: ShotgunField.Link
-        linkType: "Project"
         link: project
     }
 }

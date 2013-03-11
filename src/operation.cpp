@@ -62,10 +62,13 @@ OperationAttached::Status OperationAttached::inputsStatus() const
 
     foreach (const NodeBase* input, node()->upstream()) {
         const OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-        OperationAttached::Status inputsStatus = inputAttached->status();
-        if (inputsStatus > status)
-        status = inputsStatus;
+        OperationAttached::Status inputStatus = inputAttached->status();
+        trace() << "status of" << input << "is" << inputStatus;
+        if (inputStatus > status)
+            status = inputStatus;
     }
+
+    trace() << node() << ".inputsStatus() ->" << status;
 
     return status;
 }
@@ -84,6 +87,8 @@ OperationAttached::Status OperationAttached::childrenStatus() const
                 status = childStatus;
         }
     }
+
+    trace() << node() << ".childrenStatus() ->" << status;
 
     return status;
 }
@@ -106,6 +111,8 @@ OperationAttached::Status OperationAttached::dependenciesStatus() const
 
     if (es > status)
         status = es;
+
+    trace() << node() << ".dependenciesStatus() ->" << status;
 
     return status;
 }

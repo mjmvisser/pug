@@ -44,7 +44,6 @@ ShotgunEntity {
         // name: "sg_source_path"
         // type: ShotgunField.Link
         // link: sourcePathLink
-        // linkType: "Attachment"
     // }
     
     ShotgunField {
@@ -69,21 +68,18 @@ ShotgunEntity {
     ShotgunField {
         name: "sg_delivery"
         type: ShotgunField.Link
-        linkType: "Delivery"
         link: delivery      
     }
     
     ShotgunField {
         name: "project"
         type: ShotgunField.Link
-        linkType: "Project"
         link: project
     }
     
     ShotgunField {
         name: "sg_release"
         type: ShotgunField.Link
-        linkType: "PublishEvent"
         link: release
     }
     
@@ -91,13 +87,11 @@ ShotgunEntity {
         name: "created_by"
         type: ShotgunField.Link
         link: user
-        linkType: "HumanUser"
     }
 
     ShotgunField {
         name: "updated_by"
         type: ShotgunField.Link
         link: user
-        linkType: "HumanUser"
     }
 }

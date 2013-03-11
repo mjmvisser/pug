@@ -174,6 +174,7 @@ const QVariantMap Shotgun::translateFilters(const QVariantList filters, const QS
 const QVariantMap Shotgun::constructReadParameters(const QString entityType, const QStringList fields,
         const QVariantMap filters, bool retiredOnly, const QStringList order) const
 {
+    trace() << ".constructReadParameters(" << entityType << "," << fields << "," << filters << "," << retiredOnly << "," << order << ")";
     QVariantMap params;
     params["type"] = entityType;
     params["return_fields"] = fields;
@@ -207,6 +208,7 @@ const QVariantMap Shotgun::constructReadParameters(const QString entityType, con
         }
         params["sorts"] = sortList;
     }
+    trace() << "->" << params;
     return params;
 }
 
@@ -219,6 +221,7 @@ ShotgunReply *Shotgun::find(const QString entityType,
         bool retiredOnly,
         int page)
 {
+    trace() << ".find(" << entityType << "," << filters << "," << fields << "," << order << "," << filterOperator << "," << limit << "," << retiredOnly << "," << page << ")";
     QVariantMap newFilters = translateFilters(filters, filterOperator);
     QVariantMap params = constructReadParameters(entityType, fields, newFilters,
             retiredOnly, order);
@@ -255,6 +258,7 @@ ShotgunReply *Shotgun::find(const QString entityType,
 ShotgunReply *Shotgun::find(const QString entityType,
         const QVariantList filters)
 {
+    trace() << ".find(" << entityType << "," << filters << ")";
     QStringList fields;
     fields << "id";
     return find(entityType, filters, fields);
@@ -267,6 +271,7 @@ ShotgunReply *Shotgun::findOne(const QString entityType,
         const QString filterOperator,
         bool retiredOnly)
 {
+    trace() << ".findOne(" << entityType << "," << filters << "," << fields << "," << order << "," << filterOperator << "," << retiredOnly << ")";
     ShotgunReply *reply = find(entityType, filters, fields, order, filterOperator, 1, retiredOnly);
     if (reply)
         reply->setFirst(true);
@@ -276,6 +281,7 @@ ShotgunReply *Shotgun::findOne(const QString entityType,
 ShotgunReply *Shotgun::findOne(const QString entityType,
         const QVariantList filters)
 {
+    trace() << ".findOne(" << entityType << "," << filters << ")";
     QStringList fields;
     fields << "id";
     return findOne(entityType, filters, fields);
@@ -300,6 +306,7 @@ Q_INVOKABLE ShotgunReply *Shotgun::create(const QString entityType,
         const QVariantMap data,
         const QStringList returnFields)
 {
+    trace() << ".create(" << entityType << "," << data << "," << returnFields << ")";
     QStringList createReturnFields = returnFields;
     if (createReturnFields.isEmpty())
         createReturnFields << "id";
@@ -326,6 +333,7 @@ Q_INVOKABLE ShotgunReply *Shotgun::create(const QString entityType,
     reply->setFirst(true);
 
     if (!uploadImage.isEmpty()) {
+        debug() << "requesting upload of" << uploadImage;
         ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
         upload->setFieldName("thumb_image");
         upload->setPath(uploadImage);
@@ -334,6 +342,7 @@ Q_INVOKABLE ShotgunReply *Shotgun::create(const QString entityType,
     }
 
     if (!uploadFilmStripImage.isEmpty()) {
+        debug() << "requesting upload of" << uploadFilmStripImage;
         ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
         upload->setFieldName("filmstrip_thumb_image");
         upload->setPath(uploadFilmStripImage);
@@ -346,6 +355,7 @@ Q_INVOKABLE ShotgunReply *Shotgun::create(const QString entityType,
 
 ShotgunReply *Shotgun::batch(const QVariantList requests)
 {
+    trace() << ".batch(" << requests << ")";
     QVariantList calls;
 
     // TODO: handle empty list of requests
@@ -424,12 +434,14 @@ ShotgunReply *Shotgun::schemaRead()
 }
 
 ShotgunReply* Shotgun::info() {
+    trace() << ".info()";
     return callRpc("info", QVariant(), false);
 }
 
 ShotgunReply *Shotgun::upload(const QString entityType, int entityId, const QString path,
         const QString fieldName, const QString displayName, const QString tagList)
 {
+    trace() << ".upload(" << entityType << "," << entityId << "," << path << "," << fieldName << "," << displayName << "," << tagList << ")";
     QVariantMap params;
     params["entity_type"] = entityType;
     params["entity_id"] = entityId;
@@ -513,17 +525,20 @@ ShotgunReply *Shotgun::upload(const QString entityType, int entityId, const QStr
 ShotgunReply *Shotgun::uploadThumbnail(const QString entityType, int entityId, const QString path,
         const QString displayName, const QString tagList)
 {
+    trace() << ".uploadThumbnail(" << entityType << "," << entityId << "," << path << "," << displayName << "," << tagList << ")";
     return upload(entityType, entityId, path, "thumb_image", displayName, tagList);
 }
 
 ShotgunReply *Shotgun::uploadFilmstripThumbnail(const QString entityType, int entityId, const QString path,
         const QString displayName, const QString tagList)
 {
+    trace() << ".uploadFilmstripThumbnail(" << entityType << "," << entityId << "," << path << "," << displayName << "," << tagList << ")";
     return upload(entityType, entityId, path, "filmstrip_thumb_image", displayName, tagList);
 }
 
 ShotgunReply *Shotgun::callRpc(const QString method, const QVariant params, bool includeScriptName, ShotgunReply *reply)
 {
+    trace() << ".callRpc(" << method << "," << params << "," << includeScriptName << "," << reply << ")";
     QJsonObject payload;
 
     const QVariant newParams = transformOutbound(params);
@@ -748,6 +763,7 @@ void ShotgunReply::uploadLater(ShotgunUploadRequest *upload)
 
 void ShotgunReply::onNetworkReplyFinished()
 {
+    trace() << ".onNetworkReplyFinished()";
     QByteArray respBody = m_networkReply->readAll();
     QString contentType = m_networkReply->header(QNetworkRequest::ContentTypeHeader).toString();
 
@@ -958,6 +974,7 @@ void ShotgunReply::onNetworkReplyError()
 
 void ShotgunReply::continueUploading()
 {
+    trace() << ".continueUploading()";
     Q_ASSERT(!m_uploads.isEmpty());
 
     Shotgun *shotgun = qobject_cast<Shotgun *>(QObject::parent());

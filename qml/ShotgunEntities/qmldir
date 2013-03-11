@@ -1,4 +1,6 @@
 module ShotgunEntities
+ShotgunHumanUser 1.0 ShotgunHumanUser.qml
+ShotgunProject 1.0 ShotgunProject.qml
 ShotgunDelivery 1.0 ShotgunDelivery.qml
 ShotgunElement 1.0 ShotgunElement.qml
 ShotgunPublishEvent 1.0 ShotgunPublishEvent.qml

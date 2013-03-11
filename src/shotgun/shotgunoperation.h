@@ -14,42 +14,36 @@ class ShotgunOperationAttached : public OperationAttached
     Q_PROPERTY(Action action READ action WRITE setAction NOTIFY actionChanged)
 public:
     enum Action { Find, Create };
+    enum Mode { Skip=0x00, Pull=0x01, PullAtIndex=0x02, Push=0x04, PushAtIndex=0x08 };
 
     explicit ShotgunOperationAttached(QObject *object);
 
     Action action() const;
     void setAction(Action);
 
-    virtual void reset();
     virtual void run();
 
 signals:
     void actionChanged(Action action);
 
+    void shotgunPull(const QVariant env, Shotgun *shotgun);
+    void shotgunPullAtIndex(int index, const QVariant env, Shotgun *shotgun);
+    void shotgunPush(const QVariant env, Shotgun *shotgun);
+    void shotgunPushAtIndex(int index, const QVariant env, Shotgun *shotgun);
+
 protected:
-    virtual OperationAttached::Status extraStatus() const;
-    virtual void runExtra();
-    virtual void resetExtra();
-    virtual void resetExtraStatus();
-    
     virtual const QMetaObject *operationMetaObject() const;
 
-    void readEntity(const ShotgunEntity *, const QVariantMap);
-    void createEntity(const ShotgunEntity *, const QVariantMap);
-    void batchCreateEntities(ShotgunEntity *, const QVariantList);
-
-    void addDetail(const QVariantMap entity);
-
-protected slots:
-    void onReadCreateEntityFinished(const QVariant);
-    void onBatchCreateEntitiesFinished(const QVariant);
-    void onShotgunError();
+private slots:
+    void onShotgunPulled(int);
+    void onShotgunPulledAtIndex(int, int);
+    void onShotgunPushed(int);
+    void onShotgunPushedAtIndex(int, int);
 
 private:
-    const QVariantMap updateFieldsWithEnv(const QVariantMap fields) const;
-
     Action m_action;
-    int m_pendingTransactions;
+    int m_mode;
+    OperationStatusList m_indexStatus;
 };
 
 class ShotgunOperation : public Operation

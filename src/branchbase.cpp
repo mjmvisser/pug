@@ -550,6 +550,7 @@ const QStringList BranchBase::listMatchingPaths(const QVariantMap context) const
         {
             result << path;
             // early exit, we map to a single path exactly that exists
+            debug() << "matched" << result;
             return result;
         }
 
@@ -559,6 +560,7 @@ const QStringList BranchBase::listMatchingPaths(const QVariantMap context) const
             debug() << "absolute file path detected";
             QFileInfo pathInfo(path);
             result = listMatchingPathsHelper(pathInfo.absoluteDir(), context);
+            debug() << "matched" << result;
             return result;
         }
     }

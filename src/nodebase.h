@@ -71,6 +71,13 @@ public:
     Q_INVOKABLE QJSValue detail(int index, const QString arg1=QString(), const QString arg2=QString(),
             const QString arg3=QString(), const QString arg4=QString(), const QString arg5=QString()) const;
 
+    void setDetail(int, QJSValue, bool=true);
+    void setDetail(int, const QString, QJSValue, bool=true);
+    void setDetail(int, const QString, const QString, QJSValue, bool=true);
+    void setDetail(int, const QString, const QString, const QString, QJSValue, bool=true);
+    void setDetail(int, const QString, const QString, const QString, const QString, QJSValue, bool=true);
+    void setDetail(int, const QString, const QString, const QString, const QString, const QString, QJSValue, bool=true);
+
     Q_INVOKABLE int childIndex() const;
     NodeBase *child(int index);
     int childCount() const;

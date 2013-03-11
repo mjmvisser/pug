@@ -60,7 +60,6 @@ PugTestCase {
     
     Root {
         id: root
-        logLevel: Log.Info
 
         Shotgun {
             id: shotgun
@@ -112,19 +111,14 @@ PugTestCase {
             FrameSpecField { name: "FRAME" },
             Field { name: "EXT" }
         ]
-        
+
         Branch {
             id: prod
             name: "prod"
             pattern: "{ROOT}/"
             
-            ShotgunEntity {
-                name: "HumanUser"
-                
-                ShotgunField {
-                    name: "login"
-                    field: "USER"
-                }
+            ShotgunHumanUser {
+                id: sg_user
             }
         }
         
@@ -134,13 +128,8 @@ PugTestCase {
             pattern: "projects/{PROJECT}/"
             root: prod
             
-            ShotgunEntity {
-                name: "Project"
-                
-                ShotgunField {
-                    name: "name"
-                    field: "PROJECT"
-                } 
+            ShotgunProject {
+                id: sg_project
             }
         }
         
@@ -151,7 +140,8 @@ PugTestCase {
             pattern: "transfer/from_client/{TRANSFER}/"
 
             ShotgunDelivery {
-                project: project
+                id: sg_transfer
+                project: sg_project
             }
 
             Branch {
@@ -159,50 +149,45 @@ PugTestCase {
                 name: "transferRelease"
                 pattern: "release/{VARIATION}/v{VERSION}/"
                 ReleaseOperation.versionField: "VERSION"
-                ShotgunOperation.action: ShotgunOperation.Create
 
                 ShotgunPublishEvent {
-                    project: project
-                    entityType: "Delivery"
-                    entity: transfer
-                    user: prod
+                    id: sg_transferRelease
+                    project: sg_project
+                    entity: sg_transfer
+                    user: sg_user
                     code: "from_client_{TRANSFER}_v{VERSION}"
+                    ShotgunOperation.action: ShotgunOperation.Create
                 }
                 
                 File {
                     id: releaseFile
                     name: "releaseFile"
                     pattern: "{FILENAME}.{EXT}"
-                    ShotgunOperation.action: ShotgunOperation.Create
 
                     ShotgunFile {
-                        project: project
-                        release: transferRelease
-                        user: prod
+                        id: sg_releaseFile
+                        project: sg_project
+                        release: sg_transferRelease
+                        user: sg_user
+                        ShotgunOperation.action: ShotgunOperation.Create
                     }
 
-                    Node {
-                        id: releaseFileElement
-                        // dummy node to force a dependency on releaseFile
-                        active: true
-                        ShotgunOperation.action: ShotgunOperation.Create
-                        
-                        ShotgunElement {
-                            project: project
-                            delivery: transfer
-                            release: transferRelease
-                            user: prod
-                            code: "{FILENAME}.{EXT}"   
-                            //sourcePathLink: releaseFile   // TODO:           
-                        }
+                    ShotgunElement {
+                        id: sg_releaseElement
+                        project: sg_project
+                        delivery: sg_transfer
+                        release: sg_transferRelease
+                        user: sg_user
+                        code: "{FILENAME}.{EXT}"   
+                        //sourcePathLink: releaseFile   // TODO:           
                     }
                     
                     ShotgunVersion {
-                        project: project
-                        entityType: "Delivery"
-                        entity: transfer
-                        release: transferRelease
-                        user: prod
+                        id: sg_releaseVersion
+                        project: sg_project
+                        entity: sg_transfer
+                        release: sg_transferRelease
+                        user: sg_user
                         code: "from_client_{TRANSFER}_v{VERSION}"
                     }
                 }
@@ -229,7 +214,8 @@ PugTestCase {
             root: project
             
             ShotgunScene {
-                project: project
+                id: sg_seq
+                project: sg_project
             }
         }
         
@@ -240,8 +226,9 @@ PugTestCase {
             root: seq
 
             ShotgunShot {
-                project: project
-                scene: seq
+                id: sg_shot
+                project: sg_project
+                scene: sg_seq
             }
         }
         
@@ -252,6 +239,7 @@ PugTestCase {
             root: shot
 
             ShotgunStep {
+                id: sg_step
             }
             
             Branch {
@@ -262,10 +250,10 @@ PugTestCase {
                 ShotgunOperation.action: ShotgunOperation.Create
 
                 ShotgunPublishEvent {
-                    project: project
-                    entityType: "Shot"
-                    entity: shot
-                    user: prod
+                    id: sg_compRelease
+                    project: sg_project
+                    entity: sg_shot
+                    user: sg_user
                     code: "{SEQUENCE}_{SHOT}_comp_v{VERSION}"
                 }
                 
@@ -276,20 +264,21 @@ PugTestCase {
                     ShotgunOperation.action: ShotgunOperation.Create
                 
                     ShotgunVersion {
-                        project: project
-                        entityType: "Shot"
-                        entity: shot
-                        release: compRelease
-                        user: prod
+                        id: sg_releaseSeqVersion
+                        project: sg_project
+                        entity: sg_shot
+                        release: sg_compRelease
+                        user: sg_user
                         code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
                         thumbnail: workSeqThumbnail
                         filmstrip: workSeqFilmstrip
                     }
 
                     ShotgunFile {
-                        project: project
-                        release: compRelease
-                        user: prod
+                        id: sg_releaseSeqFile
+                        project: sg_project
+                        release: sg_compRelease
+                        user: sg_user
                         thumbnail: workSeqThumbnail
                         filmstrip: workSeqFilmstrip
                     }
@@ -380,13 +369,13 @@ PugTestCase {
         compare(transfer.ShotgunOperation.status, Operation.Finished);
         compare(releaseFile.ShotgunOperation.status, Operation.Finished);
 
-        compare(project.ShotgunOperation.sg.Project.type, "Project");
-        compare(transfer.ShotgunOperation.sg.Delivery.type, "Delivery");
-        compare(transferRelease.ShotgunOperation.sg.PublishEvent.type, "PublishEvent");
-        compare(releaseFileElement.ShotgunOperation.sg.Element.type, "Element");
-        compare(releaseFile.ShotgunOperation.sg.Attachment.type, "Attachment");
-        compare(releaseFile.ShotgunOperation.sg.Version.type, "Version");
-        compare(transferRelease.ShotgunOperation.sg.PublishEvent.type, "PublishEvent");
+        compare(sg_project.details[0].entity.type, "Project");
+        compare(sg_transfer.details[0].entity.type, "Delivery");
+        compare(sg_transferRelease.details[0].entity.type, "PublishEvent");
+        compare(sg_releaseElement.details[0].entity.type, "Element");
+        compare(sg_releaseFile.details[0].entity.type, "Attachment");
+        compare(sg_releaseVersion.details[0].entity.type, "Version");
+        compare(sg_transferRelease.details[0].entity.type, "PublishEvent");
 
         compare(workFile.details.length, 1);
         compare(workFile.details[0].element.path, workPath);
@@ -396,13 +385,13 @@ PugTestCase {
 
     function test_releaseSeq() {
         var context = {ROOT: tmpDir + "shotguntests",
-                   PROJECT: "888_test",
-                   SEQUENCE: "DEV",
-                   SHOT: "001",
-                   STEP: "comp",
-                   USER: "mvisser",
-                   FILENAME: "somefile",
-                   EXT: "jpg"};
+                       PROJECT: "888_test",
+                       SEQUENCE: "DEV",
+                       SHOT: "001",
+                       STEP: "comp",
+                       USER: "mvisser",
+                       FILENAME: "somefile",
+                       EXT: "jpg"};
         var startFrame = 1;
         var endFrame = 100;
         var workPath = tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images/somefile.%04d.jpg";
@@ -426,14 +415,16 @@ PugTestCase {
     
     function test_pullFields() {
         var context = {ROOT: tmpDir + "shotguntests",
-                   PROJECT: "888_test",
-                   SEQUENCE: "DEV",
-                   SHOT: "001",
-                   USER: "mvisser"};
+                       PROJECT: "888_test",
+                       SEQUENCE: "DEV",
+                       SHOT: "001",
+                       USER: "mvisser"};
         shotgunPull.run(shot, context);
         pullSpy.wait(5000);
         
-        compare(shot.details[0].sg.Shot.sg_head_in, 1);                
-        compare(shot.details[0].sg.Shot.sg_tail_out, 100);                
+        compare(shot.details.length, 1);
+        compare(sg_shot.details.length, 1);
+        compare(sg_shot.details[0].entity.sg_head_in, 1);                
+        compare(sg_shot.details[0].entity.sg_tail_out, 100);                
     }
 }

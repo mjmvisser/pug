@@ -7,6 +7,7 @@ ShotgunEntity {
     property var scene: null
     property var sequence: null
     
+    
     inputs: [
         Input { name: "project" },
         Input { name: "scene" },
@@ -21,21 +22,18 @@ ShotgunEntity {
     ShotgunField {
         name: "sg_scene"
         type: ShotgunField.Link
-        linkType: "Scene"
         link: scene
     }
     
     ShotgunField {
         name: "sg_sequence"
         type: ShotgunField.Link
-        linkType: "Sequence"
         link: sequence
     }
     
     ShotgunField {
         name: "project"
         type: ShotgunField.Link
-        linkType: "Project"
         link: project
     }
     

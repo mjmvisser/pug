@@ -1,4 +1,5 @@
 #include <QQmlProperty>
+#include <QQmlListReference>
 
 #include "nodebase.h"
 #include "param.h"
@@ -434,26 +435,32 @@ const QList<const NodeBase *> NodeBase::upstream() const
     // loop through inputs and find upstream nodes
     foreach (const Input *in, m_inputs) {
         if (hasProperty(in->name().toUtf8())) {
-            const QVariant v = QObject::property(in->name().toUtf8());
+            const QVariant v = QQmlProperty::read(const_cast<NodeBase *>(this), in->name());
             if (v.canConvert<NodeBase *>()) {
                 // single input
                 const NodeBase *input = v.value<NodeBase*>();
                 if (input) {
                     result.append(input);
                 }
-            } else if (v.canConvert<QVariantList>()) {
+            } else if (v.canConvert<QQmlListReference>()) {
                 // multi-input
-                foreach (const QVariant w, v.toList()) {
-                    if (v.canConvert<NodeBase *>()) {
-                        const NodeBase *input = w.value<NodeBase*>();
-                        if (input) {
-                            result.append(input);
-                        }
+                QQmlListReference l = v.value<QQmlListReference>();
+                for (int i = 0; i < l.count(); i++) {
+                    const NodeBase *input = qobject_cast<const NodeBase *>(l.at(i));
+                    if (input) {
+                        result.append(input);
                     }
                 }
+            } else if (v.isNull()) {
+                // skip
+            } else {
+                error() << "can't interpret input" << in->name() << v;
             }
+        } else {
+            error() << "can't find input" << in->name();
         }
     }
+    trace() << "    ->" << result;
     return result;
 }
 
@@ -464,27 +471,32 @@ const QList<NodeBase *> NodeBase::upstream()
     // loop through inputs and find upstream nodes
     foreach (const Input *in, m_inputs) {
         if (hasProperty(in->name().toUtf8())) {
-            QVariant v = QObject::property(in->name().toUtf8());
+            QVariant v = QQmlProperty::read(const_cast<NodeBase *>(this), in->name());
             if (v.canConvert<NodeBase *>()) {
                 // single input
                 NodeBase *input = v.value<NodeBase*>();
                 if (input) {
                     result.append(input);
                 }
-            } else if (v.canConvert<QVariantList>()) {
+            } else if (v.canConvert<QQmlListReference>()) {
                 // multi-input
-                foreach (QVariant w, v.toList()) {
-                    if (v.canConvert<NodeBase *>()) {
-                        NodeBase *input = w.value<NodeBase*>();
-                        if (input) {
-                            result.append(input);
-                        }
+                QQmlListReference l = v.value<QQmlListReference>();
+                for (int i = 0; i < l.count(); i++) {
+                    NodeBase *input = qobject_cast<NodeBase *>(l.at(i));
+                    if (input) {
+                        result.append(input);
                     }
                 }
+            } else if (v.isNull()) {
+                // skip
+            } else {
+                error() << "can't interpret input" << in->name() << v;
             }
+        } else {
+            error() << "can't find input" << in->name();
         }
     }
-
+    trace() << "    ->" << result;
     return result;
 }
 
@@ -496,6 +508,7 @@ const QVariantList NodeBase::upstreamNodes()
         result.append(QVariant::fromValue(input));
     }
 
+    trace() << "    ->" << result;
     return result;
 }
 
@@ -512,6 +525,7 @@ const QList<NodeBase *> NodeBase::downstream()
         }
     }
 
+    trace() << "    ->" << result;
     return result;
 }
 
@@ -528,6 +542,7 @@ const QList<const NodeBase *> NodeBase::downstream() const
         }
     }
 
+    trace() << "    ->" << result;
     return result;
 }
 
@@ -539,6 +554,7 @@ const QVariantList NodeBase::downstreamNodes()
         result.append(QVariant::fromValue(output));
     }
 
+    trace() << "    ->" << result;
     return result;
 }
 
@@ -637,6 +653,84 @@ QJSValue NodeBase::detail(int index, const QString arg1, const QString arg2,
     }
 
     return result;
+}
+
+void NodeBase::setDetail(int index, QJSValue value, bool emitChanged)
+{
+    Q_ASSERT(details().isArray());
+    details().setProperty(index, value);
+    if (emitChanged)
+        emit detailsChanged();
+}
+
+void NodeBase::setDetail(int index, const QString arg1, QJSValue value, bool emitChanged)
+{
+    Q_ASSERT(details().isArray());
+    QJSValue detail = details().property(index);
+    if (detail.isUndefined()) {
+        detail = newObject();
+        setDetail(index, detail, false);
+    }
+
+    detail.setProperty(arg1, value);
+    if (emitChanged)
+        emit detailsChanged();
+}
+
+void NodeBase::setDetail(int index, const QString arg1, const QString arg2, QJSValue value, bool emitChanged)
+{
+    Q_ASSERT(details().isArray());
+    QJSValue obj = details().property(index).property(arg1);
+    if (obj.isUndefined()) {
+        obj = newObject();
+        setDetail(index, arg1, obj, false);
+    }
+
+    obj.setProperty(arg2, value);
+    if (emitChanged)
+        emit detailsChanged();
+}
+
+void NodeBase::setDetail(int index, const QString arg1, const QString arg2, const QString arg3, QJSValue value, bool emitChanged)
+{
+    Q_ASSERT(details().isArray());
+    QJSValue obj = details().property(index).property(arg1).property(arg2);
+    if (obj.isUndefined()) {
+        obj = newObject();
+        setDetail(index, arg1, arg2, obj, false);
+    }
+
+    obj.setProperty(arg3, value);
+    if (emitChanged)
+        emit detailsChanged();
+}
+
+void NodeBase::setDetail(int index, const QString arg1, const QString arg2, const QString arg3, const QString arg4, QJSValue value, bool emitChanged)
+{
+    Q_ASSERT(details().isArray());
+    QJSValue obj = details().property(index).property(arg1).property(arg2).property(arg3);
+    if (obj.isUndefined()) {
+        obj = newObject();
+        setDetail(index, arg1, arg2, arg3, obj, false);
+    }
+
+    obj.setProperty(arg4, value);
+    if (emitChanged)
+        emit detailsChanged();
+}
+
+void NodeBase::setDetail(int index, const QString arg1, const QString arg2, const QString arg3, const QString arg4, const QString arg5, QJSValue value, bool emitChanged)
+{
+    Q_ASSERT(details().isArray());
+    QJSValue obj = details().property(index).property(arg1).property(arg2).property(arg3).property(arg4);
+    if (obj.isUndefined()) {
+        obj = newObject();
+        setDetail(index, arg1, arg2, arg3, arg4, obj, false);
+    }
+
+    obj.setProperty(arg5, value);
+    if (emitChanged)
+        emit detailsChanged();
 }
 
 void NodeBase::addParam(const QString name)

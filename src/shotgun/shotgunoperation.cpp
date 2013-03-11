@@ -11,8 +11,72 @@
 ShotgunOperationAttached::ShotgunOperationAttached(QObject *object) :
     OperationAttached(object),
     m_action(ShotgunOperationAttached::Find),
-    m_pendingTransactions(0)
+    m_mode(ShotgunOperationAttached::Skip)
 {
+    bool havePushAtIndexSignal = node()->hasSignal(SIGNAL(shotgunPushAtIndex(int, const QVariant, Shotgun *)));
+    bool havePushedAtIndexSignal = node()->hasSignal(SIGNAL(shotgunPushedAtIndex(int, int)));
+
+    bool havePushSignal = node()->hasSignal(SIGNAL(shotgunPush(const QVariant, Shotgun *)));
+    bool havePushedSignal = node()->hasSignal(SIGNAL(shotgunPushed(int)));
+
+    bool havePullAtIndexSignal = node()->hasSignal(SIGNAL(shotgunPullAtIndex(int, const QVariant, Shotgun *)));
+    bool havePulledAtIndexSignal = node()->hasSignal(SIGNAL(shotgunPulledAtIndex(int, int)));
+
+    bool havePullSignal = node()->hasSignal(SIGNAL(shotgunPull(const QVariant, Shotgun *)));
+    bool havePulledSignal = node()->hasSignal(SIGNAL(shotgunPulled(int)));
+
+
+    if (havePushAtIndexSignal && havePushedAtIndexSignal) {
+        connect(this, SIGNAL(shotgunPushAtIndex(int, const QVariant, Shotgun *)),
+                node(), SIGNAL(shotgunPushAtIndex(int, const QVariant, Shotgun *)));
+        connect(node(), SIGNAL(shotgunPushedAtIndex(int, int)),
+                this, SLOT(onShotgunPushedAtIndex(int, int)));
+        m_mode |= ShotgunOperationAttached::PushAtIndex;
+        debug() << node() << "found .pushAtIndex";
+    } else if (!havePushAtIndexSignal && havePushedAtIndexSignal) {
+        error() << node() << "is missing the pushAtIndex signal";
+    } else if (havePushAtIndexSignal && !havePushedAtIndexSignal) {
+        error() << node() << "is missing the pushedAtIndex signal";
+    }
+
+    if (havePushSignal && havePushedSignal) {
+        connect(this, SIGNAL(shotgunPush(const QVariant, Shotgun *)),
+                node(), SIGNAL(shotgunPush(const QVariant, Shotgun *)));
+        connect(node(), SIGNAL(shotgunPushed(int)),
+                this, SLOT(onShotgunPushed(int)));
+        m_mode |= ShotgunOperationAttached::Push;
+        debug() << node() << "found .push";
+    } else if (!havePushSignal && havePushedSignal) {
+        error() << node() << "is missing the push signal";
+    } else if (havePushSignal && !havePushedSignal) {
+        error() << node() << "is missing the pushed signal";
+    }
+
+    if (havePullAtIndexSignal && havePulledAtIndexSignal) {
+        connect(this, SIGNAL(shotgunPullAtIndex(int, const QVariant, Shotgun *)),
+                node(), SIGNAL(shotgunPullAtIndex(int, const QVariant, Shotgun *)));
+        connect(node(), SIGNAL(shotgunPulledAtIndex(int, int)),
+                this, SLOT(onShotgunPulledAtIndex(int, int)));
+        m_mode |= ShotgunOperationAttached::PullAtIndex;
+        debug() << node() << "found .pullAtIndex";
+    } else if (!havePullAtIndexSignal && havePulledAtIndexSignal) {
+        error() << node() << "is missing the pullAtIndex signal";
+    } else if (havePullAtIndexSignal && !havePulledAtIndexSignal) {
+        error() << node() << "is missing the pulledAtIndex signal";
+    }
+
+    if (havePullSignal && havePulledSignal) {
+        connect(this, SIGNAL(shotgunPull(const QVariant, Shotgun *)),
+                node(), SIGNAL(shotgunPull(const QVariant, Shotgun *)));
+        connect(node(), SIGNAL(shotgunPulled(int)),
+                this, SLOT(onShotgunPulled(int)));
+        m_mode |= ShotgunOperationAttached::Pull;
+        debug() << node() << "found .pull";
+    } else if (!havePullSignal && havePulledSignal) {
+        error() << node() << "is missing the pull signal";
+    } else if (havePullSignal && !havePulledSignal) {
+        error() << node() << "is missing the pulled signal";
+    }
 }
 
 ShotgunOperationAttached::Action ShotgunOperationAttached::action() const
@@ -26,12 +90,6 @@ void ShotgunOperationAttached::setAction(ShotgunOperationAttached::Action a)
         m_action = a;
         emit actionChanged(m_action);
     }
-}
-
-void ShotgunOperationAttached::reset()
-{
-    OperationAttached::reset();
-    m_pendingTransactions = 0;
 }
 
 void ShotgunOperationAttached::run()
@@ -49,287 +107,105 @@ void ShotgunOperationAttached::run()
         return;
     }
 
-    BranchBase *branch = firstParent<BranchBase>();
+    m_indexStatus.clear();
 
-    if (branch && !branch->isRoot()) {
-        int count = branch->details().property("length").toInt();
+    if (sgop->mode() == ShotgunOperation::Pull) {
+        if (m_action == ShotgunOperationAttached::Find) {
+            info() << "Shotgun pull on" << node() << "with" << context();
+            trace() << node() << ".run() [cook mode is" << m_mode << "]";
 
-        // needed for lastVersion
-        // TODO: find a way to drop this dependency
-        const ReleaseOperationAttached *releaseAttached = branch->attachedPropertiesObject<ReleaseOperationAttached>(&ReleaseOperation::staticMetaObject);
-        Q_ASSERT(releaseAttached);
-
-        foreach (QObject *o, node()->children()) {
-            ShotgunEntity *sge = qobject_cast<ShotgunEntity*>(o);
-            if (sge) {
-                if (sgop->mode() == ShotgunOperation::Pull && m_action == ShotgunOperationAttached::Find) {
-                    if (count == 1) {
-                        branch->setIndex(0);
-                        QVariantMap context = qjsvalue_cast<QVariantMap>(branch->details().property(0).property("context"));
-                        readEntity(sge, updateFieldsWithEnv(context));
-                    } else {
-                        error() << node() << "Can't do a Shotgun Find of" << branch->details().property("length").toInt() << "elements";
+            m_indexStatus.clear();
+            if (m_mode & ShotgunOperationAttached::PullAtIndex) {
+                if (node()->count() > 0) {
+                    debug() << "Shotgun pulling" << node()->count() << "details";
+                    for (int i = 0; i < node()->count(); i++) {
+                        emit shotgunPullAtIndex(i, context(), sgop->shotgun());
                     }
-                } else if (sgop->mode() == ShotgunOperation::Push && m_action == ShotgunOperationAttached::Create) {
-                    if (count == 1) {
-                        branch->setIndex(0);
-                        QVariantMap context = qjsvalue_cast<QVariantMap>(branch->details().property(0).property("context"));
-                        createEntity(sge, updateFieldsWithEnv(context));
-                    } else if (count) {
-                        QVariantList contextList;
-                        for (int i = 0; i < branch->details().property("length").toInt(); i++) {
-                            branch->setIndex(i);
-
-                            QVariantMap context = qjsvalue_cast<QVariantMap>(branch->details().property(i).property("context"));
-
-                            contextList.append(updateFieldsWithEnv(context));
-                        }
-
-                        batchCreateEntities(sge, contextList);
-                    } else {
-                        error() << node() << "Can't do a Shotgun Create with no elements";
-                    }
+                } else {
+                    warning() << node() << "has nothing to pull";
+                    setStatus(OperationAttached::Finished);
+                    continueRunning();
                 }
             }
+            else if (m_mode & ShotgunOperationAttached::Pull) {
+                emit shotgunPull(context(), sgop->shotgun());
+            } else {
+                // skip
+                setStatus(OperationAttached::Finished);
+                continueRunning();
+            }
+        } else {
+            // skip
+            setStatus(OperationAttached::Finished);
+            continueRunning();
         }
-    }
+    } else if (sgop->mode() == ShotgunOperation::Push) {
+        if (m_action == ShotgunOperationAttached::Create) {
+            info() << "Shotgun push on" << node() << "with" << context();
+            trace() << node() << ".run() [cook mode is" << m_mode << "]";
 
-    if (m_pendingTransactions == 0) {
-        setStatus(OperationAttached::Finished);
-        continueRunning();
-    }
-
-}
-
-const QVariantMap ShotgunOperationAttached::updateFieldsWithEnv(const QVariantMap newContext) const
-{
-    // add data from env that is not in the context
-    QVariantMap d = context();
-    for (QVariantMap::const_iterator i = newContext.constBegin(); i != newContext.constEnd(); ++i) {
-        d.insert(i.key(), i.value());
-    }
-
-    return d;
-}
-
-void ShotgunOperationAttached::readEntity(const ShotgunEntity* sge, const QVariantMap context)
-{
-    trace() << node() << ".readEntity(" << sge << "," << context << ")";
-    m_pendingTransactions++;
-
-    ShotgunOperation *sgop = operation<ShotgunOperation>();
-    Q_ASSERT(sgop);
-
-    QVariantList filters = sge->buildFilters(context);
-
-    debug() << "--type" << sge->name() << "filters" << QJsonDocument::fromVariant(filters);
-
-    ShotgunReply *reply = sgop->shotgun()->findOne(sge->name(), filters, sge->buildFields());
-    connect(reply, &ShotgunReply::finished, this, &ShotgunOperationAttached::onReadCreateEntityFinished);
-    connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
-            this, &ShotgunOperationAttached::onShotgunError);
-}
-
-void ShotgunOperationAttached::createEntity(const ShotgunEntity* sge, const QVariantMap context)
-{
-    trace() << node() << ".createEntity(" << sge << "," << context << ")";
-    m_pendingTransactions++;
-
-    ShotgunOperation *sgop = qobject_cast<ShotgunOperation *>(operation());
-    Q_ASSERT(sgop);
-
-    QVariantMap data = sge->buildData(context);
-
-    debug() << "--type" << sge->name() << "data" << QJsonDocument::fromVariant(data);
-
-    ShotgunReply *reply = sgop->shotgun()->create(sge->name(), data, sge->buildFields());
-    connect(reply, &ShotgunReply::finished, this, &ShotgunOperationAttached::onReadCreateEntityFinished);
-    connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
-            this, &ShotgunOperationAttached::onShotgunError);
-}
-
-void ShotgunOperationAttached::batchCreateEntities(ShotgunEntity *sge, const QVariantList contextList)
-{
-    trace() << node() << ".batchCreateEntities(" << sge << "," << contextList << ")";
-    m_pendingTransactions++;
-
-    ShotgunOperation *sgop = operation<ShotgunOperation>();
-    Q_ASSERT(sgop);
-
-    QVariantList batchRequests;
-
-    foreach (const QVariant context, contextList) {
-        QVariantMap batchRequest;
-
-        batchRequest["request_type"] = "create";
-        batchRequest["entity_type"] = sge->name();
-        batchRequest["data"] = sge->buildData(context.toMap());
-        QStringList returnFields = sge->buildFields();
-        if (returnFields.length() > 0)
-            batchRequest["return_fields"] = returnFields;
-
-        batchRequests.append(batchRequest);
-    }
-
-    debug() << "requests:" << batchRequests;
-
-    ShotgunReply *reply = sgop->shotgun()->batch(batchRequests);
-    connect(reply, &ShotgunReply::finished, this, &ShotgunOperationAttached::onBatchCreateEntitiesFinished);
-    connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
-            this, &ShotgunOperationAttached::onShotgunError);
-}
-
-void ShotgunOperationAttached::addDetail(const QVariantMap entity)
-{
-    BranchBase *branch = firstParent<BranchBase>();
-    Q_ASSERT(branch);
-
-    QJSValue detail = branch->details().property(branch->index());
-    if (detail.isUndefined()) {
-        detail = newObject();
-        branch->details().setProperty(branch->index(), detail);
-    }
-
-    QJSValue entities = detail.property("sg");
-    if (entities.isUndefined()) {
-        entities = newObject();
-        detail.setProperty("sg", entities);
-    }
-
-    entities.setProperty(entity.value("type").toString(), toScriptValue(entity));
-
-    // TODO: should only do this once, instead of after every update
-    emit branch->detailsChanged();
-}
-
-void ShotgunOperationAttached::onReadCreateEntityFinished(const QVariant result)
-{
-    trace() << ".onReadCreateEntityFinished(" << result << ")";
-    addDetail(result.toMap());
-
-    QObject::sender()->deleteLater();
-
-    debug() << "received" << QJsonDocument::fromVariant(result);
-
-    m_pendingTransactions--;
-
-    if (m_pendingTransactions == 0) {
-        if (status() != OperationAttached::Error)
+            m_indexStatus.clear();
+            if (m_mode & ShotgunOperationAttached::PushAtIndex) {
+                if (node()->count() > 0) {
+                    debug() << "Shotgun pushing" << node()->count() << "details";
+                    for (int i = 0; i < node()->count(); i++) {
+                        emit shotgunPushAtIndex(i, context(), sgop->shotgun());
+                    }
+                } else {
+                    warning() << node() << "has nothing to push";
+                    setStatus(OperationAttached::Finished);
+                    continueRunning();
+                }
+            } else if (m_mode & ShotgunOperationAttached::Push) {
+                emit shotgunPush(context(), sgop->shotgun());
+            } else {
+                // skip
+                setStatus(OperationAttached::Finished);
+                continueRunning();
+            }
+        } else {
+            // skip
             setStatus(OperationAttached::Finished);
-        continueRunning();
-    }
-}
-
-void ShotgunOperationAttached::onBatchCreateEntitiesFinished(const QVariant result)
-{
-    trace() << ".onBatchCreateEntitiesFinished(" << result << ")";
-    BranchBase *branch = firstParent<BranchBase>();
-    Q_ASSERT(branch);
-
-    for (int i = 0; i < result.toList().length(); i++) {
-        branch->setIndex(i);
-        addDetail(result.toList().at(i).toMap());
-    }
-
-    QObject::sender()->deleteLater();
-
-    debug() << "received" << QJsonDocument::fromVariant(result);
-
-    m_pendingTransactions--;
-
-    if (m_pendingTransactions == 0) {
-        if (status() != OperationAttached::Error)
-            setStatus(OperationAttached::Finished);
-        continueRunning();
-    }
-}
-
-void ShotgunOperationAttached::onShotgunError()
-{
-    ShotgunReply *reply = qobject_cast<ShotgunReply *>(QObject::sender());
-    if (reply) {
-        trace() << node() << ".onShotgunError() [error is" << reply->errorString() << "]";
-        setStatus(OperationAttached::Error);
+            continueRunning();
+        }
     } else {
-        error() << ".onShotgunError WTF";
-    }
-
-    m_pendingTransactions--;
-
-    reply->deleteLater();
-
-    if (m_pendingTransactions == 0) {
+        error() << "Unknown Shotgun mode" << sgop->mode();
+        setStatus(OperationAttached::Error);
         continueRunning();
     }
 }
 
-OperationAttached::Status ShotgunOperationAttached::extraStatus() const
+void ShotgunOperationAttached::onShotgunPulled(int s)
 {
-    OperationAttached::Status es = OperationAttached::Invalid;
-
-    // only valid if we're on a branch
-    const ReleaseOperationAttached *releaseAttached = node()->attachedPropertiesObject<ReleaseOperationAttached>(&ReleaseOperation::staticMetaObject);
-    Q_ASSERT(releaseAttached);
-
-    // release target is a dependency
-    const BranchBase *targetBranch = releaseAttached->target();
-    if (targetBranch) {
-        const OperationAttached *targetAttached = targetBranch->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-        Q_ASSERT(targetAttached);
-
-        OperationAttached::Status targetStatus = targetAttached->status();
-        if (targetStatus > es)
-            es = targetStatus;
-    }
-
-    return es;
+    trace() << node() << ".onShotgunPulled(" << static_cast<OperationAttached::Status>(s) << ")";
+    setStatus(static_cast<OperationAttached::Status>(s));
+    continueRunning();
 }
 
-void ShotgunOperationAttached::runExtra()
+void ShotgunOperationAttached::onShotgunPulledAtIndex(int index, int s)
 {
-    ReleaseOperationAttached *releaseAttached = node()->attachedPropertiesObject<ReleaseOperationAttached>(&ReleaseOperation::staticMetaObject);
-    Q_ASSERT(releaseAttached);
+    trace() << node() << ".onShotgunPulledAtIndex(" << index << "," << static_cast<OperationAttached::Status>(s) << ")";
+    m_indexStatus.append(static_cast<OperationAttached::Status>(s));
 
-    BranchBase *targetBranch = releaseAttached->target();
-    if (targetBranch) {
-        OperationAttached *targetAttached = targetBranch->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-        Q_ASSERT(targetAttached);
-
-        OperationAttached::Status targetStatus = targetAttached->status();
-
-        if (targetStatus == OperationAttached::None || targetStatus == OperationAttached::Idle || targetStatus == OperationAttached::Running)
-            connect(targetAttached, &OperationAttached::finished, this, &ShotgunOperationAttached::onExtraFinished);
-
-        if (targetStatus == OperationAttached::None || targetStatus == OperationAttached::Idle)
-            targetAttached->run(operation(), context());
+    if (m_indexStatus.length() == node()->count()) {
+        onShotgunPulled(m_indexStatus.status());
     }
 }
 
-void ShotgunOperationAttached::resetExtra()
+void ShotgunOperationAttached::onShotgunPushed(int s)
 {
-    ReleaseOperationAttached *releaseAttached = node()->attachedPropertiesObject<ReleaseOperationAttached>(&ReleaseOperation::staticMetaObject);
-    Q_ASSERT(releaseAttached);
-
-    BranchBase *targetBranch = releaseAttached->target();
-    if (targetBranch) {
-        OperationAttached *targetAttached = targetBranch->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-        Q_ASSERT(targetAttached);
-
-        targetAttached->resetAll();
-    }
+    trace() << node() << ".onShotgunPushed(" << static_cast<OperationAttached::Status>(s) << ")";
+    setStatus(static_cast<OperationAttached::Status>(s));
+    continueRunning();
 }
 
-void ShotgunOperationAttached::resetExtraStatus()
+void ShotgunOperationAttached::onShotgunPushedAtIndex(int index, int s)
 {
-    ReleaseOperationAttached *releaseAttached = node()->attachedPropertiesObject<ReleaseOperationAttached>(&ReleaseOperation::staticMetaObject);
-    Q_ASSERT(releaseAttached);
+    trace() << node() << ".onShotgunPushedAtIndex(" << index << "," << static_cast<OperationAttached::Status>(s) << ")";
+    m_indexStatus.append(static_cast<OperationAttached::Status>(s));
 
-    BranchBase *targetBranch = releaseAttached->target();
-    if (targetBranch) {
-        OperationAttached *targetAttached = targetBranch->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-        Q_ASSERT(targetAttached);
-
-        targetAttached->resetAllStatus();
+    if (m_indexStatus.length() == node()->count()) {
+        onShotgunPushed(m_indexStatus.status());
     }
 }
 

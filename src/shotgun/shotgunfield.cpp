@@ -9,7 +9,8 @@ ShotgunField::ShotgunField(QObject *parent) :
     m_file(),
     m_urlType(ShotgunField::Local)
 {
-    addInput("entity");
+    setActive(true);
+
     addInput("file");
     addInput("links");
 
@@ -24,6 +25,21 @@ ShotgunField::ShotgunField(QObject *parent) :
 
     connect(this, &ShotgunField::shotgunPullAtIndex, this, &ShotgunField::onShotgunPullAtIndex);
     connect(this, &ShotgunField::shotgunPushAtIndex, this, &ShotgunField::onShotgunPushAtIndex);
+    connect(this, &ShotgunField::entityChanged, this, &ShotgunField::updateCount);
+}
+
+void ShotgunField::componentComplete()
+{
+    NodeBase::componentComplete();
+    if (entity())
+        connect(entity(), &NodeBase::countChanged, this, &NodeBase::setCount);
+
+    updateCount();
+}
+
+const ShotgunEntity *ShotgunField::entity() const
+{
+    return firstParent<ShotgunEntity>();
 }
 
 ShotgunEntity *ShotgunField::entity()
@@ -54,6 +70,25 @@ void ShotgunField::setType(ShotgunField::Type t)
     if (m_type != t) {
         m_type = t;
         emit typeChanged(m_type);
+    }
+}
+
+ShotgunEntity *ShotgunField::link()
+{
+    return m_links.length() == 1 ? m_links.at(0) : 0;
+}
+
+const ShotgunEntity *ShotgunField::link() const
+{
+    return m_links.length() == 1 ? m_links.at(0) : 0;
+}
+
+void ShotgunField::setLink(ShotgunEntity *e)
+{
+    if (m_links.length() != 1 || m_links.at(0) != e) {
+        m_links.clear();
+        m_links << e;
+        emit linksChanged();
     }
 }
 
@@ -156,16 +191,15 @@ void ShotgunField::setLocalStorage(const QVariant s)
 void ShotgunField::onShotgunPullAtIndex(int index, const QVariant context, Shotgun *shotgun)
 {
     Q_UNUSED(shotgun);
-    info() << "Pull at index" << index << "with context" << context;
-    trace() << ".pullAtIndex(" << index << "," << context << ")";
+    info() << "Shotgun pull at index" << index << "with context" << context;
+    trace() << ".shotgunPullAtIndex(" << index << "," << context << ")";
 
     QVariant value = buildValue(index, context.toMap());
 
-    if (!value.isNull() && value.isValid()) {
-        info() << "Got value" << value;
-
-        details().property(index).setProperty("value", toScriptValue(value));
-        detailsChanged();
+    if (value.isValid()) {
+        // TODO: Qt bug? null QVariant converts to a non-null QJSValue
+        setDetail(index, "value", value.isNull() ? QJSValue(QJSValue::NullValue) : toScriptValue(value));
+        info() << "Shotgun pull result is" << details();
         emit shotgunPulledAtIndex(index, OperationAttached::Finished);
     } else {
         error() << "Unable to build value";
@@ -176,16 +210,16 @@ void ShotgunField::onShotgunPullAtIndex(int index, const QVariant context, Shotg
 void ShotgunField::onShotgunPushAtIndex(int index, const QVariant context, Shotgun *shotgun)
 {
     Q_UNUSED(shotgun);
-    info() << "Push at index" << index << "with context" << context;
-    trace() << ".pushAtIndex(" << index << "," << context << ")";
+    info() << "Shotgun push at index" << index << "with context" << context;
+    trace() << ".shotgunPushAtIndex(" << index << "," << context << ")";
 
     QVariant value = buildValue(index, context.toMap());
 
-    if (!value.isNull() && value.isValid()) {
+    if (value.isValid()) {
         info() << "Got value" << value;
-
-        details().property(index).setProperty("value", toScriptValue(value));
-        detailsChanged();
+        // TODO: Qt bug? null QVariant converts to a non-null QJSValue
+        setDetail(index, "value", value.isNull() ? QJSValue(QJSValue::NullValue) : toScriptValue(value));
+        info() << "Shotgun push result is" << details().property(index);
         emit shotgunPushedAtIndex(index, OperationAttached::Finished);
     } else {
         error() << "Unable to build value";
@@ -240,18 +274,20 @@ const Field *ShotgunField::field() const
     } else {
         error() << "Field has no entity";
     }
+
+    return 0;
 }
 
-const QVariant ShotgunField::buildStringValue(const Field *field, const QVariantMap context) const
+const QVariant ShotgunField::buildStringValue(const QVariantMap context) const
 {
     Q_ASSERT(m_type == ShotgunField::String);
 
     QVariant result;
     if (!m_fieldName.isEmpty()) {
         if (field()) {
-            QVariant value = field->get(context);
+            QVariant value = field()->get(context);
             if (value.isValid())
-                result = field->format(value);
+                result = field()->format(value);
             else
                 error() << "Can't get value for field" << m_fieldName;
         } else {
@@ -260,7 +296,7 @@ const QVariant ShotgunField::buildStringValue(const Field *field, const QVariant
     } else if (m_value.canConvert<QString>()) {
         result = m_value.toString();
     } else {
-        error() << "Can't convert" << m_value << "to a string";
+        result = QVariant(QVariant::String); // null
     }
     return result;
 }
@@ -272,9 +308,9 @@ const QVariant ShotgunField::buildNumberValue(const QVariantMap context) const
     QVariant result;
     if (!m_fieldName.isEmpty()) {
         if (field()) {
-            QVariant value = field->get(context);
+            QVariant value = field()->get(context);
             if (value.isValid())
-                result = field->format(value);
+                result = field()->format(value);
             else
                 error() << "Can't get value for field" << m_fieldName;
         } else {
@@ -282,8 +318,8 @@ const QVariant ShotgunField::buildNumberValue(const QVariantMap context) const
         }
     } else if (m_value.canConvert<double>()) {
         result = m_value.toDouble();
-    } else {
-        error() << "Can't convert" << m_value << "to a number";
+    } else if (!m_value.isValid() || m_value.isNull()) {
+        result = QVariant(QVariant::String); // null value
     }
 
     return result;
@@ -293,8 +329,15 @@ const QVariant ShotgunField::buildPathValue(int index) const
 {
     Q_ASSERT(m_type == ShotgunField::Path || m_type == ShotgunField::Url);
 
+    if (!m_file) {
+        error() << "ShotgunField.Path type requires a node connected to the file property";
+        return QVariant();
+    }
+
+    Q_ASSERT(m_file->details().isArray());
+
     QVariant result;
-    if (m_file && m_file->details().isArray() && m_file->details().property("length").toInt() > index) {
+    if (m_file->details().property("length").toInt() > index) {
         result = qjsvalue_cast<Element *>(m_file->details().property(index).property("element"))->pattern();
     } else {
         error() << "Can't get detail" << index << "from" << m_file;
@@ -307,31 +350,36 @@ const QVariant ShotgunField::buildPatternValue(int index, const QVariantMap cont
 {
     Q_ASSERT(m_type == ShotgunField::Pattern);
 
-    QVariant result;
-    if (entity()) {
-        if (entity()->branch()) {
-            if (branch()->details().isArray() && branch()->details().property("length").toInt() > index) {
-                QVariantMap data = qjsvalue_cast<QVariantMap>(branch->details().property(index).property("context"));
-                for (QVariantMap::const_iterator i = context.constBegin(); i != context.constEnd(); ++i) {
-                    if (!data.contains(i.key()))
-                        data.insert(i.key(), i.value());
-                }
+    const BranchBase *branch = qobject_cast<const BranchBase *>(m_file);
 
-                if (branch->fieldsComplete(m_pattern, data)) {
-                    result = branch->formatFields(m_pattern, data);
-                } else {
-                    // run it anyway, so we can log the errors
-                    branch->formatFields(m_pattern, data);
-                    error() << branch << "missing fields for" << m_pattern;
-                }
-            } else {
-                error() << "Can't get detail" << index << "from" << branch;
-            }
+    if (!branch) {
+        error() << "ShotgunField.Pattern type requires a branch connected to the file property";
+        return QVariant();
+    }
+
+    Q_ASSERT(branch->details().isArray());
+
+    QVariant result;
+    if (branch->details().property("length").toInt() > index) {
+        QVariantMap data = qjsvalue_cast<QVariantMap>(branch->details().property(index).property("context"));
+        for (QVariantMap::const_iterator i = context.constBegin(); i != context.constEnd(); ++i) {
+            if (!data.contains(i.key()))
+                data.insert(i.key(), i.value());
+        }
+
+        if (branch->fieldsComplete(m_pattern, data)) {
+            QString value = branch->formatFields(m_pattern, data);
+            if (!value.isEmpty())
+                result = value;
+            else
+                error() << branch << ".formatFields(" << m_pattern << "," << data << ") returned null";
         } else {
-            error() << "Entity has no branch";
+            // run it anyway, so we can log the errors
+            branch->formatFields(m_pattern, data);
+            error() << branch << "missing fields for" << m_pattern;
         }
     } else {
-        error() << "Field has no entity";
+        error() << "Can't get detail" << index << "from" << branch;
     }
 
     return result;
@@ -359,7 +407,7 @@ const QVariant ShotgunField::buildLinkValue(int index) const
                 error() << "linked entity" << linkedEntity << "has no id";
             }
         } else {
-            error() << "linked entity is null";
+            result = QVariant(QVariant::String); // null
         }
     } else if (m_links.length() == 0) {
         error() << "links is empty";
@@ -385,12 +433,12 @@ const QVariant ShotgunField::buildMultiLinkValue(int index) const
                 // Shotgun entity type is the linked ShotgunEntity's name
                 link["type"] = m_links[i]->name();
                 link["id"] = sg_entity["id"];
-                result.append(link);
+                result << link;
             } else {
                 error() << "linked entity" << i << m_links[i] << "has no id";
             }
         } else {
-            error() << "linked entity" << i << m_links[i] << "is null";
+            result << QVariant(QVariant::String); // null QVariant
         }
     }
 
@@ -415,10 +463,8 @@ const QVariant ShotgunField::buildUrlValue(int index) const
         }
     } else if (m_urlType == ShotgunField::Local || m_urlType == ShotgunField::Upload) {
         QVariantMap file;
-        // use the value for the name
-        // TODO: maybe we should have a separate "name" property to be explicit?
-        if (!m_value.isNull() && m_value.isValid() && m_value.canConvert<QString>())
-            file["name"] = m_value.toString();
+        if (!m_displayName.isEmpty())
+            file["name"] = m_displayName;
 
         if (!m_contentType.isEmpty())
             file["content_type"] = m_contentType;
@@ -442,4 +488,12 @@ const QVariant ShotgunField::buildUrlValue(int index) const
     }
 
     return result;
+}
+
+
+void ShotgunField::updateCount()
+{
+    if (entity()) {
+        setCount(entity()->count());
+    }
 }

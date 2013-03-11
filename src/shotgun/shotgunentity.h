@@ -17,6 +17,7 @@ class ShotgunEntity : public NodeBase
 public:
     explicit ShotgunEntity(QObject *parent = 0);
 
+    const BranchBase *branch() const;
     BranchBase *branch();
 
     QQmlListProperty<ShotgunField> shotgunFields_();
@@ -30,6 +31,7 @@ public:
     Q_INVOKABLE const QStringList buildFields() const;
 
 signals:
+    void branchChanged(const BranchBase *branch);
     void shotgunFieldsChanged();
 
     void shotgunPull(const QVariant context, Shotgun *shotgun);
@@ -37,23 +39,30 @@ signals:
     void shotgunPush(const QVariant context, Shotgun *shotgun);
     void shotgunPushed(int status);
 
+protected:
+    virtual void componentComplete();
+
 protected slots:
     void onShotgunPull(const QVariant context, Shotgun *shotgun);
     void onShotgunPush(const QVariant context, Shotgun *shotgun);
 
 private slots:
-    void onReadEntityFinished(const QVariant);
-    void onReadEntityFinished(const QVariant);
-    void onBatchCreateEntitiesFinished(const QVariant);
+    void onBranchCountChanged(int count);
+    void onReadFinished(const QVariant);
+    void onCreateFinished(const QVariant);
+    void onBatchCreateFinished(const QVariant);
     void onShotgunReadError();
     void onShotgunCreateError();
+    void updateCount();
 
 private:
-    void readEntity(Shotgun *, const QVariantMap);
-    void createEntity(Shotgun *, const QVariantMap);
-    void batchCreateEntities(Shotgun *, const QVariantList);
+    void readEntity(Shotgun *);
+    void createEntity(Shotgun *);
+    void batchCreateEntities(Shotgun *);
 
-    //void addDetail(const QVariantMap entity);
+    const QVariantList data() const;
+    const QStringList fields() const;
+    const QVariantList filters() const;
 
     // shotgunFields property
     static void shotgunFields_append(QQmlListProperty<ShotgunField> *, ShotgunField *);

@@ -6,6 +6,7 @@
 
 #include "nodebase.h"
 
+class Shotgun;
 class ShotgunEntity;
 class Field;
 class BranchBase;
@@ -31,6 +32,7 @@ public:
     enum UrlType { Upload, Local, Web };
     explicit ShotgunField(QObject *parent = 0);
 
+    const ShotgunEntity *entity() const;
     ShotgunEntity *entity();
 
     const QString fieldName() const;
@@ -51,6 +53,7 @@ public:
     const QVariant value() const;
     void setValue(const QVariant);
 
+    const NodeBase *file() const;
     NodeBase *file();
     void setFile(NodeBase *);
 
@@ -69,6 +72,7 @@ public:
     Q_INVOKABLE const QVariant buildValue(int, const QVariantMap) const;
 
 signals:
+    void entityChanged(ShotgunEntity *entity);
     void fieldNameChanged(const QString field);
     void typeChanged(Type type);
     void linksChanged();
@@ -85,9 +89,15 @@ signals:
     void shotgunPushAtIndex(int index, const QVariant context, Shotgun *shotgun);
     void shotgunPushedAtIndex(int index, int status);
 
+protected:
+    virtual void componentComplete();
+
 protected slots:
     void onShotgunPullAtIndex(int index, const QVariant context, Shotgun *shotgun);
     void onShotgunPushAtIndex(int index, const QVariant context, Shotgun *shotgun);
+
+private slots:
+    void updateCount();
 
 private:
     const QVariant buildStringValue(const QVariantMap) const;

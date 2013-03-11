@@ -6,15 +6,33 @@
 ShotgunEntity::ShotgunEntity(QObject *parent) :
     NodeBase(parent)
 {
+    setActive(true);
+
     addInput("branch");
+    addInput("shotgunFields");
 
     connect(this, &ShotgunEntity::shotgunPull, this, &ShotgunEntity::onShotgunPull);
     connect(this, &ShotgunEntity::shotgunPush, this, &ShotgunEntity::onShotgunPush);
+    connect(this, &ShotgunEntity::branchChanged, this, &ShotgunEntity::updateCount);
+}
+
+void ShotgunEntity::componentComplete()
+{
+    NodeBase::componentComplete();
+    if (branch())
+        connect(branch(), &NodeBase::countChanged, this, &NodeBase::setCount);
+
+    updateCount();
+}
+
+const BranchBase *ShotgunEntity::branch() const
+{
+    // TODO: how do we emit branchChanged() when the parent changes?
+    return parent<BranchBase>();
 }
 
 BranchBase *ShotgunEntity::branch()
 {
-    // TODO: how do we emit branchChanged() when the parent changes?
     return parent<BranchBase>();
 }
 
@@ -74,209 +92,195 @@ void ShotgunEntity::shotgunFields_clear(QQmlListProperty<ShotgunField> *prop)
 
 void ShotgunEntity::onShotgunPull(const QVariant context, Shotgun *shotgun)
 {
-    m_status = OperationAttached::Finished;
+    trace() << ".onShotgunPull(" << context << "," << shotgun << ")";
+    Q_ASSERT(shotgun);
+
+    if (branch()->count() == 1) {
+        ShotgunReply *reply = shotgun->findOne(name(), filters(), fields());
+        debug() << "filters are" << filters();
+        connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onReadFinished);
+        connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
+                this, &ShotgunEntity::onShotgunReadError);
+    } else if (branch()->count() > 0) {
+        error() << "Shotgun pull does not support branches with multiple details (" << branch() << ")";
+        emit shotgunPulled(OperationAttached::Error);
+    } else {
+        error() << "Branch" << branch() << "has no details";
+        emit shotgunPulled(OperationAttached::Error);
+    }
 }
 
 void ShotgunEntity::onShotgunPush(const QVariant context, Shotgun *shotgun)
 {
-    m_status = OperationAttached::Finished;
+    trace() << ".onShotgunPush(" << context << "," << shotgun << ")";
+    Q_ASSERT(shotgun);
+
+    if (branch()->count() == 1) {
+        ShotgunReply *reply = shotgun->create(name(), data()[0].toMap(), fields());
+        connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onCreateFinished);
+        connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
+                this, &ShotgunEntity::onShotgunCreateError);
+    } else if (branch()->count() > 0) {
+        QVariantList batchRequests;
+        foreach (const QVariant d, data()) {
+            QVariantMap batchRequest;
+
+            batchRequest["request_type"] = "create";
+            batchRequest["entity_type"] = name();
+            batchRequest["data"] = d;
+            QStringList returnFields = fields();
+            if (returnFields.length() > 0)
+                batchRequest["return_fields"] = returnFields;
+
+            batchRequests.append(batchRequest);
+        }
+
+        debug() << "requests:" << batchRequests;
+
+        ShotgunReply *reply = shotgun->batch(batchRequests);
+        connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onBatchCreateFinished);
+        connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
+                this, &ShotgunEntity::onShotgunCreateError);
+    } else {
+        error() << "Branch" << branch() << "has no details";
+        emit shotgunPushed(OperationAttached::Error);
+    }
 }
 
-const QVariantList ShotgunEntity::buildFilters(const QVariantMap fields) const
+const QVariantList ShotgunEntity::data() const
 {
-    if (!branch()) {
-        error() << "Not parented to a branch-derived node";
-        return QVariantList();
+    trace() << ".data()";
+    Q_ASSERT(branch());
+
+    QVariantList result;
+    for (int i = 0; i < branch()->count(); i++) {
+        QVariantMap d;
+
+        // build data for this entity from the entity's fields
+        foreach (const QObject *o, children()) {
+            const ShotgunField *sgf = qobject_cast<const ShotgunField *>(o);
+            if (sgf) {
+                // name: value pairs
+                QJSValue jsvalue = sgf->detail(0, "value");
+                QVariant value;
+                if (jsvalue.isNull())
+                    value = QVariant(QVariant::String); // null QVariant
+                else if (jsvalue.isUndefined())
+                    value = QVariant(); // invalid QVariant
+                else
+                    value = qjsvalue_cast<QVariant>(jsvalue);
+                trace() << "value of" << sgf << "is" << value;
+                Q_ASSERT(value.isValid());
+                // skip null values
+                if (!value.isNull()) {
+                    d.insert(sgf->name(), value);
+                }
+            }
+        }
+
+        result.append(d);
     }
 
-    QVariantList filterList;
+    trace() << "    ->" << result;
+    return result;
+}
+
+const QVariantList ShotgunEntity::filters() const
+{
+    trace() << ".filters()";
+    Q_ASSERT(branch());
+    Q_ASSERT(branch()->count() == 1);
+
+    QVariantList result;
 
     // build filters for this entity from the entity's shotgun fields
     foreach (const QObject *o, children()) {
         const ShotgunField *sgf = qobject_cast<const ShotgunField *>(o);
-        if (sgf) {
+        if (sgf && sgf->type() != ShotgunField::Url) {
+            // we skip Url fields, since they can't be filtered against
             // ["<shotgun field name>", "is", <value for field name>]
-            QVariant value = qjsvalue_cast<QVariant>(sgf->detail(0, "value"));
-            if (value.isValid()) {
+            QJSValue jsvalue = sgf->detail(0, "value");
+            QVariant value;
+            if (jsvalue.isNull())
+                value = QVariant(QVariant::String); // null QVariant
+            else if (jsvalue.isUndefined())
+                value = QVariant(); // invalid QVariant
+            else
+                value = qjsvalue_cast<QVariant>(jsvalue);
+            trace() << "value of" << sgf << "is" << value;
+            Q_ASSERT(value.isValid());
+            // we also skip null fields
+            if (!value.isNull()) {
                 QVariantList filter;
                 filter << sgf->name() << "is" << value;
-                filterList << QVariant(filter);
+                result << QVariant(filter);
             }
         }
     }
 
-    return filterList;
+    trace() << "    ->" << result;
+    return result;
 }
 
-const QVariantMap ShotgunEntity::buildData(const QVariantMap fields) const
+
+const QStringList ShotgunEntity::fields() const
 {
-    const BranchBase *branch = firstParent<BranchBase>();
-    if (!branch) {
-        error() << this << "is not parented to a branch-derived node";
-        return QVariantMap();
-    }
+    trace() << ".fields()";
+    Q_ASSERT(branch());
+    Q_ASSERT(branch()->count() == 1);
 
-    QVariantMap dataMap;
-
-    // build data for this entity from the entity's shotgun fields
-    foreach (const QObject *o, children()) {
-        const ShotgunField *sgf = qobject_cast<const ShotgunField *>(o);
-        if (sgf) {
-            dataMap.insert(sgf->name(), sgf->buildValue(branch, fields));
-        }
-    }
-
-    return dataMap;
-}
-
-const QStringList ShotgunEntity::buildFields() const
-{
-    const BranchBase *branch = firstParent<BranchBase>();
-    if (!branch) {
-        error() << this << "is not parented to a branch-derived node";
-        return QStringList();
-    }
-
-    QStringList fieldList;
+    QStringList result;
 
     // build a list of Shotgun fields
     foreach (const QObject *o, children()) {
         const ShotgunField *sgf = qobject_cast<const ShotgunField *>(o);
         if (sgf) {
-            fieldList << sgf->name();
+            result << sgf->name();
         }
     }
 
-    return fieldList;
+    trace() << "    ->" << result;
+    return result;
 }
 
-
-void ShotgunEntity::readEntity(Shotgun *shotgun, const QVariantMap context)
+void ShotgunEntity::onReadFinished(const QVariant result)
 {
-    trace() << ".readEntity(" << shotgun << "," context << ")";
-    Q_ASSERT(shotgun);
+    trace() << ".onReadFinished(" << result << ")";
+    debug() << "Shotgun.find returned" << result;
 
-    m_pendingTransactions++;
-
-    QVariantList filters = buildFilters(context);
-
-    debug() << "--type" << name() << "filters" << QJsonDocument::fromVariant(filters);
-
-    ShotgunReply *reply = shotgun->findOne(name(), filters, buildFields());
-    connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onReadEntityFinished);
-    connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
-            this, &ShotgunEntity::onShotgunError);
-}
-
-void ShotgunEntity::createEntity(Shotgun *shotgun, const QVariantMap context)
-{
-    trace() << ".createEntity(" << shotgun << "," << context << ")";
-    Q_ASSERT(shotgun);
-
-    m_pendingTransactions++;
-
-    QVariantMap data = buildData(context);
-
-    debug() << "--type" << name() << "data" << QJsonDocument::fromVariant(data);
-
-    ShotgunReply *reply = shotgun->create(name(), data, buildFields());
-    connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onCreateEntityFinished);
-    connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
-            this, &ShotgunEntity::onShotgunError);
-}
-
-void ShotgunEntity::batchCreateEntities(Shotgun *shotgun, const QVariantList contextList)
-{
-    trace() << ".batchCreateEntities(" << shotgun << "," contextList << ")";
-    Q_ASSERT(shotgun);
-
-    m_pendingTransactions++;
-
-    QVariantList batchRequests;
-
-    foreach (const QVariant context, contextList) {
-        QVariantMap batchRequest;
-
-        batchRequest["request_type"] = "create";
-        batchRequest["entity_type"] = name();
-        batchRequest["data"] = buildData(context.toMap());
-        QStringList returnFields = buildFields();
-        if (returnFields.length() > 0)
-            batchRequest["return_fields"] = returnFields;
-
-        batchRequests.append(batchRequest);
-    }
-
-    debug() << "requests:" << batchRequests;
-
-    ShotgunReply *reply = shotgun->batch(batchRequests);
-    connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onBatchCreateEntitiesFinished);
-    connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
-            this, &ShotgunEntity::onShotgunError);
-}
-
-void ShotgunEntity::addDetail(int index, const QVariantMap entity)
-{
-    QJSValue detail = details().property(index);
-    if (detail.isUndefined()) {
-        detail = newObject();
-        branch->details().setProperty(index, detail);
-    }
-
-    detail.setProperty("entity", toScriptValue(entity));
-
-    // TODO: should only do this once, instead of after every update
-    emit detailsChanged();
-}
-
-void ShotgunEntity::onReadEntityFinished(const QVariant result)
-{
-    trace() << ".onReadEntityFinished(" << result << ")";
-    addDetail(0, result.toMap());
+    setDetail(0, "entity", toScriptValue(result.toMap()));
 
     QObject::sender()->deleteLater();
 
-    debug() << "received" << QJsonDocument::fromVariant(result);
-
-    m_pendingTransactions--;
-
-    if (m_pendingTransactions == 0)
-        emit shotgunPulled(static_cast<int>(m_status));
+    emit shotgunPulled(OperationAttached::Finished);
 }
 
 void ShotgunEntity::onCreateFinished(const QVariant result)
 {
-    trace() << ".onCreateEntityFinished(" << result << ")";
-    addDetail(0, result.toMap());
+    trace() << ".onCreateFinished(" << result << ")";
+    debug() << "Shotgun.create returned" << result;
+
+    setDetail(0, "entity", toScriptValue(result.toMap()));
 
     QObject::sender()->deleteLater();
 
-    debug() << "received" << QJsonDocument::fromVariant(result);
-
-    m_pendingTransactions--;
-
-    if (m_pendingTransactions == 0)
-        emit shotgunPushed(static_cast<int>(m_status));
+    emit shotgunPushed(OperationAttached::Finished);
 }
 
-void ShotgunEntity::onBatchCreateEntitiesFinished(const QVariant result)
+void ShotgunEntity::onBatchCreateFinished(const QVariant result)
 {
-    trace() << ".onBatchCreateEntitiesFinished(" << result << ")";
-    BranchBase *branch = firstParent<BranchBase>();
-    Q_ASSERT(branch);
+    trace() << ".onBatchCreateFinished(" << result << ")";
+    debug() << "Shotgun.batch returned" << result;
 
     for (int i = 0; i < result.toList().length(); i++) {
-        addDetail(i, result.toList().at(i).toMap());
+        setDetail(i, "entity", toScriptValue(result.toList().at(i).toMap()));
     }
 
     QObject::sender()->deleteLater();
 
     debug() << "received" << QJsonDocument::fromVariant(result);
 
-    m_pendingTransactions--;
-
-    if (m_pendingTransactions == 0)
-        emit shotgunPushed(static_cast<int>(m_status));
+    emit shotgunPushed(OperationAttached::Finished);
 }
 
 void ShotgunEntity::onShotgunReadError()
@@ -284,19 +288,13 @@ void ShotgunEntity::onShotgunReadError()
     ShotgunReply *reply = qobject_cast<ShotgunReply *>(QObject::sender());
     Q_ASSERT(reply);
 
-    if (reply) {
-        trace() << node() << ".onShotgunReadError() [error is" << reply->errorString() << "]";
-        m_status = OperationAttached::Error;
-    } else {
-        error() << ".onShotgunError WTF";
-    }
-
-    m_pendingTransactions--;
+    trace() << ".onShotgunReadError() [error is" << reply->errorString() << "]";
+    debug() << "Shotgun.find failed  [error is" << reply->errorString() << "]";
+    m_status = OperationAttached::Error;
 
     reply->deleteLater();
 
-    if (m_pendingTransactions == 0)
-        emit shotgunPulled(static_cast<int>(m_status));
+    emit shotgunPulled(OperationAttached::Error);
 }
 
 void ShotgunEntity::onShotgunCreateError()
@@ -304,17 +302,18 @@ void ShotgunEntity::onShotgunCreateError()
     ShotgunReply *reply = qobject_cast<ShotgunReply *>(QObject::sender());
     Q_ASSERT(reply);
 
-    if (reply) {
-        trace() << node() << ".onShotgunCreateError() [error is" << reply->errorString() << "]";
-        m_status = OperationAttached::Error;
-    } else {
-        error() << ".onShotgunError WTF";
-    }
-
-    m_pendingTransactions--;
+    trace() << ".onShotgunCreateError() [error is" << reply->errorString() << "]";
+    debug() << "Shotgun.create or .batch failed  [error is" << reply->errorString() << "]";
+    m_status = OperationAttached::Error;
 
     reply->deleteLater();
 
-    if (m_pendingTransactions == 0)
-        emit shotgunPushed(static_cast<int>(m_status));
+    emit shotgunPushed(OperationAttached::Error);
+}
+
+void ShotgunEntity::updateCount()
+{
+    if (branch()) {
+        setCount(branch()->count());
+    }
 }

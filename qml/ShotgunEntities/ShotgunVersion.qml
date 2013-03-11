@@ -37,7 +37,6 @@ ShotgunEntity {
     ShotgunField {
         name: "project"
         type: ShotgunField.Link
-        linkType: "Project"
         link: project
     }
     
@@ -45,7 +44,6 @@ ShotgunEntity {
         id: entityField
         name: "entity"
         type: ShotgunField.Link
-        linkType: entityType
         link: entity
     }
 
@@ -74,7 +72,6 @@ ShotgunEntity {
     ShotgunField {
         name: "sg_release"
         type: ShotgunField.Link
-        linkType: "PublishEvent"
         link: release
     }
 
@@ -92,13 +89,11 @@ ShotgunEntity {
         name: "created_by"
         type: ShotgunField.Link
         link: user
-        linkType: "HumanUser"
     }
 
     ShotgunField {
         name: "updated_by"
         type: ShotgunField.Link
         link: user
-        linkType: "HumanUser"
     }
 }

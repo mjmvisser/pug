@@ -4,7 +4,6 @@ ShotgunEntity {
     name: "PublishEvent"
     
     property var project
-    property string entityType
     property var entity
     property string code 
     property var user
@@ -16,14 +15,12 @@ ShotgunEntity {
     ]
     
     params: [
-        Param { name: "entityType" },
         Param { name: "code" }
     ]
 
     ShotgunField {
         name: "project"
         type: ShotgunField.Link
-        linkType: "Project"
         link: project
     }
 
@@ -52,7 +49,6 @@ ShotgunEntity {
     ShotgunField {
         name: "sg_link"
         type: ShotgunField.Link
-        linkType: entityType
         link: entity
     }
     
@@ -60,14 +56,12 @@ ShotgunEntity {
         name: "created_by"
         type: ShotgunField.Link
         link: user
-        linkType: "HumanUser"
     }
 
     ShotgunField {
         name: "updated_by"
         type: ShotgunField.Link
         link: user
-        linkType: "HumanUser"
     }
 }
 
