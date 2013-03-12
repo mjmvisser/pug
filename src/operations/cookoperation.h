@@ -8,13 +8,8 @@
 class CookOperationAttached : public OperationAttached
 {
     Q_OBJECT
-    Q_PROPERTY(Mode mode READ mode CONSTANT)
-    Q_ENUMS(Mode)
 public:
-    enum Mode { Skip, Cook, CookAtIndex };
     explicit CookOperationAttached(QObject *parent = 0);
-
-    Mode mode() const;
 
     Q_INVOKABLE virtual void run();
 
@@ -30,6 +25,9 @@ private slots:
     void onCookedAtIndex(int, int);
 
 private:
+    enum Mode { Skip, Cook, CookAtIndex };
+    friend QDebug operator<<(QDebug dbg, Mode m);
+
     Mode m_mode;
     OperationStatusList m_indexStatus;
 };

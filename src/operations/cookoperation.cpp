@@ -38,11 +38,6 @@ CookOperationAttached::CookOperationAttached(QObject *parent) :
     }
 }
 
-CookOperationAttached::Mode CookOperationAttached::mode() const
-{
-    return m_mode;
-}
-
 void CookOperationAttached::run()
 {
     info() << "Cooking" << node() << "with" << context();
