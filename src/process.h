@@ -51,7 +51,7 @@ protected slots:
     virtual void componentComplete();
 
 private:
-    QJSValue parseDetails(const QString, const QVariantMap) const;
+    bool parseDetails(const QString, const QVariantMap);
 
     QStringList m_argv;
     QString m_stdin;

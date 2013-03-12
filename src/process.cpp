@@ -5,6 +5,7 @@
 #include <QJsonDocument>
 
 #include "process.h"
+#include "element.h"
 
 Process::Process(QObject *parent) :
     Node(parent),
@@ -144,15 +145,11 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     debug() << "stdout:" << stdout;
 
     QVariantMap context = m_contexts.take(process);
-    QJSValue stdoutDetails = parseDetails(stdout, context);
-    if (!stdoutDetails.isNull()) {
-        appendDetails(stdoutDetails);
-    } else {
+    if (!parseDetails(stdout, context)) {
         setDetail(i, "context", toScriptValue(context));
         setDetail(i, "process", "stdout", toScriptValue(stdout));
         setDetail(i, "process", "exitCode", toScriptValue(process->exitCode()));
     }
-    debug() << "details are:" << details();
 
     m_processes[i] = 0;
     process->deleteLater();
@@ -161,7 +158,7 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     emit cookedAtIndex(i, status);
 }
 
-QJSValue Process::parseDetails(const QString stdout, const QVariantMap context) const
+bool Process::parseDetails(const QString stdout, const QVariantMap context)
 {
     trace() << ".parseDetails(" << stdout << "," << context << ")";
     QRegularExpression regex("^begin-json details$(.*)^====$",
@@ -171,37 +168,51 @@ QJSValue Process::parseDetails(const QString stdout, const QVariantMap context) 
     QRegularExpressionMatch match = regex.match(stdout);
 
     if (match.hasMatch()) {
-        debug() << "matched details:" << match.captured(1).trimmed();
         QJsonDocument json = QJsonDocument::fromJson(match.captured(1).trimmed().toUtf8());
-        debug() << "json is:" << json.toJson();
         if (json.isArray()) {
-            QVariantList detailsIn = json.toVariant().toList();
-            QVariantList detailsOut;
-            foreach (const QVariant v, detailsIn) {
-                QVariantMap detail = v.toMap();
-                QVariantMap detailContext = detail["context"].toMap();
-                // merge contexts
-                QMapIterator<QString, QVariant> i(context);
+            QVariantList l = json.toVariant().toList();
+
+            int index = details().property("length").toInt();
+            foreach (const QVariant v, l) {
+                QVariantMap m = v.toMap();
+
+                QMapIterator<QString, QVariant> i(m);
                 while (i.hasNext()) {
                     i.next();
-                    // don't overwrite
-                    if (!detailContext.contains(i.key()))
-                        detailContext.insert(i.key(), i.value());
+                    if (i.key() == "element") {
+                        Element *element = new Element(this);
+                        element->setPattern(i.value().toMap()["pattern"].toString());
+
+                        // TODO: frames
+
+                        setDetail(index, i.key(), newQObject(element));
+                    } else if (i.key() == "context") {
+                        QVariantMap detailContext = m["context"].toMap();
+                        // merge contexts
+                        QMapIterator<QString, QVariant> i(context);
+                        while (i.hasNext()) {
+                            i.next();
+                            // don't overwrite
+                            if (!detailContext.contains(i.key()))
+                                detailContext.insert(i.key(), i.value());
+                        }
+                        setDetail(index, i.key(), toScriptValue(detailContext));
+                    } else {
+                        setDetail(index, i.key(), toScriptValue(i.value()));
+                    }
                 }
-                detail["context"] = detailContext;
-                detailsOut << detail;
+                index++;
             }
 
-            debug() << "got details" << detailsOut;
-            return toScriptValue(detailsOut);
+            return true;
         } else {
             error() << "json written to stdout is not an array";
-            return QJSValue(QJSValue::NullValue);
+            return false;
         }
     } else {
         // no json matched
         debug() << "no json matched from" << stdout;
-        return QJSValue(QJSValue::NullValue);
+        return false;
     }
 }
 
