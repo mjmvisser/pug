@@ -216,3 +216,11 @@ QObject *PugItem::sender()
 {
     return QObject::sender();
 }
+
+const QString PugItem::relativePath(const QString path)
+{
+    QQmlContext *context = QQmlEngine::contextForObject(this);
+    Q_ASSERT(context);
+
+    return context->resolvedUrl(path).toLocalFile();
+}
