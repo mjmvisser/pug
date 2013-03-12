@@ -10,25 +10,34 @@ Node::Node(QObject *parent) :
 {
 }
 
-const QString Node::tempFile(const QString fileName) const
+const QString Node::temporaryDir() const
 {
-    const Branch *parentBranch = firstParent<Branch>();
-    if (parentBranch) {
-        const Element *element = parentBranch->element(0);
+    if (m_temporaryDir.isNull()) {
+        // construct a temporary dir
+        const Branch *parentBranch = firstParent<Branch>();
+        if (parentBranch) {
+            const Element *element = parentBranch->element(index());
 
-        if (element) {
-            return QDir(element->directory()).absoluteFilePath(fileName);
+            if (element) {
+                return QDir(element->directory()).absoluteFilePath("temp");
+            }
         }
+        return QString();
+
+    } else {
+        return m_temporaryDir;
     }
-    return QString();
 }
 
-const QString Node::tempFile(const QString baseName, const QString extension) const
+void Node::setTemporaryDir(const QString dir)
 {
-    return tempFile(baseName) + extension;
+    if (m_temporaryDir != dir) {
+        m_temporaryDir = dir;
+        emit temporaryDirChanged(dir);
+    }
 }
 
-const QString Node::tempFile(const QString baseName, const QString frameSpec, const QString extension) const
+const QString Node::temporaryFile(const QString templateName) const
 {
-    return tempFile(baseName) + frameSpec + extension;
+    return QDir(temporaryDir()).absoluteFilePath(templateName);
 }

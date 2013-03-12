@@ -10,13 +10,22 @@
 class Node : public NodeBase
 {
     Q_OBJECT
+    Q_PROPERTY(QString temporaryDir READ temporaryDir WRITE setTemporaryDir NOTIFY temporaryDirChanged)
 public:
     explicit Node(QObject *parent = 0);
 
-    Q_INVOKABLE const QString tempFile(const QString fileName) const;
-    Q_INVOKABLE const QString tempFile(const QString baseName, const QString extension) const;
-    Q_INVOKABLE const QString tempFile(const QString baseName, const QString frameSpec, const QString extension) const;
+    const QString temporaryDir() const;
+    void setTemporaryDir(const QString);
+
+    Q_INVOKABLE const QString temporaryFile(const QString templateName) const;
+
+signals:
+    void temporaryDirChanged(const QString temporaryDir);
+
+private:
+    QString m_temporaryDir;
 };
+
 Q_DECLARE_METATYPE(Node*) // makes available to QVariant
 
 #endif // NODE_H
