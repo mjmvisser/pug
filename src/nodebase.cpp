@@ -657,16 +657,16 @@ QJSValue NodeBase::detail(int index, const QString arg1, const QString arg2,
 
 void NodeBase::setDetail(int index, QJSValue value, bool emitChanged)
 {
-    Q_ASSERT(details().isArray());
-    details().setProperty(index, value);
+    Q_ASSERT(m_details.isArray());
+    m_details.setProperty(index, value);
     if (emitChanged)
         emit detailsChanged();
 }
 
 void NodeBase::setDetail(int index, const QString arg1, QJSValue value, bool emitChanged)
 {
-    Q_ASSERT(details().isArray());
-    QJSValue detail = details().property(index);
+    Q_ASSERT(m_details.isArray());
+    QJSValue detail = m_details.property(index);
     if (detail.isUndefined()) {
         detail = newObject();
         setDetail(index, detail, false);
@@ -679,8 +679,8 @@ void NodeBase::setDetail(int index, const QString arg1, QJSValue value, bool emi
 
 void NodeBase::setDetail(int index, const QString arg1, const QString arg2, QJSValue value, bool emitChanged)
 {
-    Q_ASSERT(details().isArray());
-    QJSValue obj = details().property(index).property(arg1);
+    Q_ASSERT(m_details.isArray());
+    QJSValue obj = m_details.property(index).property(arg1);
     if (obj.isUndefined()) {
         obj = newObject();
         setDetail(index, arg1, obj, false);
@@ -693,8 +693,8 @@ void NodeBase::setDetail(int index, const QString arg1, const QString arg2, QJSV
 
 void NodeBase::setDetail(int index, const QString arg1, const QString arg2, const QString arg3, QJSValue value, bool emitChanged)
 {
-    Q_ASSERT(details().isArray());
-    QJSValue obj = details().property(index).property(arg1).property(arg2);
+    Q_ASSERT(m_details.isArray());
+    QJSValue obj = m_details.property(index).property(arg1).property(arg2);
     if (obj.isUndefined()) {
         obj = newObject();
         setDetail(index, arg1, arg2, obj, false);
@@ -707,8 +707,8 @@ void NodeBase::setDetail(int index, const QString arg1, const QString arg2, cons
 
 void NodeBase::setDetail(int index, const QString arg1, const QString arg2, const QString arg3, const QString arg4, QJSValue value, bool emitChanged)
 {
-    Q_ASSERT(details().isArray());
-    QJSValue obj = details().property(index).property(arg1).property(arg2).property(arg3);
+    Q_ASSERT(m_details.isArray());
+    QJSValue obj = m_details.property(index).property(arg1).property(arg2).property(arg3);
     if (obj.isUndefined()) {
         obj = newObject();
         setDetail(index, arg1, arg2, arg3, obj, false);
@@ -721,8 +721,8 @@ void NodeBase::setDetail(int index, const QString arg1, const QString arg2, cons
 
 void NodeBase::setDetail(int index, const QString arg1, const QString arg2, const QString arg3, const QString arg4, const QString arg5, QJSValue value, bool emitChanged)
 {
-    Q_ASSERT(details().isArray());
-    QJSValue obj = details().property(index).property(arg1).property(arg2).property(arg3).property(arg4);
+    Q_ASSERT(m_details.isArray());
+    QJSValue obj = m_details.property(index).property(arg1).property(arg2).property(arg3).property(arg4);
     if (obj.isUndefined()) {
         obj = newObject();
         setDetail(index, arg1, arg2, arg3, arg4, obj, false);
@@ -731,6 +731,11 @@ void NodeBase::setDetail(int index, const QString arg1, const QString arg2, cons
     obj.setProperty(arg5, value);
     if (emitChanged)
         emit detailsChanged();
+}
+
+void NodeBase::clearDetails()
+{
+    setDetails(newArray());
 }
 
 void NodeBase::addParam(const QString name)

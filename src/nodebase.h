@@ -64,6 +64,7 @@ public:
     QJSValue details();
     const QJSValue details() const;
     void setDetails(const QJSValue &);
+    void clearDetails();
 
     const NodeBase *rootBranch() const;
     NodeBase *rootBranch();
