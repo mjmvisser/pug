@@ -6,28 +6,49 @@
 class UpdateOperationAttached : public OperationAttached
 {
     Q_OBJECT
-    Q_PROPERTY(bool updatable READ isUpdatable WRITE setUpdatable NOTIFY updatableChanged)
 public:
     explicit UpdateOperationAttached(QObject *parent = 0);
-
-    bool isUpdatable() const;
-    void setUpdatable(bool);
 
     Q_INVOKABLE virtual void run();
 
 signals:
     void update(const QVariant env);
-    void updatableChanged(bool updatable);
+    void updateAtIndex(int, const QVariant env);
 
 protected:
     virtual const QMetaObject *operationMetaObject() const;
 
 private slots:
     void onUpdated(int);
+    void onUpdatedAtIndex(int, int);
 
 private:
-    bool m_updatableFlag;
+    enum Mode { Skip, Update, UpdateAtIndex };
+    friend QDebug operator<<(QDebug dbg, Mode m);
+
+    Mode m_mode;
+    OperationStatusList m_indexStatus;
 };
+
+inline QDebug operator<<(QDebug dbg, UpdateOperationAttached::Mode m)
+{
+    switch (m) {
+    case UpdateOperationAttached::Skip:
+        dbg.nospace() << "Skip";
+        break;
+    case UpdateOperationAttached::Update:
+        dbg.nospace() << "Update";
+        break;
+    case UpdateOperationAttached::UpdateAtIndex:
+        dbg.nospace() << "UpdateAtIndex";
+        break;
+    default:
+        dbg.nospace() << "Unknown!";
+        break;
+    }
+
+    return dbg.maybeSpace();
+}
 
 class UpdateOperation : public Operation
 {
