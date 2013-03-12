@@ -207,6 +207,8 @@ void ShotgunField::onShotgunPullAtIndex(int index, const QVariant context, Shotg
     info() << "Shotgun pull at index" << index << "with context" << context;
     trace() << ".shotgunPullAtIndex(" << index << "," << context << ")";
 
+    setIndex(index);
+
     QVariant value = buildValue(index, context.toMap());
 
     if (value.isValid()) {
@@ -225,6 +227,8 @@ void ShotgunField::onShotgunPushAtIndex(int index, const QVariant context, Shotg
     Q_UNUSED(shotgun);
     info() << "Shotgun push at index" << index << "with context" << context;
     trace() << ".shotgunPushAtIndex(" << index << "," << context << ")";
+
+    setIndex(index);
 
     QVariant value = buildValue(index, context.toMap());
 
