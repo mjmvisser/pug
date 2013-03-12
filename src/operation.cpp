@@ -53,6 +53,7 @@ void OperationAttached::resetStatus()
 void OperationAttached::reset()
 {
     trace() << node() << "reset()";
+    node()->clearDetails();
     setStatus(OperationAttached::None);
 }
 
