@@ -51,12 +51,15 @@ protected slots:
     virtual void componentComplete();
 
 private:
+    QJSValue parseDetails(const QString, const QVariantMap) const;
+
     QStringList m_argv;
     QString m_stdin;
     QJSValue m_env;
     bool m_ignoreExitCode;
     QVector<QProcess *> m_processes;
     QHash<QProcess *, QString> m_stdouts;
+    QHash<QProcess *, QVariantMap> m_contexts;
 };
 //Q_DECLARE_METATYPE(Node*) // makes available to QVariant
 

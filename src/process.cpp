@@ -2,6 +2,7 @@
 #include <QProcess>
 #include <QDebug>
 #include <QSignalMapper>
+#include <QJsonDocument>
 
 #include "process.h"
 
@@ -71,15 +72,11 @@ void Process::setIgnoreExitCode(bool flag)
 void Process::onCookAtIndex(int i, const QVariant context)
 {
     trace() << ".onCookAtIndex(" << i << "," << context << ")";
+    debug() << "intially details are:" << details();
 
     setIndex(i);
 
     Q_ASSERT(details().isArray());
-    Q_ASSERT(details().property(i).isUndefined());
-
-    // save the context in the detail
-    details().setProperty(i, newObject());
-    details().property(i).setProperty("context", toScriptValue(context));
 
     if (m_processes.size() != count())
         m_processes.resize(count());
@@ -108,6 +105,8 @@ void Process::onCookAtIndex(int i, const QVariant context)
             this, &Process::onProcessError);
 
     m_processes[i]->setProcessEnvironment(processEnv);
+
+    m_contexts[m_processes[i]] = context.toMap();
 
     debug() << "process argv:" << m_argv;
 
@@ -140,20 +139,70 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     int i = m_processes.indexOf(process);
     Q_ASSERT(i >= 0);
 
-    Q_ASSERT(details().isArray());
-    Q_ASSERT(!details().property(i).isUndefined());
-
     QString stdout = m_stdouts.take(process);
-    if (details().property(i).property("process").isUndefined())
-        details().property(i).setProperty("process", newObject());
-    details().property(i).property("process").setProperty("stdout", stdout);
-    details().property(i).property("process").setProperty("exitCode", process->exitCode());
+
+    debug() << "stdout:" << stdout;
+
+    QVariantMap context = m_contexts.take(process);
+    QJSValue stdoutDetails = parseDetails(stdout, context);
+    if (!stdoutDetails.isNull()) {
+        appendDetails(stdoutDetails);
+    } else {
+        setDetail(i, "context", toScriptValue(context));
+        setDetail(i, "process", "stdout", toScriptValue(stdout));
+        setDetail(i, "process", "exitCode", toScriptValue(process->exitCode()));
+    }
+    debug() << "details are:" << details();
 
     m_processes[i] = 0;
     process->deleteLater();
 
     emit detailsChanged();
     emit cookedAtIndex(i, status);
+}
+
+QJSValue Process::parseDetails(const QString stdout, const QVariantMap context) const
+{
+    trace() << ".parseDetails(" << stdout << "," << context << ")";
+    QRegularExpression regex("^begin-json details$(.*)^====$",
+            QRegularExpression::DotMatchesEverythingOption|
+            QRegularExpression::MultilineOption);
+
+    QRegularExpressionMatch match = regex.match(stdout);
+
+    if (match.hasMatch()) {
+        debug() << "matched details:" << match.captured(1).trimmed();
+        QJsonDocument json = QJsonDocument::fromJson(match.captured(1).trimmed().toUtf8());
+        debug() << "json is:" << json.toJson();
+        if (json.isArray()) {
+            QVariantList detailsIn = json.toVariant().toList();
+            QVariantList detailsOut;
+            foreach (const QVariant v, detailsIn) {
+                QVariantMap detail = v.toMap();
+                QVariantMap detailContext = detail["context"].toMap();
+                // merge contexts
+                QMapIterator<QString, QVariant> i(context);
+                while (i.hasNext()) {
+                    i.next();
+                    // don't overwrite
+                    if (!detailContext.contains(i.key()))
+                        detailContext.insert(i.key(), i.value());
+                }
+                detail["context"] = detailContext;
+                detailsOut << detail;
+            }
+
+            debug() << "got details" << detailsOut;
+            return toScriptValue(detailsOut);
+        } else {
+            error() << "json written to stdout is not an array";
+            return QJSValue(QJSValue::NullValue);
+        }
+    } else {
+        // no json matched
+        debug() << "no json matched from" << stdout;
+        return QJSValue(QJSValue::NullValue);
+    }
 }
 
 void Process::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
