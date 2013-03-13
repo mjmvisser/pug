@@ -4,6 +4,7 @@ ShotgunEntity {
     shotgunEntity: "HumanUser"
     
     ShotgunField {
+        name: "login"
         shotgunField: "login"
         field: "USER"
     }

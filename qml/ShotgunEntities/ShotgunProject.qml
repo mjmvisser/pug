@@ -4,6 +4,7 @@ ShotgunEntity {
     shotgunEntity: "Project"
     
     ShotgunField {
+        name: "name"
         shotgunField: "name"
         field: "PROJECT"
     }

@@ -4,6 +4,7 @@ ShotgunEntity {
     shotgunEntity: "Step"
     
     ShotgunField {
+        name: "code"
         shotgunField: "code"
         field: "STEP"
     }
