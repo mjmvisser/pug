@@ -82,6 +82,10 @@ public:
 
     const Element *element(int index) const;
     Q_INVOKABLE Element *element(int index);
+    Q_INVOKABLE void setElement(int index, const Element *element, bool emitChanged=true);
+
+    Q_INVOKABLE const QVariantMap context(int index) const;
+    Q_INVOKABLE void setContext(int index, const QVariantMap context, bool emitChanged=true);
 
     Node *child(int index);
     int childCount() const;

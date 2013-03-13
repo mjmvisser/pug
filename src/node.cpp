@@ -747,6 +747,25 @@ Element *Node::element(int index)
     return new Element(this);
 }
 
+void Node::setElement(int index, const Element *element, bool emitChanged)
+{
+    if (qjsvalue_cast<const Element *>(detail(index, "element")) != element) {
+        setDetail(index, "element", newQObject(element), emitChanged);
+    }
+}
+
+const QVariantMap Node::context(int index) const
+{
+    return qjsvalue_cast<QVariantMap>(detail(index, "context"));
+}
+
+void Node::setContext(int index, const QVariantMap context, bool emitChanged)
+{
+    if (qjsvalue_cast<const QVariantMap>(detail(index, "context")) != context) {
+        setDetail(index, "context", toScriptValue(context), emitChanged);
+    }
+}
+
 void Node::addParam(const QString name)
 {
     Param *param = new Param(this);

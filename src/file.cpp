@@ -82,97 +82,84 @@ void File::onCook(const QVariant context)
         }
 
         setCount(m_input->details().property("length").toInt());
-
-        Q_ASSERT(details().isArray());
+        clearDetails();
 
         for (int index=0; index < count(); index++) {
-            QJSValue inputDetail = m_input->details().property(index);
-            if (inputDetail.isObject()) {
+            debug() << "cooking index" << index;
 
-                debug() << "cooking index" << index;
+            const Element *inputElement = m_input->element(index);
+            const QVariantMap inputContext = m_input->context(index);
+            if (inputElement) {
+                debug() << "input" << m_input;
+                debug() << "input fields" << inputContext;
+                debug() << "input element pattern" << inputElement->pattern();
+                debug() << "input element" << inputElement->toString();
 
-                if (inputDetail.property("element").isQObject() && inputDetail.property("context").isObject()) {
-                    const Element *inputElement = qjsvalue_cast<Element *>(inputDetail.property("element"));
-                    const QVariantMap inputContext = qjsvalue_cast<QVariantMap>(inputDetail.property("context"));
+                Element *destElement = new Element(this);
 
-                    debug() << "input" << m_input;
-                    debug() << "input fields" << inputContext;
-                    debug() << "input element pattern" << inputElement->pattern();
-                    debug() << "input element" << inputElement->toString();
+                destElement->setPattern(map(inputContext));
+                destElement->setFrames(inputElement->frames());
 
-                    Element *destElement = new Element;
+                // create a new field values based off our default
+                QVariantMap destContext(context.toMap());
 
-                    destElement->setPattern(map(inputContext));
-                    destElement->setFrames(inputElement->frames());
+                debug() << "dest context" << destContext;
+                debug() << "dest element" << destElement->toString();
 
-                    // create a new field values based off our default
-                    QVariantMap destContext(context.toMap());
+                // merge input context
+                QMapIterator<QString, QVariant> i(inputContext);
+                while (i.hasNext()) {
+                    i.next();
+                    // don't overwrite
+                    destContext.insert(i.key(), i.value());
+                }
 
-                    debug() << "dest context" << destContext;
+                foreach (const QString inputPath, inputElement->paths()) {
+                    QVariant srcFrame = inputElement->frame(inputPath);
+                    QString destPath = destElement->path(srcFrame);
 
-                    debug() << "dest element" << destElement->toString();
+                    debug() << "cooking" << inputPath << "->" << destPath;
 
-                    // merge input context
-                    QMapIterator<QString, QVariant> i(inputContext);
-                    while (i.hasNext()) {
-                        i.next();
-                        // don't overwrite
-                        destContext.insert(i.key(), i.value());
-                    }
+                    if (!destPath.isEmpty()) {
+                        QFileInfo destInfo(destPath);
+                        destInfo.absoluteDir().mkpath(".");
 
-                    foreach (const QString inputPath, inputElement->paths()) {
-                        QVariant srcFrame = inputElement->frame(inputPath);
-                        QString destPath = destElement->path(srcFrame);
+                        QFile destFile(destPath);
+                        if (destFile.exists())
+                            destFile.remove();
 
-                        debug() << "cooking" << inputPath << "->" << destPath;
+                        debug() << "linking" << inputPath << "to" << destPath;
 
-                        if (!destPath.isEmpty()) {
-                            QFileInfo destInfo(destPath);
-                            destInfo.absoluteDir().mkpath(".");
+                        if (m_linkType == File::Hard) {
+                            // META TODO: no cross-platform hardlink support in Qt
+                            if (link(inputPath.toUtf8().constData(), destPath.toUtf8().constData()) != 0) {
+                                error() << "link failed:" << inputPath.toUtf8().constData() << "->" << destPath.toUtf8().constData();
+                                error() << "error is:" << strerror(errno);
 
-                            QFile destFile(destPath);
-                            if (destFile.exists())
-                                destFile.remove();
+                                emit cooked(OperationAttached::Error);
+                                return;
+                            }
+                        } else {
+                            if (symlink(inputPath.toUtf8().constData(), destPath.toUtf8().constData()) != 0) {
+                                error() << "symlink failed:" << inputPath.toUtf8().constData() << "->" << destPath.toUtf8().constData();
+                                error() << "error is:" << strerror(errno);
 
-                            debug() << "linking" << inputPath << "to" << destPath;
-
-                            if (m_linkType == File::Hard) {
-                                // META TODO: no cross-platform hardlink support in Qt
-                                if (link(inputPath.toUtf8().constData(), destPath.toUtf8().constData()) != 0) {
-                                    error() << "link failed:" << inputPath.toUtf8().constData() << "->" << destPath.toUtf8().constData();
-                                    error() << "error is:" << strerror(errno);
-
-                                    emit cooked(OperationAttached::Error);
-                                    return;
-                                }
-                            } else {
-                                if (symlink(inputPath.toUtf8().constData(), destPath.toUtf8().constData()) != 0) {
-                                    error() << "symlink failed:" << inputPath.toUtf8().constData() << "->" << destPath.toUtf8().constData();
-                                    error() << "error is:" << strerror(errno);
-
-                                    emit cooked(OperationAttached::Error);
-                                    return;
-                                }
+                                emit cooked(OperationAttached::Error);
+                                return;
                             }
                         }
                     }
-
-                    details().setProperty(index, newObject());
-                    details().property(index).setProperty("element", newQObject(destElement));
-                    details().property(index).setProperty("context", toScriptValue(destContext));
-                    debug() << "set detail[" << index << "] to " << details().property(index);
-
-                    info() << "Cook generated:" << destElement->paths();
-
-                } else if (!inputDetail.property("element").isQObject()) {
-                    error() << "input.details[" << index << "].element does not exist or is not an Element";
-                } else if (!inputDetail.property("context").isObject()) {
-                    error() << "input.details[" << index << "].fields does not exist or is not an Object";
                 }
-            } else {
-                error() << "input.details[" << index << "] is not an Object";
-            }
 
+                setElement(index, destElement, false);
+                setContext(index, destContext, false);
+                debug() << "set detail[" << index << "] to " << details().property(index);
+
+                info() << "Cook generated:" << destElement->paths();
+
+            } else if (!inputDetail.property("element").isQObject()) {
+                error() << "input.details[" << index << "].element does not exist or is not an Element";
+            }
         }
 
         emit detailsChanged();

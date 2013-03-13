@@ -130,16 +130,18 @@ QQmlListProperty<Field> Branch::fields_()
 void Branch::setPaths(const QStringList paths, const QVariantMap context)
 {
     trace() << ".setPaths(" << paths << ")";
-    QJSValue newDetails = newArray();
+
+    clearDetails();
 
     int index = 0;
     foreach (const QString path, paths) {
         bool found = false;
 
-        for (int i = 0; i < newDetails.property("length").toInt(); i++) {
-            Element *element = qjsvalue_cast<Element *>(newDetails.property(i).property("element"));
+        for (int i = 0; i < details().property("length").toInt(); i++) {
+            Element *element = element(i);
             if (element->hasFrames() && element->matches(path)) {
                 element->append(path);
+                setElement(index, element, false);
                 found = true;
                 break;
             }
@@ -161,18 +163,14 @@ void Branch::setPaths(const QStringList paths, const QVariantMap context)
                     elementContext.insert(i.key(), i.value());
             }
 
-            QJSValue detail = newObject();
-            detail.setProperty("element", newQObject(element));
-            detail.setProperty("context", toScriptValue(elementContext));
-            newDetails.setProperty(index, detail);
+            setContext(index, elementContext, false);
+            setElement(index, element, false);
             index++;
         }
     }
 
     setCount(index);
     debug() << details().property("length").toInt();
-    for (int i = 0; i < index; i++)
-        details().setProperty(i, newDetails.property(i));
     debug() << details().toVariant();
     emit detailsChanged();
 }
