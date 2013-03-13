@@ -9,7 +9,6 @@
 
 #include "node.h"
 #include "field.h"
-#include "element.h"
 
 class Branch : public Node
 {
@@ -50,9 +49,6 @@ public:
 
     Q_INVOKABLE const QStringList listMatchingPaths(const QVariantMap context) const;
     Q_INVOKABLE void setPaths(const QStringList paths, const QVariantMap context);
-
-    const Element *element(int index) const;
-    Q_INVOKABLE Element *element(int index);
 
 signals:
     void update(const QVariant context);

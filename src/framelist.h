@@ -10,8 +10,6 @@ class FrameList : public PugItem
 {
     Q_OBJECT
     Q_PROPERTY(QVariantList frames READ frames WRITE setFrames NOTIFY framesChanged)
-    Q_PROPERTY(QVariant firstFrame READ firstFrame NOTIFY framesChanged)
-    Q_PROPERTY(QVariant lastFrame READ lastFrame NOTIFY framesChanged)
     Q_PROPERTY(QString pattern READ pattern WRITE setPattern NOTIFY patternChanged)
 public:
     explicit FrameList(QObject *parent = 0);
@@ -20,11 +18,11 @@ public:
     const QVariantList frames() const;
     void setFrames(const QVariantList);
 
-    const QVariant firstFrame() const;
-    const QVariant lastFrame() const;
-
     const QString pattern() const;
     void setPattern(const QString);
+
+    Q_INVOKABLE const QVariant firstFrame() const;
+    Q_INVOKABLE const QVariant lastFrame() const;
 
     const QString toString() const;
 

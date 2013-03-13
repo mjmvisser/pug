@@ -191,32 +191,6 @@ void Branch::setPattern(const QString p)
 }
 
 
-const Element *Branch::element(int index) const
-{
-    if (!details().property("length").isUndefined() && details().property("length").toInt() == 1) {
-        QJSValue detail = details().property(index);
-
-        if (detail.property("element").isQObject()) {
-            return qjsvalue_cast<Element *>(detail.property("element"));
-        }
-    }
-
-    return 0;
-}
-
-Element *Branch::element(int index)
-{
-    if (!details().property("length").isUndefined() && details().property("length").toInt() == 1) {
-        QJSValue detail = details().property(index);
-
-        if (detail.property("element").isQObject()) {
-            return qjsvalue_cast<Element *>(detail.property("element"));
-        }
-    }
-
-    return 0;
-}
-
 bool Branch::exactMatch() const
 {
     return m_exactMatchFlag;

@@ -36,11 +36,17 @@ const QString Element::pattern() const
 
 void Element::setPattern(const QString p)
 {
-    const QString newPattern = patternFromPath(p);;
+    const QString newPattern = patternFromPath(p);
     if (m_pattern != newPattern) {
         m_pattern = newPattern;
         m_patternRegExp = regExpFromPattern(m_pattern);
-        emit elementChanged();
+
+        if (!m_frameList) {
+            m_frameList = new FrameList(this);
+            emit frameListChanged(m_frameList);
+        }
+
+        emit patternChanged(p);
     }
 }
 
@@ -54,19 +60,12 @@ const FrameList *Element::frameList() const
     return m_frameList;
 }
 
-void Element::setFrameList(FrameList *fl)
+void Element::setFrameList(FrameList *l)
 {
-    if (m_frameList != fl) {
-        if (m_frameList)
-            m_frameList->deleteLater();
-        m_frameList = fl;
-        emit elementChanged();
+    if (m_frameList != l) {
+        m_frameList = l;
+        emit frameListChanged(l);
     }
-}
-
-QVariant Element::frames()
-{
-    return m_frameList ? m_frameList->frames() : QVariant();
 }
 
 const QVariant Element::frames() const
@@ -89,7 +88,7 @@ void Element::setFrames(const QVariant f)
         m_frameList = 0;
     }
 
-    emit elementChanged();
+    emit frameListChanged(m_frameList);
 }
 
 const QVariant Element::firstFrame() const
@@ -227,7 +226,7 @@ void Element::append(const QString path)
 
             m_frameList->setFrames(frames);
 
-            emit elementChanged();
+            emit frameListChanged(m_frameList);
 
         } else {
             qWarning() << this << ".append" << "path" << "does not match" << m_pattern;

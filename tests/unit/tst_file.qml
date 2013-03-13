@@ -85,9 +85,9 @@ PugTestCase {
         updateSpy.wait(500);
         compare(file.UpdateOperation.status, Operation.Finished);
         compare(branch.details.length, 1);
-            compare(branch.details[0].element.path, tmpDir + "filetests/");
-        compare(file.details[0].element.pattern, tmpDir + "filetests/abc/foo.%04d.baz");
-        compare(file.details[0].element.paths[0], tmpDir + "filetests/abc/foo.0001.baz");
+        compare(branch.element(0).path(), tmpDir + "filetests/");
+        compare(file.element(0).pattern, tmpDir + "filetests/abc/foo.%04d.baz");
+        compare(file.element(0).paths()[0], tmpDir + "filetests/abc/foo.0001.baz");
     }
     
     function test_fileLink() {
@@ -104,7 +104,7 @@ PugTestCase {
         updateSpy.wait(500);
         
         compare(absFile.UpdateOperation.status, Operation.Finished);
-        compare(absFile.details[0].element.pattern, tmpDir + "filetests/abc/foo.%04d.baz");
-        compare(absFile.details[0].element.paths[0], tmpDir + "filetests/abc/foo.0001.baz");
+        compare(absFile.element(0).pattern, tmpDir + "filetests/abc/foo.%04d.baz");
+        compare(absFile.element(0).paths()[0], tmpDir + "filetests/abc/foo.0001.baz");
     }
 }    

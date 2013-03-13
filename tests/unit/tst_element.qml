@@ -12,10 +12,10 @@ PugTestCase {
     }
     
     function test_basic() {
-        compare(basic.directory, tmpDir + "filepatterns/foo/bar/");
-        compare(basic.baseName, "someseq");
-        compare(basic.frameSpec, "%04d");
-        compare(basic.extension, "ext");
+        compare(basic.directory(), tmpDir + "filepatterns/foo/bar/");
+        compare(basic.baseName(), "someseq");
+        compare(basic.frameSpec(), "%04d");
+        compare(basic.extension(), "ext");
     }
     
     Element {
@@ -25,10 +25,10 @@ PugTestCase {
     }
     
     function test_singleFile() {
-        compare(singleFile.directory, tmpDir + "filepatterns/foo/bar/");
-        compare(singleFile.baseName, "file");
-        compare(singleFile.frameSpec, "");
-        compare(singleFile.extension, "ext");
+        compare(singleFile.directory(), tmpDir + "filepatterns/foo/bar/");
+        compare(singleFile.baseName(), "file");
+        compare(singleFile.frameSpec(), "");
+        compare(singleFile.extension(), "ext");
     }
     
     Element {
@@ -38,10 +38,10 @@ PugTestCase {
     }
     
     function test_frame() {
-        compare(frame.directory, "");
-        compare(frame.baseName, "foo");
-        compare(frame.frameSpec, "%04d");
-        compare(frame.extension, "ext");
+        compare(frame.directory(), "");
+        compare(frame.baseName(), "foo");
+        compare(frame.frameSpec(), "%04d");
+        compare(frame.extension(), "ext");
     }
     
     Element {
@@ -50,22 +50,24 @@ PugTestCase {
     }
     
     function test_file() {
-        verify(!file.frames)
-        compare(file.paths, [tmpDir + "filepatterns/file/somefile.ext"]);
+        compare(file.frames(), []);
+        compare(file.paths(), [tmpDir + "filepatterns/file/somefile.ext"]);
     }
 
     Element {
         id: seq
         name: "seq"
         pattern: tmpDir + "filepatterns/seq/someseq.#.ext"
-        frames: [1,2,3,4]
+        frameList: FrameList {
+            frames: [1,2,3,4]
+        }                
     }
     
     function test_seq() {
-        compare(seq.frames, [1,2,3,4]);
-        compare(seq.paths, [tmpDir + "filepatterns/seq/someseq.0001.ext",
-                            tmpDir + "filepatterns/seq/someseq.0002.ext",
-                            tmpDir + "filepatterns/seq/someseq.0003.ext",
-                            tmpDir + "filepatterns/seq/someseq.0004.ext"]);
+        compare(seq.frames(), [1,2,3,4]);
+        compare(seq.paths(), [tmpDir + "filepatterns/seq/someseq.0001.ext",
+                              tmpDir + "filepatterns/seq/someseq.0002.ext",
+                              tmpDir + "filepatterns/seq/someseq.0003.ext",
+                              tmpDir + "filepatterns/seq/someseq.0004.ext"]);
     }
 }

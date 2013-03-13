@@ -152,9 +152,9 @@ PugTestCase {
         releaseSpy.wait(500);
         compare(release.status, Operation.Finished);
         compare(workFile.details.length, 1);
-        compare(workFile.details[0].element.path, workPath);
+        compare(workFile.element(0).path(), workPath);
         compare(workFile.ReleaseOperation.status, Operation.Finished);
-        compare(releaseFile.details[0].element.path, releasePath_v003);
+        compare(releaseFile.element(0).path(), releasePath_v003);
         compare(releaseFile.details.length, 1);
         verify(Util.exists(releasePath_v003));
         
@@ -164,7 +164,7 @@ PugTestCase {
         compare(workFile.ReleaseOperation.status, Operation.Finished);
         compare(workFile.details.length, 1);
         compare(releaseFile.details.length, 1);
-        compare(releaseFile.details[0].element.path, releasePath_v004);
+        compare(releaseFile.element(0).path(), releasePath_v004);
         verify(Util.exists(releasePath_v004));
     }
     
@@ -193,8 +193,8 @@ PugTestCase {
         
         compare(workSeq.details.length, 1);
         compare(releaseSeq.details.length, 1);
-        compare(releaseSeq.details[0].element.pattern, releasePath);
-        compare(releaseBranch.details[0].element.path, tmpDir + "releasetests/abc/foo/release/main/v003/");
+        compare(releaseSeq.element(0).pattern, releasePath);
+        compare(releaseBranch.element(0).path(), tmpDir + "releasetests/abc/foo/release/main/v003/");
         
         for (var frame = 1; frame <= 4; frame++) {
             var framePath = releasePath.replace("%04d", zeroFill(frame, 4));

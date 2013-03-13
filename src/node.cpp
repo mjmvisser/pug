@@ -227,24 +227,6 @@ void Node::setDetails(const QJSValue &details)
     }
 }
 
-int Node::childIndex() const
-{
-    const Node *p = parent<Node>();
-    if (p) {
-        int index = 0;
-        foreach (const QObject *o, p->children()) {
-            const Node *child = qobject_cast<const Node *>(o);
-            if (child) {
-                if (child == this)
-                    return index;
-                index++;
-            }
-        }
-    }
-
-    return -1;
-}
-
 Node *Node::child(int i)
 {
     int index = 0;
@@ -736,6 +718,33 @@ void Node::setDetail(int index, const QString arg1, const QString arg2, const QS
 void Node::clearDetails()
 {
     setDetails(newArray());
+}
+
+const Element *Node::element(int index) const
+{
+    if (m_details.isArray() && m_details.property("length").toInt() > index) {
+        QJSValue detail = m_details.property(index);
+
+        if (detail.property("element").isQObject()) {
+            return qjsvalue_cast<Element *>(detail.property("element"));
+        }
+    }
+
+    return 0;
+}
+
+Element *Node::element(int index)
+{
+    if (m_details.isArray() && m_details.property("length").toInt() > index) {
+        QJSValue detail = m_details.property(index);
+
+        if (detail.property("element").isQObject()) {
+            return qjsvalue_cast<Element *>(detail.property("element"));
+        }
+    }
+
+    // return a default element so we don't have to worry about undefineds
+    return new Element(this);
 }
 
 void Node::addParam(const QString name)

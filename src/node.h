@@ -11,6 +11,7 @@
 #include "input.h"
 #include "output.h"
 #include "operation.h"
+#include "element.h"
 
 class Node : public PugItem
 {
@@ -79,7 +80,9 @@ public:
     void setDetail(int, const QString, const QString, const QString, const QString, QJSValue, bool=true);
     void setDetail(int, const QString, const QString, const QString, const QString, const QString, QJSValue, bool=true);
 
-    Q_INVOKABLE int childIndex() const;
+    const Element *element(int index) const;
+    Q_INVOKABLE Element *element(int index);
+
     Node *child(int index);
     int childCount() const;
 

@@ -91,14 +91,14 @@ PugTestCase {
                         
                         debug("input is " + copier.input);
                         debug("index is " + index);
-                        debug("input.details[index].element is " + copier.input.details[index].element);
-                        debug("input.details[index].element.path is " + copier.input.details[index].element.path);
+                        debug("input.details[index].element is " + copier.input.element(index));
+                        debug("input.details[index].element.path() is " + copier.input.element(index).path());
                         debug("input.details[index].context " + JSON.stringify(copier.input.details[index].context));
                         debug("input.count is " + input.count);
                         debug("count is " + count);
-                        var inputPath = copier.input.details[index].element.path;
-                        var outputDir = copier.input.details[index].element.directory + "temp/";
-                        var outputPath = outputDir + "temp_" + copier.input.details[index].element.baseName + "." + copier.input.details[index].element.extension;
+                        var inputPath = copier.input.element(index).path();
+                        var outputDir = copier.input.element(index).directory() + "temp/";
+                        var outputPath = outputDir + "temp_" + copier.input.element(index).baseName() + "." + copier.input.element(index).extension();
 
                         debug("--- creating " + outputPath + " from " + inputPath);
                         if (!Util.exists(outputDir))
@@ -177,9 +177,9 @@ PugTestCase {
         compare(update.status, Operation.Finished);
         compare(workFile.UpdateOperation.status, Operation.Finished);
         compare(cookFile.UpdateOperation.status, Operation.Finished);
-        compare(workFile.details[0].element.path, workPaths[0]);
-        compare(workFile.details[1].element.path, workPaths[1]);
-        compare(workFile.details[2].element.path, workPaths[2]);
+        compare(workFile.element(0).path(), workPaths[0]);
+        compare(workFile.element(1).path(), workPaths[1]);
+        compare(workFile.element(2).path(), workPaths[2]);
         compare(cookFile.details.length, 0);
 
         cook.run(cookFile, context);
@@ -193,9 +193,9 @@ PugTestCase {
         compare(workFile.CookOperation.status, Operation.Finished);
         compare(copier.details.length, 3);
         compare(cookFile.details.length, 3);
-        compare(cookFile.details[0].element.path, cookPaths[0]);
-        compare(cookFile.details[1].element.path, cookPaths[1]);
-        compare(cookFile.details[2].element.path, cookPaths[2]);
+        compare(cookFile.element(0).path(), cookPaths[0]);
+        compare(cookFile.element(1).path(), cookPaths[1]);
+        compare(cookFile.element(2).path(), cookPaths[2]);
     }
     
     function test_cookCompound() {

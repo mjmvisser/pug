@@ -51,6 +51,7 @@ TestCase {
 
     function test_processFailure() {
         spy.clear();
+        console.log("Intentionally triggering process failure...");
         cook.run(falseProcess, {});
         spy.wait(500);
         compare(falseProcess.CookOperation.status, Operation.Error);
@@ -76,6 +77,6 @@ TestCase {
         spy.wait(500);
         compare(elementProcess.details.length, 1);
         compare(elementProcess.CookOperation.status, Operation.Finished);
-        compare(elementProcess.details[0].element.path, elementProcess.relativePath("tst_process.qml"));
+        compare(elementProcess.element(0).path(), elementProcess.relativePath("tst_process.qml"));
     }
 }

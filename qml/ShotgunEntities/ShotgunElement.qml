@@ -58,7 +58,7 @@ ShotgunEntity {
         name: "sg_start_frame"
         shotgunField: "sg_start_frame"
         type: ShotgunField.Number
-        value: parent.details[index].element.firstFrame                         
+        value: parent.element(index).firstFrame()                       
     }
 
     ShotgunField {
@@ -66,7 +66,7 @@ ShotgunEntity {
         name: "sg_end_frame"
         shotgunField: "sg_end_frame"
         type: ShotgunField.Number
-        value: parent.details[index].element.lastFrame                         
+        value: parent.element(index).lastFrame()                         
     }
     
     ShotgunField {

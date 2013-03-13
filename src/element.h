@@ -10,45 +10,35 @@
 class Element : public PugItem
 {
     Q_OBJECT
-    Q_PROPERTY(QString pattern READ pattern WRITE setPattern NOTIFY elementChanged)
-    Q_PROPERTY(FrameList *frameList READ frameList WRITE setFrameList NOTIFY elementChanged)
-    Q_PROPERTY(QVariant frames READ frames WRITE setFrames NOTIFY elementChanged)
-    Q_PROPERTY(QVariant firstFrame READ firstFrame NOTIFY elementChanged)
-    Q_PROPERTY(QVariant lastFrame READ lastFrame NOTIFY elementChanged)
-    Q_PROPERTY(QStringList paths READ paths NOTIFY elementChanged)
-    Q_PROPERTY(QString path READ path NOTIFY elementChanged)
-    Q_PROPERTY(QString directory READ directory NOTIFY elementChanged)
-    Q_PROPERTY(QString baseName READ baseName NOTIFY elementChanged)
-    Q_PROPERTY(QString frameSpec READ frameSpec NOTIFY elementChanged)
-    Q_PROPERTY(QString extension READ extension NOTIFY elementChanged)
+    Q_PROPERTY(QString pattern READ pattern WRITE setPattern NOTIFY patternChanged)
+    Q_PROPERTY(FrameList *frameList READ frameList WRITE setFrameList NOTIFY frameListChanged)
 public:
     explicit Element(QObject *parent = 0);
 
     const QString pattern() const;
     void setPattern(const QString);
 
-    const QStringList paths() const;
-    const QString path() const;
-
     FrameList *frameList();
     const FrameList *frameList() const;
     void setFrameList(FrameList *);
 
-    QVariant frames();
-    const QVariant frames() const;
-    void setFrames(const QVariant);
+    Q_INVOKABLE const QStringList paths() const;
+    Q_INVOKABLE const QString path() const;
 
-    const QVariant firstFrame() const;
-    const QVariant lastFrame() const;
+    Q_INVOKABLE const QVariant frames() const;
+    Q_INVOKABLE void setFrames(const QVariant);
 
-    const QString directory() const;
-    const QString baseName() const;
-    const QString frameSpec() const;
-    const QString extension() const;
-    bool hasFrames() const;
+    Q_INVOKABLE const QVariant firstFrame() const;
+    Q_INVOKABLE const QVariant lastFrame() const;
 
-    const QString path(QVariant frame) const;
-    const QVariant frame(const QString path) const;
+    Q_INVOKABLE bool hasFrames() const;
+    Q_INVOKABLE const QString directory() const;
+    Q_INVOKABLE const QString baseName() const;
+    Q_INVOKABLE const QString frameSpec() const;
+    Q_INVOKABLE const QString extension() const;
+
+    Q_INVOKABLE const QString path(QVariant frame) const;
+    Q_INVOKABLE const QVariant frame(const QString path) const;
 
     Q_INVOKABLE bool matches(const QString path) const;
     Q_INVOKABLE void append(const QString path);
@@ -57,15 +47,17 @@ public:
     const QString toString() const;
 
 signals:
-    void elementChanged();
+    void patternChanged(const QString pattern);
+    void frameListChanged(const FrameList *frameList);
 
 private:
     static const QString patternFromPath(const QString path);
     static const QRegularExpression regExpFromPattern(const QString pattern);
 
     QString m_pattern;
-    QRegularExpression m_patternRegExp;
     FrameList *m_frameList;
+
+    QRegularExpression m_patternRegExp;
 };
 Q_DECLARE_METATYPE(Element*) // makes available to QVariant
 
