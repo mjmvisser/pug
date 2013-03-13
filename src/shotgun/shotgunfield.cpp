@@ -426,7 +426,7 @@ const QVariant ShotgunField::buildLinkValue(int index) const
             result = QVariant(QVariant::String); // null
         }
     } else if (m_links.length() == 0) {
-        error() << "links is empty";
+        result = QVariant(QVariant::String); // null
     } else {
         error() << m_links.length() << "linked entities but linkType is not MultiLink";
     }
