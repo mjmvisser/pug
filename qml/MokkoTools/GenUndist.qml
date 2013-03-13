@@ -1,44 +1,46 @@
 import QtQuick 2.0
 import Pug 1.0
 
-Script {
-    id: renderLowUnd
-    script: "genundist2"
+Process {
+    id: self
 
     // inputs
     property File nukeNodeFile
     property File plateFile
 
-    Property {
-        name: "nukeNodeFile"
-        input: true
-    }
+    inputs: [
+        Input { name: "nukeNodeFile" },
+        Input { name: "plateFile" }
+    ]
     
-    Property {
-        name: "plateFile"
-        input: true
-    }
-    
-    // parameters
-    property string nukeNodePath: nukeNodeFile.paths
-    property string platePath: plateFile.paths
+    // params
     property string format
-    property var paths
-    
-    Property {
-        name: "nukeNodePath"
+
+    params: [
+        Param { name: "format" }
+    ]
+
+    argv: [
+        Qt.resolvedUrl("scripts/genundist2").replace("file://", ""),
+        "--nukeNodePath", nukeNodeFile.details[index].pattern,
+        "--platePath", plateFile.details[index].pattern,
+        "--outputFormat", format,
+        "--outputPath", temporaryFile(self.name + ".%04d.jpg")
+    ]
+
+    // additional outputs
+    property MakeThumbnail thumbnail: makeThumbnail
+    property MakeThumbnail filmstrip: makeFilmstrip
+
+    MakeThumbnail {
+        id: thumbnail
+        input: self
+        filmstrip: false
     }
 
-    Property {
-        name: "platePath"
-    }
-    
-    Property {
-        name: "format"
-    }
-    
-    Property {
-        name: "paths"
-        output: true
+    MakeThumbnail {
+        id: filmstrip
+        input: self
+        filmstrip: true
     }
 }

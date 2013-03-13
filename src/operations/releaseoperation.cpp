@@ -11,20 +11,20 @@ ReleaseOperationAttached::ReleaseOperationAttached(QObject *parent) :
     connect(m_queue, &FileOpQueue::error, this, &ReleaseOperationAttached::onFileOpQueueError);
 
     connect(this, &ReleaseOperationAttached::targetChanged, this, &ReleaseOperationAttached::regenerateDetails);
-    connect(node(), &NodeBase::detailsChanged, this, &ReleaseOperationAttached::regenerateDetails);
+    connect(node(), &Node::detailsChanged, this, &ReleaseOperationAttached::regenerateDetails);
 }
 
-BranchBase *ReleaseOperationAttached::target()
+Branch *ReleaseOperationAttached::target()
 {
     return m_target;
 }
 
-const BranchBase *ReleaseOperationAttached::target() const
+const Branch *ReleaseOperationAttached::target() const
 {
     return m_target;
 }
 
-void ReleaseOperationAttached::setTarget(BranchBase *branch)
+void ReleaseOperationAttached::setTarget(Branch *branch)
 {
     if (m_target != branch) {
         m_target = branch;
@@ -125,7 +125,7 @@ void ReleaseOperationAttached::regenerateDetails()
 
 const QString ReleaseOperationAttached::findVersionFieldName() const
 {
-    const BranchBase *branch = qobject_cast<const BranchBase *>(node());
+    const Branch *branch = qobject_cast<const Branch *>(node());
     const ReleaseOperationAttached *branchAttached = branch ? branch->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject()) : 0;
     QString versionFieldName = branchAttached ? branchAttached->m_versionFieldName : QString();
 
@@ -143,7 +143,7 @@ int ReleaseOperationAttached::findLastVersion(const QVariant data) const
     trace() << node() << ".findLastVersion(" << data << ")";
 
     // find branch parent with version field
-    const BranchBase *branch = qobject_cast<const BranchBase *>(node());
+    const Branch *branch = qobject_cast<const Branch *>(node());
 
     if (!branch || m_versionFieldName.isEmpty()) {
         error() << node() << "can't find last version on a non-branch or branch without valid ReleaseOperation.versionField";
@@ -182,7 +182,7 @@ int ReleaseOperationAttached::version(const QVariant context)
 {
     trace() << node() << ".version(" << context << ")";
 
-    BranchBase *branch = qobject_cast<BranchBase *>(node());
+    Branch *branch = qobject_cast<Branch *>(node());
     if (branch && !m_versionFieldName.isEmpty()) {
         // we're attached to a branch with a version field name specified
         if (m_version == -1) {
@@ -203,7 +203,7 @@ void ReleaseOperationAttached::resetVersion()
 {
     trace() << node() << ".resetVersion()";
 
-    BranchBase *branch = qobject_cast<BranchBase *>(node());
+    Branch *branch = qobject_cast<Branch *>(node());
     if (branch && !m_versionFieldName.isEmpty()) {
         // we're attached to a branch with a version field name specified
         m_version = -1;
@@ -309,12 +309,12 @@ void ReleaseOperationAttached::onFileOpQueueFinished()
     targetContext[versionFieldName] = version;
 
     // update the parents
-    BranchBase *p = m_target->firstParent<BranchBase>();
+    Branch *p = m_target->firstParent<Branch>();
     while (p && !p->isRoot()) {
         QStringList paths = p->listMatchingPaths(targetContext);
         p->setPaths(paths, targetContext);
 
-        p = p->firstParent<BranchBase>();
+        p = p->firstParent<Branch>();
    }
 
     setStatus(OperationAttached::Finished);

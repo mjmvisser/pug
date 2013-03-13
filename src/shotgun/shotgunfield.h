@@ -4,14 +4,14 @@
 #include <QString>
 #include <QtQml>
 
-#include "nodebase.h"
+#include "node.h"
 
 class Shotgun;
 class ShotgunEntity;
 class Field;
-class BranchBase;
+class Branch;
 
-class ShotgunField : public NodeBase
+class ShotgunField : public Node
 {
     Q_OBJECT
     Q_PROPERTY(QString shotgunField READ shotgunFieldName WRITE setShotgunFieldName NOTIFY shotgunFieldNameChanged)
@@ -22,7 +22,7 @@ class ShotgunField : public NodeBase
     Q_PROPERTY(QQmlListProperty<ShotgunEntity> links READ links_ NOTIFY linksChanged)
     Q_PROPERTY(QString pattern READ pattern WRITE setPattern NOTIFY patternChanged)
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
-    Q_PROPERTY(NodeBase *file READ file WRITE setFile NOTIFY fileChanged)
+    Q_PROPERTY(Node *file READ file WRITE setFile NOTIFY fileChanged)
     Q_PROPERTY(QString displayName READ displayName WRITE setDisplayName NOTIFY displayNameChanged)
     Q_PROPERTY(UrlType urlType READ urlType WRITE setUrlType NOTIFY urlTypeChanged)
     Q_PROPERTY(QString contentType READ contentType WRITE setContentType NOTIFY contentTypeChanged)
@@ -57,9 +57,9 @@ public:
     const QVariant value() const;
     void setValue(const QVariant);
 
-    const NodeBase *file() const;
-    NodeBase *file();
-    void setFile(NodeBase *);
+    const Node *file() const;
+    Node *file();
+    void setFile(Node *);
 
     const QString displayName() const;
     void setDisplayName(const QString);
@@ -83,7 +83,7 @@ signals:
     void linksChanged();
     void patternChanged(const QString pattern);
     void valueChanged(const QVariant value);
-    void fileChanged(NodeBase *file);
+    void fileChanged(Node *file);
     void displayNameChanged(const QString displayName);
     void urlTypeChanged(UrlType urlType);
     void contentTypeChanged(const QString contentType);
@@ -121,7 +121,7 @@ private:
     QList<ShotgunEntity *> m_links;
     QString m_pattern;
     QVariant m_value;
-    NodeBase *m_file;
+    Node *m_file;
     QString m_displayName;
     UrlType m_urlType;
     QString m_contentType;

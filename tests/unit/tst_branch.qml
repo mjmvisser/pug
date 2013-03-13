@@ -6,7 +6,7 @@ PugTestCase {
     id: self
     name: "TestBranch"
  
-    Branch {
+    Folder {
         id: branch
         name: "testBranch"
         pattern: "{ROOT}/abc/{TEST}/def/{FOO}/"
@@ -18,8 +18,8 @@ PugTestCase {
     }
     
     function test_branch() {
-        verify(branch.inherits("Branch"));
-        compare(branch.className.indexOf("Branch"), 0);
+        verify(branch.inherits("Folder"));
+        compare(branch.className.indexOf("Folder"), 0);
         verify(branch.node);
         compare(branch.pattern, "{ROOT}/abc/{TEST}/def/{FOO}/");
         compare(branch.parse("/root/abc/foo/def/foo/"), {ROOT: "/root", TEST: "foo", FOO: "foo"});
@@ -36,7 +36,7 @@ PugTestCase {
             Field { name: "BAZ"; type: Field.Integer }
         ]
         
-        Branch {
+        Folder {
             id: branch1
             name: "branch1"
             pattern: "/abc/{FOO}/def/{BAR}/"
@@ -44,7 +44,7 @@ PugTestCase {
             fields: Field { name: "BAR" }
         }
         
-        Branch {
+        Folder {
             id: branch2
             name: "branch2"
             pattern: "ghi/{BAZ}"

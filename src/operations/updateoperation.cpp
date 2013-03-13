@@ -1,5 +1,5 @@
 #include "updateoperation.h"
-#include "nodebase.h"
+#include "node.h"
 
 UpdateOperationAttached::UpdateOperationAttached(QObject *parent) :
     OperationAttached(parent),

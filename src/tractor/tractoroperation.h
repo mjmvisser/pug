@@ -78,7 +78,7 @@ public:
 
     TractorJob *tractorJob();
 
-    Q_INVOKABLE virtual void run(NodeBase *node, const QVariant context, bool reset=true);
+    Q_INVOKABLE virtual void run(Node *node, const QVariant context, bool reset=true);
 
     static TractorOperationAttached *qmlAttachedProperties(QObject *);
 
@@ -88,7 +88,7 @@ signals:
     void tractorJobChanged(TractorJob *tractorJob);
 
 protected:
-    TractorJob *buildTractorJob(NodeBase *node, const QVariant context);
+    TractorJob *buildTractorJob(Node *node, const QVariant context);
 
 private:
     Mode m_mode;

@@ -50,19 +50,19 @@ PugTestCase {
             Field { name: "FILENAME"; regexp: ".*" }
         ]
         
-        Branch {
+        Folder {
             id: abc
             name: "abc"
             pattern: "{ROOT}cooktests/abc/"
         }
         
-        Branch {
+        Folder {
             id: foo
             name: "foo"
             pattern: "{FOO}/"
             root: abc
             
-            Branch {
+            Folder {
                 id: workBranch
                 name: "work"
                 pattern: "work/"
@@ -74,7 +74,7 @@ PugTestCase {
                     pattern: "{FILENAME}"
                 }
 
-                Node {
+                DeprecatedNode {
                     id: copier
                     name: "copier"
                     count: input ? input.details.length : 0
@@ -123,7 +123,7 @@ PugTestCase {
             }
         }
         
-        Node {
+        DeprecatedNode {
             id: nodeA
             name: "nodeA"
     

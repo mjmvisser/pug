@@ -6,10 +6,10 @@
 #include "param.h"
 #include "input.h"
 #include "output.h"
-#include "node.h"
+#include "deprecatednode.h"
 #include "field.h"
-#include "branchbase.h"
 #include "branch.h"
+#include "folder.h"
 #include "file.h"
 #include "root.h"
 #include "process.h"
@@ -137,11 +137,11 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<Input>(uri, 1, 0, "Input");
     qmlRegisterType<Output>(uri, 1, 0, "Output");
     qmlRegisterType<Param>(uri, 1, 0, "Param");
-    qmlRegisterType<NodeBase>(uri, 1, 0, "NodeBase");
     qmlRegisterType<Node>(uri, 1, 0, "Node");
+    qmlRegisterType<DeprecatedNode>(uri, 1, 0, "DeprecatedNode");
     qmlRegisterType<Field>(uri, 1, 0, "Field");
-    qmlRegisterType<BranchBase>();
-    qmlRegisterType<Branch>(uri, 1, 0, "Branch");
+    qmlRegisterType<Branch>();
+    qmlRegisterType<Folder>(uri, 1, 0, "Folder");
     qmlRegisterType<Root>(uri, 1, 0, "Root");
     qmlRegisterType<File>(uri, 1, 0, "File");
     qmlRegisterType<Process>(uri, 1, 0, "Process");

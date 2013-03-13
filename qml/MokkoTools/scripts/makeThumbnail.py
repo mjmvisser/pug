@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, os, subprocess, math
+import sys, os, subprocess, math, json
 from optparse import OptionParser
 
 def frange(limit1, limit2 = None, increment = 1.):
@@ -71,5 +71,12 @@ else:
         first_frame_path = options.input_path
     
     result = subprocess.call(['convert', first_frame_path, "-resize", "240x240", "-quality", "80", options.output_path])
+
+details = [{"element": {"path": options.output_path}}]
+
+# pass output back
+print "begin-json details"
+print json.dumps(details, indent=4)
+print "===="
 
 sys.exit(result)

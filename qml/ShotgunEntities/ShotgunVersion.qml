@@ -6,7 +6,6 @@ ShotgunEntity {
     shotgunEntity: "Version"
 
     property var project
-    property string entityType
     property var entity
     property var release
     property string code
@@ -24,7 +23,6 @@ ShotgunEntity {
     ]
 
     params: [
-        Param { name: "entityType" },
         Param { name: "code" }
     ]
     
@@ -59,14 +57,14 @@ ShotgunEntity {
     ShotgunField {
         shotgunField: "sg_first_frame"
         type: ShotgunField.Number
-        value: ShotgunUtils.safeElementAttribute(parent, "firstFrame")                         
+        value: parent.details[index].element.firstFrame                         
 
     }
 
     ShotgunField {
         shotgunField: "sg_last_frame"
         type: ShotgunField.Number
-        value: ShotgunUtils.safeElementAttribute(parent, "lastFrame")                         
+        value: parent.details[index].element.firstFrame                         
     }
     
     ShotgunField {

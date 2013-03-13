@@ -63,7 +63,7 @@ OperationAttached::Status Pug::runOperation(const QString operationName, const Q
         return OperationAttached::Invalid;
     }
 
-    BranchBase *branch = m_root->findBranch(path);
+    Branch *branch = m_root->findBranch(path);
 
     if (!branch) {
         PugItem::error() << "Can't find branch for" << path;
@@ -84,7 +84,7 @@ OperationAttached::Status Pug::runOperation(const QString operationName, const Q
     // run a local event loop, terminated when the operation finishes
     QEventLoop eventLoop;
     connect(op, SIGNAL(finished(OperationAttached::Status)), &eventLoop, SLOT(quit()));
-    QMetaObject::invokeMethod(op, "run", Qt::QueuedConnection, Q_ARG(NodeBase*, branch), Q_ARG(QVariant, data));
+    QMetaObject::invokeMethod(op, "run", Qt::QueuedConnection, Q_ARG(Node*, branch), Q_ARG(QVariant, data));
     eventLoop.exec();
 
     return op->status();

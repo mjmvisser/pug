@@ -6,10 +6,10 @@
 #include <QProcess>
 #include <QVector>
 
-#include "node.h"
+#include "deprecatednode.h"
 #include "operation.h"
 
-class Process : public Node
+class Process : public DeprecatedNode
 {
     Q_OBJECT
     Q_PROPERTY(QStringList argv READ argv WRITE setArgv NOTIFY argvChanged)
@@ -61,6 +61,6 @@ private:
     QHash<QProcess *, QString> m_stdouts;
     QHash<QProcess *, QVariantMap> m_contexts;
 };
-//Q_DECLARE_METATYPE(Node*) // makes available to QVariant
+//Q_DECLARE_METATYPE(DeprecatedNode*) // makes available to QVariant
 
 #endif // PROCESS_H

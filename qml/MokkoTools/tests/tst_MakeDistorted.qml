@@ -17,7 +17,7 @@ TestCase {
             }
         ]
         
-        Branch {
+        Folder {
             name: "mokkotoolstests"
             pattern: "/usr/tmp/mokkotoolstests"
 
@@ -35,9 +35,6 @@ TestCase {
     
             MakeDistorted {
                 id: makeDist
-                logLevel: Log.Debug
-                UpdateOperation.logLevel: Log.Error
-                CookOperation.logLevel: Log.Error
                 input: seq
                 nukeDistortFile: nukeDistortFile
                 outputFormat: "100"

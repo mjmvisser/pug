@@ -13,7 +13,6 @@ TestCase {
     property string releaseImagePath: Qt.resolvedUrl("data/release_test.png").replace("file://", "")
         
     Root {
-        logLevel: Log.Debug
         operations: [
             UpdateOperation {
                 id: update
@@ -56,6 +55,7 @@ TestCase {
         
         ConformMaya {
             id: conform
+            name: "conform"
             scene: scene
             refs: refs
             

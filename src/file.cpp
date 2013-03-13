@@ -12,7 +12,7 @@
 #include "element.h"
 
 File::File(QObject *parent) :
-    BranchBase(parent),
+    Branch(parent),
     m_input(),
     m_linkType(File::Hard)
 {
@@ -25,16 +25,16 @@ File::File(QObject *parent) :
     addInput("input");
 }
 
-NodeBase *File::input()
+Node *File::input()
 {
     return m_input;
 }
-const NodeBase *File::input() const
+const Node *File::input() const
 {
     return m_input;
 }
 
-void File::setInput(NodeBase *node)
+void File::setInput(Node *node)
 {
     if (m_input != node) {
         m_input = node;

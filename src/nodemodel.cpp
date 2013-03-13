@@ -1,6 +1,6 @@
 #include <QVariant>
 
-#include "nodebase.h"
+#include "node.h"
 
 #include "nodemodel.h"
 
@@ -28,14 +28,14 @@ QModelIndex NodeModel::index(int row, int column, const QModelIndex &parent) con
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    NodeBase *parentNode;
+    Node *parentNode;
 
     if (!parent.isValid())
         parentNode = m_root;
     else
-        parentNode = static_cast<NodeBase*>(parent.internalPointer());
+        parentNode = static_cast<Node*>(parent.internalPointer());
 
-    NodeBase *childNode = parentNode->child(row);
+    Node *childNode = parentNode->child(row);
     if (childNode)
         return createIndex(row, column, childNode);
     else
@@ -47,8 +47,8 @@ QModelIndex NodeModel::parent(const QModelIndex &index) const
     if (!index.isValid())
         return QModelIndex();
 
-    NodeBase *childNode = static_cast<NodeBase*>(index.internalPointer());
-    NodeBase *parentNode = childNode->parent<NodeBase>();
+    Node *childNode = static_cast<Node*>(index.internalPointer());
+    Node *parentNode = childNode->parent<Node>();
 
     if (parentNode == m_root)
         return QModelIndex();
@@ -58,14 +58,14 @@ QModelIndex NodeModel::parent(const QModelIndex &index) const
 
 int NodeModel::rowCount(const QModelIndex &parent) const
 {
-    NodeBase *parentNode;
+    Node *parentNode;
     if (parent.column() > 0)
         return 0;
 
     if (!parent.isValid())
         parentNode = m_root;
     else
-        parentNode = static_cast<NodeBase*>(parent.internalPointer());
+        parentNode = static_cast<Node*>(parent.internalPointer());
 
     return parentNode->childCount();
 }
@@ -84,7 +84,7 @@ QVariant NodeModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    NodeBase *node = static_cast<NodeBase*>(index.internalPointer());
+    Node *node = static_cast<Node*>(index.internalPointer());
 
     switch(role) {
     case Qt::DisplayRole:
@@ -111,7 +111,7 @@ QVariant NodeModel::headerData(int /*section*/, Qt::Orientation /*orientation*/,
     case Qt::DisplayRole:
         return "Name";
     case NodeModel::NodeRole:
-        return "Node";
+        return "DeprecatedNode";
     default:
         return QVariant();
     }

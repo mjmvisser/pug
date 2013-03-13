@@ -1,8 +1,8 @@
 import Pug 1.0
 
-Node {
+DeprecatedNode {
     id: self
-    property NodeBase input
+    property Node input
 
     inputs: Input { name: "input" }
 
@@ -10,11 +10,11 @@ Node {
 
     details: nodeC.details
 
-    Node {
+    DeprecatedNode {
         id: nodeB
         name: "nodeB"
 
-        property NodeBase input: self.input
+        property Node input: self.input
         
         inputs: Input { name: "input" }
         
@@ -31,10 +31,10 @@ Node {
         }
     }
 
-    Node {
+    DeprecatedNode {
         id: nodeC
         name: "nodeC"
-        property NodeBase input: nodeB
+        property Node input: nodeB
         active: true
         
         inputs: Input { name: "input" }

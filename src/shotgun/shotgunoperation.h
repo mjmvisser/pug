@@ -5,7 +5,7 @@
 #include "shotgun.h"
 
 class ShotgunEntity;
-class BranchBase;
+class Branch;
 
 class ShotgunOperationAttached : public OperationAttached
 {
@@ -72,7 +72,7 @@ signals:
 private:
     Mode m_mode;
     Shotgun *m_shotgun;
-    NodeBase *m_runningNode;
+    Node *m_runningNode;
     QVariant m_runningEnv;
 };
 

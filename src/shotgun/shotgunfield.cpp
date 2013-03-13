@@ -1,10 +1,10 @@
 #include "shotgunfield.h"
 #include "shotgunentity.h"
-#include "branchbase.h"
+#include "branch.h"
 #include "shotgunoperation.h"
 
 ShotgunField::ShotgunField(QObject *parent) :
-    NodeBase(parent),
+    Node(parent),
     m_type(ShotgunField::String),
     m_file(),
     m_urlType(ShotgunField::Local)
@@ -30,9 +30,9 @@ ShotgunField::ShotgunField(QObject *parent) :
 
 void ShotgunField::componentComplete()
 {
-    NodeBase::componentComplete();
+    Node::componentComplete();
     if (entity())
-        connect(entity(), &NodeBase::countChanged, this, &NodeBase::setCount);
+        connect(entity(), &Node::countChanged, this, &Node::setCount);
 
     updateCount();
 }
@@ -136,12 +136,12 @@ void ShotgunField::setValue(const QVariant v)
     }
 }
 
-NodeBase *ShotgunField::file()
+Node *ShotgunField::file()
 {
     return m_file;
 }
 
-void ShotgunField::setFile(NodeBase *file)
+void ShotgunField::setFile(Node *file)
 {
     if (m_file != file) {
         m_file = file;
@@ -367,7 +367,7 @@ const QVariant ShotgunField::buildPatternValue(int index, const QVariantMap cont
 {
     Q_ASSERT(m_type == ShotgunField::Pattern);
 
-    const BranchBase *branch = qobject_cast<const BranchBase *>(m_file);
+    const Branch *branch = qobject_cast<const Branch *>(m_file);
 
     if (!branch) {
         error() << "ShotgunField.Pattern type requires a branch connected to the file property";
@@ -409,7 +409,7 @@ const QVariant ShotgunField::buildLinkValue(int index) const
     // this field is an entity link
     QVariant result;
     if (m_links.length() == 1) {
-        const NodeBase *linkedEntity = m_links.at(0);
+        const Node *linkedEntity = m_links.at(0);
 
         if (linkedEntity) {
             const QVariantMap sg_entity = qjsvalue_cast<QVariantMap>(linkedEntity->detail(index, "entity"));

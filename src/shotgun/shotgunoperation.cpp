@@ -4,7 +4,7 @@
 #include "shotgunoperation.h"
 #include "shotgunentity.h"
 #include "shotgunfield.h"
-#include "branchbase.h"
+#include "branch.h"
 
 #include "releaseoperation.h"
 

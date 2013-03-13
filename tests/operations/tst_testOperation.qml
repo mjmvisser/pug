@@ -24,16 +24,16 @@ PugTestCase {
             }
         ]
         
-        Branch {
+        Folder {
             id: branchA
             name: "branchA"
             
-            Branch {
+            Folder {
                 id: branchB
                 name: "branchB"
                 root: branchA
                 
-                Branch {
+                Folder {
                     id: branchC
                     name: "branchC"
                     root: branchB

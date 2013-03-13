@@ -10,7 +10,7 @@
 #include "pugitem.h"
 
 class Operation;
-class NodeBase;
+class Node;
 
 class OperationAttached : public PugItem
 {
@@ -38,8 +38,8 @@ public:
     const Operation* operation() const;
     Operation *operation();
 
-    const NodeBase *node() const;
-    NodeBase *node();
+    const Node *node() const;
+    Node *node();
 
     Q_INVOKABLE void resetStatus();
     Q_INVOKABLE virtual void reset();
@@ -161,13 +161,13 @@ public:
     OperationAttached::Status status() const;
     void setStatus(OperationAttached::Status);
 
-    void resetAll(NodeBase *node);
-    Q_INVOKABLE virtual void run(NodeBase *node, const QVariant context, bool reset=true);
+    void resetAll(Node *node);
+    Q_INVOKABLE virtual void run(Node *node, const QVariant context, bool reset=true);
 
     //static OperationAttached *qmlAttachedProperties(QObject *); // must be defined in subclasses
 
-    NodeBase *node();
-    const NodeBase *node() const;
+    Node *node();
+    const Node *node() const;
 
 signals:
     void dataChanged();
@@ -182,7 +182,7 @@ protected slots:
     void onFinished(OperationAttached *);
 
 protected:
-    void startRunning(NodeBase *node, const QVariant context);
+    void startRunning(Node *node, const QVariant context);
     void continueRunning();
 
     OperationAttached::Status dependenciesStatus() const;
@@ -203,7 +203,7 @@ private:
     QList<Operation *> m_dependencies;
     QList<Operation *> m_triggers;
 
-    NodeBase *m_node;
+    Node *m_node;
     QVariant m_context;
     OperationAttached::Status m_status;
 };

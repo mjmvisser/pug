@@ -66,19 +66,19 @@ PugTestCase {
             Field { name: "VERSION"; type: Field.Integer; width: 3 }
         ]
         
-        Branch {
+        Folder {
             id: abc
             name: "abc"
             pattern: "{ROOT}releasetests/abc/"
         }
         
-        Branch {
+        Folder {
             id: foo
             name: "foo"
             pattern: "{FOO}/"
             root: abc
             
-            Branch {
+            Folder {
                 id: releaseBranch
                 name: "releaseBranch"
                 pattern: "release/main/v{VERSION}/"
@@ -100,7 +100,7 @@ PugTestCase {
                 }
             }
             
-            Branch {
+            Folder {
                 id: workBranch
                 name: "workBranch"
                 pattern: "work/"

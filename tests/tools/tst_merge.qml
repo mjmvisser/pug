@@ -32,7 +32,7 @@ TestCase {
             dependencies: update
         }
     
-        Branch {
+        Folder {
             pattern: tmpDir + "mergetests/abc/";
             
             File {

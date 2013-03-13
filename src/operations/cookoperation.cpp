@@ -1,5 +1,5 @@
 #include "cookoperation.h"
-#include "nodebase.h"
+#include "node.h"
 
 CookOperationAttached::CookOperationAttached(QObject *parent) :
     OperationAttached(parent),

@@ -72,17 +72,18 @@ Root {
         Field { name: "EXT" }
     ]
     
-    Branch {
+    ShotgunHumanUser {
+        id: sg_user
+        name: "sg_user"
+    }
+
+    Folder {
         id: prod
     	name: "root"
     	pattern: "/prod/projects/"
-
-        ShotgunHumanUser {
-            id: sg_user
-        }
     }
     
-    Branch {
+    Folder {
         id: project
     	name: "project"
     	pattern: "{PROJECT}/"
@@ -90,6 +91,7 @@ Root {
 
         ShotgunProject {
             id: sg_project
+            name: "sg_project"
         }
     }
     
@@ -99,7 +101,7 @@ Root {
         root: project
     }
     
-    Branch {
+    Folder {
         id: scene
         name: "scene"
     	pattern: "shots/{SEQUENCE}/"
@@ -107,17 +109,20 @@ Root {
 
         ShotgunScene {
             id: sg_scene
+            name: "sg_scene"
             project: sg_project
         }
     }
     
-    Branch {
+    Folder {
         id: shot
         name: "shot"
     	pattern: "{SHOT}/"
     	root: scene
 
         ShotgunShot {
+            id: sg_shot
+            name: "sg_shot"
             project: sg_project
             scene: sg_scene
         }
@@ -141,7 +146,7 @@ Root {
         // root: shot
     // }
     
-    Branch {
+    Folder {
         id: asset
         name: "asset"
         pattern: "assets/{ASSET_TYPE}/{ASSET}/"

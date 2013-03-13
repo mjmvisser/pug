@@ -38,7 +38,7 @@ PugTestCase {
             FrameSpecField { name: "FRAME" }
         ]
                 
-        Branch {
+        Folder {
             id: branch1
             name: "branch1"
             pattern: tmpDir + "updatetests/abc/{FOO}/def/{BAR}/"
@@ -48,7 +48,7 @@ PugTestCase {
             }
         }
         
-        Branch {
+        Folder {
             id: branch2
             name: "branch2"
             pattern: "ghi/{BAZ}/"

@@ -8,7 +8,7 @@
 #include "element.h"
 
 Process::Process(QObject *parent) :
-    Node(parent),
+    DeprecatedNode(parent),
     m_ignoreExitCode(false)
 {
     connect(this, &Process::cookAtIndex, this, &Process::onCookAtIndex);
@@ -254,7 +254,7 @@ void Process::onReadyReadStandardError()
 
 void Process::componentComplete()
 {
-    NodeBase::componentComplete();
+    Node::componentComplete();
 
     m_env = newObject();
 

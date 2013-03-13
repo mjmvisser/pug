@@ -4,7 +4,7 @@ import Pug 1.0
 Process {
     id: self
     count: input !== null ? input.details.length : 0
-    property var input
+    property File input
     property string outputFormat
 
     inputs: [

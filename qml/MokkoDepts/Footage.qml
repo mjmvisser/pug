@@ -2,11 +2,11 @@ import Pug 1.0
 import ShotgunEntities 1.0
 import MokkoTools 1.0
 
-Branch {
+Folder {
     name: "footage"
     pattern: "2d/assets/footage"
     
-    Branch {
+    Folder {
         id: release
         name: "release"
         pattern: "release/{VARIATION}/{VERSION}/"
@@ -15,9 +15,10 @@ Branch {
 
         ShotgunPublishEvent {
             id: sg_releasePublishEvent
-            project: node("/project")
-            entity { link: node("/shot"); linkType: "Shot" }
-            user: node("/prod")
+            name: "sg_releasePublishEvent"
+            project: node("/project/sg_project")
+            entity: node("/shot/sg_shot")
+            user: node("/sg_user")
             code: "{SEQUENCE}_{SHOT}_footage_v{VERSION}"
         }
 
@@ -28,28 +29,26 @@ Branch {
             ShotgunOperation.action: ShotgunOperation.Create
 
             ShotgunVersion {
-                project: node("/project")
-                entity { link: node("/shot"); linkType: "Shot" }
-                release: release
-                user: node("/prod")
+                project: node("/project/sg_project")
+                entity: node("/shot/sg_shot")
+                release: sg_releasePublishEvent
+                user: node("/sg_user")
                 code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
-                firstFrame: releaseSeq.details[releaseSeq.ShotgunOperation.index].element.firstFrame
-                lastFrame: releaseSeq.details[releaseSeq.ShotgunOperation.index].element.lastFrame
-                thumbnailPath: workSeq.thumbnail.details[releaseSeq.ShotgunOperation.index].element.path
-                filmstripPath: workSeq.filmstrip.details[releaseSeq.ShotgunOperation.index].element.path
+                thumbnailPath: workSeq.thumbnail
+                filmstripPath: workSeq.filmstrip
             }
 
             ShotgunFile {
-                project: node("/project")
-                release: release
-                user: node("/prod")
-                thumbnailPath: workSeqThumbnail.outputPath
-                filmstripPath: workSeqfilmstrip.outputPath
+                project: node("/project/sg_project")
+                release: sg_releasePublishEvent
+                user: node("/sg_user")
+                thumbnail: workSeq.thumbnail
+                filmstrip: workSeq.filmstrip
             }
         }
     }
 
-    Branch {
+    Folder {
         id: work    
         name: "work"
         pattern: "work/{USER}/"

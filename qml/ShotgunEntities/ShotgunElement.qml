@@ -55,14 +55,14 @@ ShotgunEntity {
         id: startFrameField
         shotgunField: "sg_start_frame"
         type: ShotgunField.Number
-        value: ShotgunUtils.safeElementAttribute(parent, "firstFrame")                         
+        value: parent.details[index].element.firstFrame                         
     }
 
     ShotgunField {
         id: endFrameField
         shotgunField: "sg_end_frame"
         type: ShotgunField.Number
-        value: ShotgunUtils.safeElementAttribute(parent, "lastFrame")                         
+        value: parent.details[index].element.lastFrame                         
     }
     
     ShotgunField {

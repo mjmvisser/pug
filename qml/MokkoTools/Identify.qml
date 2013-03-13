@@ -7,7 +7,7 @@ Process {
     id: self
     count: input ? input.details.length : 0;
 
-    property var input
+    property File input
     property var metadata: {}
 
     inputs: Input { name: "input" }

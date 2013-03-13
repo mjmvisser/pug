@@ -2,21 +2,22 @@ import Pug 1.0
 import ShotgunEntities 1.0
 import MokkoTools 1.0
 
-Branch {
+Folder {
     name: "tracking"
     pattern: "3d/tracking/"
     
-    Branch {
+    Folder {
         id: release
         name: "release"
         pattern: "release/{VARIATION}/v{VERSION}"
         ReleaseOperation.versionField: findField("VERSION")
 
         ShotgunPublishEvent {
-            project: node("/project")
-            entityType: "Shot"
-            entity: node("/shot")
-            user: node("/prod")
+            id: sg_releasePublishEvent
+            name: "sg_releasePublishEvent"
+            project: node("/project/sg_project")
+            entity: node("/shot/sg_shot")
+            user: node("/sg_user")
             code: "{SEQUENCE}_{SHOT}_model_v{VERSION}"
         }
 
@@ -27,9 +28,11 @@ Branch {
             pattern: "3de/{SEQUENCE}_{SHOT}.3de"
 
             ShotgunFile {
-                project: node("/project")
-                release: release
-                user: node("/prod")
+                id: sg_release3deSceneFile
+                name: "sg_release3deSceneFile"
+                project: node("/project/sg_project")
+                release: sg_releasePublishEvent
+                user: node("/sg_user")
             }
         }
         
@@ -40,9 +43,11 @@ Branch {
             pattern: "nk/{SEQUENCE}_{SHOT}_cam.nk"
 
             ShotgunFile {
-                project: node("/project")
-                release: release
-                user: node("/prod")
+                id: sg_releaseNukeScriptFile
+                name: "sg_releaseNukeScriptFile"
+                project: node("/project/sg_project")
+                release: sg_releasePublishEvent
+                user: node("/sg_user")
             }
         }
 
@@ -53,9 +58,11 @@ Branch {
             pattern: "mel/{SEQUENCE}_{SHOT}_cam.mel"
 
             ShotgunFile {
-                project: node("/project")
-                release: release
-                user: node("/prod")
+                id: sg_releaseMelScriptFile
+                name: "sg_releaseMelScriptFile"
+                project: node("/project/sg_project")
+                release: sg_releasePublishEvent
+                user: node("/sg_user")
             }
         }
 
@@ -66,11 +73,13 @@ Branch {
             pattern: "render/1280x675/jpg/{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_{VERSION}_1280x675.%04d.jpg"
 
             ShotgunFile {
-                project: node("/project")
-                release: release
-                user: node("/prod")
-                thumbnail: workLowThumbnail
-                filmstrip: workLowFilmstrip
+                id: sg_releaseLowUndistFile
+                name: "sg_releaseLowUndistFile"
+                project: node("/project/sg_project")
+                release: sg_releasePublishEvent
+                user: node("/sg_user")
+                thumbnail: workLow.thumbnail
+                filmstrip: workLow.filmstrip
             }
         }
 
@@ -81,32 +90,33 @@ Branch {
             pattern: "render/2560x1350/jpg/{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_{VERSION}_2560x1350.%04d.jpg"
 
             ShotgunVersion {
-                project: node("/project")
-                entity { link: node("/shot"); linkType: "Shot" }
-                release: release
-                user: node("/prod")
+                id: sg_releaseFullUndistVersion
+                name: "sg_releaseFullUndistVersion"
+                project: node("/project/sg_project")
+                release: sg_releasePublishEvent
+                user: node("/sg_user")
                 code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
-                firstFrame: releaseSeq.details[releaseSeq.ShotgunOperation.index].element.firstFrame
-                lastFrame: releaseSeq.details[releaseSeq.ShotgunOperation.index].element.lastFrame
-                thumbnail: workFullThumbnail
-                filmstrip: workFullFilmstrip
+                thumbnail: workFull.thumbnail
+                filmstrip: workFull.filmstrip
             }
 
             ShotgunFile {
-                project: node("/project")
-                release: release
-                user: node("/prod")
-                thumbnail: workFullThumbnail
-                filmstrip: workFullFilmstrip
+                id: sg_releaseFullUndistFile
+                name: "sg_releaseFullUndistFile"
+                project: node("/project/sg_project")
+                release: sg_releasePublishEvent
+                user: node("/sg_user")
+                thumbnail: workFull.thumbnail
+                filmstrip: workFull.filmstrip
             }
         }
         
     }
     
-    Branch {
+    Folder {
         id: work
         name: "work"
-        root: parentBranch
+        root: parentFolder
         pattern: "work/{USER}/"
 
         File {
@@ -145,20 +155,6 @@ Branch {
             ReleaseOperation.releasable: true
             ReleaseOperation.target: releaseLowUndist
         }
-
-        MakeThumbnail {
-            id: workLowThumbnail
-            name: "workLowThumbnail"
-            input: workLowUndist
-            filmstrip: false
-        }
-
-        MakeThumbnail {
-            id: workLowFilmstrip
-            name: "workLowFilmstrip"
-            input: workLowUndist
-            filmstrip: true
-        }
         
         GenUndist {
             id: workFullUndist
@@ -168,20 +164,6 @@ Branch {
             format: "2k_und"
             ReleaseOperation.releasable: true
             ReleaseOperation.target: releaseFullUndist
-        }
-
-        MakeThumbnail {
-            id: workFullThumbnail
-            name: "workFullThumbnail"
-            input: workFullUndist
-            filmstrip: false
-        }
-
-        MakeThumbnail {
-            id: workFullFilmstrip
-            name: "workFullFilmstrip"
-            input: workFullUndist
-            filmstrip: true
         }
     }
 }

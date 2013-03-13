@@ -2,7 +2,7 @@ import Pug 1.0
 import ShotgunEntities 1.0
 import MokkoTools 1.0
 
-Branch {
+Folder {
     id: transfer
     pattern: "transfer/from_client/{TRANSFER}/"
 
@@ -15,13 +15,13 @@ Branch {
         project: node("/project")
     }
 
-    Branch {
+    Folder {
         id: transferClient
         name: "transferClient"
         pattern: "client/"
     }
     
-    Branch {
+    Folder {
         id: release
         name: "release"
         pattern: "release/v{VERSION}/"
@@ -82,7 +82,7 @@ Branch {
         }
     }
 
-    Branch {
+    Folder {
         id: work
         name: "work"
         pattern: "work/{USER}/"

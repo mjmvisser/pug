@@ -1,5 +1,6 @@
 import re, os, sys, subprocess
 from optparse import OptionParser
+import json
 
 import nuke, nukescripts
 
@@ -89,3 +90,12 @@ write_output = nuke.nodes.Write(file=output_path, name="write_output")
 write_output.setInput(0, last_node)
 
 nuke.executeMultiple([write_output], [(first, last, 1)])
+
+details = [{"element": {"path": output_path},
+            "context": {"FORMAT": output_format}}]
+
+# pass outputs back
+print "begin-json details"
+print json.dumps(details, indent=4)
+print "===="
+

@@ -9,8 +9,8 @@
 #include "tractortask.h"
 #include "tractorcmd.h"
 #include "tractorjob.h"
-#include "nodebase.h"
-#include "branch.h"
+#include "node.h"
+#include "folder.h"
 #include "serializers.h"
 
 TractorOperationAttached::TractorOperationAttached(QObject *parent) :
@@ -22,7 +22,7 @@ TractorOperationAttached::TractorOperationAttached(QObject *parent) :
 
 TractorOperationAttached *TractorOperationAttached::parentAttached()
 {
-    NodeBase *p = node()->firstParent<NodeBase>();
+    Node *p = node()->firstParent<Node>();
     return p ? p->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject()) : 0;
 }
 
@@ -91,7 +91,7 @@ void TractorOperationAttached::generateTask()
     m_tractorTask->setTitle(node()->objectName());
 
     // find the first branch parent and get the path
-    Branch *branch = node()->firstParent<Branch>();
+    Folder *branch = node()->firstParent<Folder>();
     if (!branch) {
         setStatus(OperationAttached::Finished);
         return;
@@ -324,7 +324,7 @@ TractorJob *TractorOperation::tractorJob()
     return m_tractorJob;
 }
 
-void TractorOperation::run(NodeBase *node, const QVariant context, bool reset)
+void TractorOperation::run(Node *node, const QVariant context, bool reset)
 {
     trace() << ".run(" << node << "," << context << "," << reset << ")";
     m_target->resetAll(node);
@@ -340,7 +340,7 @@ void TractorOperation::run(NodeBase *node, const QVariant context, bool reset)
     }
 }
 
-TractorJob *TractorOperation::buildTractorJob(NodeBase *node, const QVariant context)
+TractorJob *TractorOperation::buildTractorJob(Node *node, const QVariant context)
 {
     trace() << ".buildTractorJob(" << node << "," << context << ")";
     TractorJob *job = new TractorJob(this);

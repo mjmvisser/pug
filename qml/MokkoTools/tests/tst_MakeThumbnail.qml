@@ -18,7 +18,7 @@ TestCase {
         
         fields: FrameSpecField { name: "FRAME" }
         
-        Branch {
+        Folder {
             name: "mokkotoolstests"
             pattern: "/usr/tmp/mokkotoolstests"
 
@@ -54,8 +54,8 @@ TestCase {
         spy.wait(25000);
 
         compare(cook.status, Operation.Finished)        
-        verify(seq.details.length == 1);
-        verify(makeThumbnail.details.length == 1);
+        compare(seq.details.length, 1);
+        compare(makeThumbnail.details.length, 1);
     }
     
     function test_makeFilmstrip() {

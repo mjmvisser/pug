@@ -6,7 +6,7 @@
 #include <QJSValue>
 
 #include "operation.h"
-#include "branchbase.h"
+#include "branch.h"
 #include "field.h"
 #include "fileopqueue.h"
 
@@ -14,7 +14,7 @@ class ReleaseOperationAttached : public OperationAttached
 {
     Q_OBJECT
     Q_ENUMS(Mode)
-    Q_PROPERTY(BranchBase *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(Branch *target READ target WRITE setTarget NOTIFY targetChanged)
     Q_PROPERTY(QString versionField READ versionFieldName WRITE setVersionFieldName NOTIFY versionFieldChanged)
     Q_PROPERTY(QJSValue details READ details NOTIFY detailsChanged)
     Q_PROPERTY(Mode mode READ mode WRITE setMode NOTIFY modeChanged)
@@ -23,9 +23,9 @@ public:
 
     explicit ReleaseOperationAttached(QObject *parent = 0);
 
-    BranchBase *target();
-    const BranchBase *target() const;
-    void setTarget(BranchBase *);
+    Branch *target();
+    const Branch *target() const;
+    void setTarget(Branch *);
 
     const QString versionFieldName() const;
     void setVersionFieldName(const QString);
@@ -43,7 +43,7 @@ public:
     Q_INVOKABLE int findLastVersion(const QVariant data) const;
 
 signals:
-    void targetChanged(BranchBase *target);
+    void targetChanged(Branch *target);
     void versionFieldChanged(const QString versionField);
     void detailsChanged();
     void modeChanged(Mode mode);
@@ -66,7 +66,7 @@ private slots:
     void regenerateDetails();
 
 private:
-    BranchBase *m_target;
+    Branch *m_target;
     QString m_versionFieldName;
     int m_version;
     QJSValue m_details;

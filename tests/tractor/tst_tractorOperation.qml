@@ -51,19 +51,19 @@ PugTestCase {
             Field { name: "FILENAME"; regexp: ".*" }
         ]
         
-        Branch {
+        Folder {
             id: abc
             name: "abc"
             pattern: "{ROOT}tractortests/abc/"
         }
         
-        Branch {
+        Folder {
             id: foo
             name: "foo"
             pattern: "{FOO}/"
             root: abc
             
-            Branch {
+            Folder {
                 id: workBranch
                 name: "workBranch"
                 pattern: "work/"

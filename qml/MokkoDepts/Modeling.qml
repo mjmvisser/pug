@@ -2,14 +2,14 @@ import Pug 1.0
 import ShotgunEntities 1.0
 import MokkoTools 1.0
 
-Branch {
+Folder {
     pattern: "3d/model/"
     
     fields: [
         Field { name: "LOD"; values: "master"; defaultValue: "master" }
     ]
     
-    Branch {
+    Folder {
         id: release
         name: "release"
         pattern: "release/{VARIATION}/v{VERSION}/"
@@ -17,10 +17,11 @@ Branch {
         ShotgunOperation.action: ShotgunOperation.Create
         
         ShotgunPublishEvent {
-            project: node("/project")
-            entityType: "Asset"
-            entity: node("/asset")
-            user: node("/prod")
+            id: sg_releasePublishEvent
+            name: "sg_releasePublishEvent"
+            project: node("/project/sg_project")
+            entity: node("/asset/sg_asset")
+            user: node("/sg_user")
             code: "{ASSET_TYPE}_{ASSET}_model_v{VERSION}"
         }
         
@@ -31,9 +32,11 @@ Branch {
             ShotgunOperation.action: ShotgunOperation.Create
             
             ShotgunFile {
-                project: node("/project")
-                release: release
-                user: node("/prod")
+                id: sg_releaseMayaMasterFile
+                name: "sg_releaseMayaMasterFile"
+                project: node("/project/sg_project")
+                release: sg_releasePublishEvent
+                user: node("/sg_user")
             }
             
         }
@@ -45,9 +48,11 @@ Branch {
             ShotgunOperation.action: ShotgunOperation.Create
             
             ShotgunFile {
-                project: node("/project")
-                release: release
-                user: node("/prod")
+                id: sg_releaseMayaLod
+                name: "sg_releaseMayaLod"
+                project: node("/project/sg_project")
+                release: sg_releasePublishEvent
+                user: node("/sg_user")
             }
             
         }
@@ -77,7 +82,7 @@ Branch {
         // }
     }
     
-    Branch {
+    Folder {
         id: work
         name: "work"
         pattern: "work/{USER}/"

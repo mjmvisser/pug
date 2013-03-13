@@ -69,27 +69,27 @@ Config {
     }
     
     contents: Network {
-        Branch {
+        Folder {
             id: root
         	objectName: "root"
         	pattern: "/usr/tmp/testconfig/prod/projects/"
         }
         
-        Branch {
+        Folder {
             id: project
         	objectName: "project"
         	pattern: "{PROJECT}/"
             input: root
         }
         
-        Branch {
+        Folder {
             id: sequence
         	objectName: "sequence"
         	pattern: "shots/{SEQUENCE}/"
         	input: project
         }
         
-        Branch {
+        Folder {
             id: shot
         	objectName: "shot"
         	pattern: "{SHOT}/"

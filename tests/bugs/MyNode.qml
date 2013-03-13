@@ -6,6 +6,6 @@ Process {
     
     onCook: {
         foo = env.FOO;
-        cooked(Node.Cooked);
+        cooked(DeprecatedNode.Cooked);
     }
 }

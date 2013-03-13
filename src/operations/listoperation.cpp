@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "listoperation.h"
-#include "branchbase.h"
+#include "branch.h"
 
 ListOperationAttached::ListOperationAttached(QObject *parent) :
     OperationAttached(parent)
@@ -12,7 +12,7 @@ void ListOperationAttached::run()
 {
     info() << "Listing" << node();
     trace() << node() << ".run()";
-    BranchBase *branch = qobject_cast<BranchBase *>(node());
+    Branch *branch = qobject_cast<Branch *>(node());
 
     if (branch) {
         for (int index = 0; index < branch->details().property("length").toInt(); index++) {

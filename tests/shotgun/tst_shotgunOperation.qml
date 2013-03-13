@@ -112,7 +112,7 @@ PugTestCase {
             Field { name: "EXT" }
         ]
 
-        Branch {
+        Folder {
             id: prod
             name: "prod"
             pattern: "{ROOT}/"
@@ -122,7 +122,7 @@ PugTestCase {
             }
         }
         
-        Branch {
+        Folder {
             id: project
             name: "project"
             pattern: "projects/{PROJECT}/"
@@ -133,7 +133,7 @@ PugTestCase {
             }
         }
         
-        Branch {
+        Folder {
             id: transfer
             name: "transfer"
             root: project
@@ -144,7 +144,7 @@ PugTestCase {
                 project: sg_project
             }
 
-            Branch {
+            Folder {
                 id: transferRelease
                 name: "transferRelease"
                 pattern: "release/{VARIATION}/v{VERSION}/"
@@ -193,7 +193,7 @@ PugTestCase {
                 }
             }
 
-            Branch {
+            Folder {
                 id: transferWork
                 name: "transferWork"
                 pattern: "work/{USER}/"
@@ -207,7 +207,7 @@ PugTestCase {
             }
         }
         
-        Branch {
+        Folder {
             id: seq
             name: "seq"
             pattern: "shots/{SEQUENCE}/"
@@ -219,7 +219,7 @@ PugTestCase {
             }
         }
         
-        Branch {
+        Folder {
             id: shot
             name: "shot"
             pattern: "{SHOT}/"
@@ -232,7 +232,7 @@ PugTestCase {
             }
         }
         
-        Branch {
+        Folder {
             id: comp
             name: "comp"
             pattern: "{STEP}/"
@@ -242,7 +242,7 @@ PugTestCase {
                 id: sg_step
             }
             
-            Branch {
+            Folder {
                 id: compRelease
                 name: "compRelease"
                 pattern: "release/{VARIATION}/v{VERSION}/"
@@ -285,7 +285,7 @@ PugTestCase {
                 }
             }
             
-            Branch {
+            Folder {
                 id: compWork
                 name: "compWork"
                 pattern: "work/{USER}/"

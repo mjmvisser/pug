@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import Pug 1.0
 
-Branch {
+Folder {
     constraints: fields.DEPARTMENT === "test" && fields.VARIATION == "pl" && fields.RES == "2k" && fields.FORMAT == "dpx" && fields.EXT == "dpx"
     
     contents: Network {

@@ -4,7 +4,7 @@ import Pug 1.0
 Process {
     id: self
     count: scene !== null ? scene.details.length : 0
-    property var scene
+    property File scene
 
     inputs: [
         Input { name: "scene" }

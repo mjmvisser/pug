@@ -1,18 +1,18 @@
 #include <QDebug>
 
 #include "root.h"
-#include "branch.h"
+#include "folder.h"
 #include "operation.h"
 
 Root::Root(QObject *parent) :
-        BranchBase(parent)
+        Branch(parent)
 {
     setLogLevel(Log::Warning);
 }
 
 const QVariant Root::parse(const QString nodeName, const QString path)
 {
-    Branch *branch = qobject_cast<Branch *>(node(nodeName));
+    Folder *branch = qobject_cast<Folder *>(node(nodeName));
     if (branch)
         return branch->parse(path);
     else
@@ -21,7 +21,7 @@ const QVariant Root::parse(const QString nodeName, const QString path)
 
 const QString Root::map(const QString nodeName, const QVariant fields)
 {
-    Branch *branch = qobject_cast<Branch *>(node(nodeName));
+    Folder *branch = qobject_cast<Folder *>(node(nodeName));
     if (branch)
         return branch->map(fields);
     else
@@ -79,18 +79,18 @@ void Root::operations_clear(QQmlListProperty<Operation> *prop)
 }
 
 
-BranchBase *Root::findBranch(const QString path)
+Branch *Root::findBranch(const QString path)
 {
     trace() << ".findBranch(" << path << ")";
     return findBranch(this, path);
 }
 
-BranchBase *Root::findBranch(BranchBase* branch, const QString path)
+Branch *Root::findBranch(Branch* branch, const QString path)
 {
     trace() << ".findBranch(" << branch << "," << path << ")";
-    BranchBase *result = 0;
+    Branch *result = 0;
     foreach (QObject *o, branch->children()) {
-        BranchBase *child = qobject_cast<BranchBase *>(o);
+        Branch *child = qobject_cast<Branch *>(o);
         if (child) {
             debug() << "checking" << child;
             QVariant fields = child->parse(path);

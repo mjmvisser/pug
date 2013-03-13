@@ -28,7 +28,7 @@ PugTestCase {
         dependencies: update
     }
  
-    Branch {
+    Folder {
         id: branch
         pattern: tmpDir + "filetests/"
     

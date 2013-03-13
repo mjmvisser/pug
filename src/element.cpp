@@ -18,7 +18,7 @@
     \brief Elements encapsulate the path of a directory, a file, or a sequence of files.
 
     Elements encapsulate the path of a directory, a file, or a sequence of files.
-    BranchBase-derived classes contain a list of elements, each which is an instance of Element.
+    Branch-derived classes contain a list of elements, each which is an instance of Element.
     Elements have convenience read-only properties that return the directory, baseName, frameSpec and extension
     of their path. They also store a FrameList object and corresponding read-only frames convenience property.
 */

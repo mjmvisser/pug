@@ -1,14 +1,12 @@
 import Pug 1.0
 
-import "js/shotgunutils.js" as ShotgunUtils
-
 ShotgunEntity {
     shotgunEntity: "Attachment"
 
     property var project
     property var release
-    property var thumbnail
-    property var filmstrip
+    property Node thumbnail
+    property Node filmstrip
     property var user
 
     inputs: [
@@ -20,7 +18,6 @@ ShotgunEntity {
     ]
 
     ShotgunField {
-        id: thisFileField
         shotgunField: "this_file"
         urlType: ShotgunField.Local
     }
@@ -38,15 +35,15 @@ ShotgunEntity {
     }
 
     ShotgunField {
-        id: thumbnailField
         shotgunField: "image"
-        value: thumbnail
+        type: ShotgunField.Path
+        file: thumbnail
     }
 
     ShotgunField {
-        id: filmstripField
         shotgunField: "filmstrip_image"
-        value: thumbnail
+        type: ShotgunField.Path
+        file: thumbnail
     }
     
     ShotgunField {

@@ -42,7 +42,7 @@ PugTestCase {
             Field { name: "PROJECT" }
         ]
 
-        Branch {
+        Folder {
             id: project
             name: "project"
             pattern: "/prod/projects/{PROJECT}"

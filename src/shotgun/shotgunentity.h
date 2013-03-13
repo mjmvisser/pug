@@ -4,16 +4,16 @@
 #include <QString>
 #include <QQmlListProperty>
 
-#include "nodebase.h"
-#include "branchbase.h"
+#include "node.h"
+#include "branch.h"
 #include "shotgunoperation.h"
 #include "shotgunfield.h"
 
-class ShotgunEntity : public NodeBase
+class ShotgunEntity : public Node
 {
     Q_OBJECT
     Q_PROPERTY(QString shotgunEntity READ shotgunEntityName WRITE setShotgunEntityName NOTIFY shotgunEntityNameChanged)
-    Q_PROPERTY(BranchBase *branch READ branch NOTIFY branchChanged);
+    Q_PROPERTY(Branch *branch READ branch NOTIFY branchChanged);
     Q_PROPERTY(QQmlListProperty<ShotgunField> shotgunFields READ shotgunFields_ NOTIFY shotgunFieldsChanged)
 public:
     explicit ShotgunEntity(QObject *parent = 0);
@@ -21,8 +21,8 @@ public:
     const QString shotgunEntityName() const;
     void setShotgunEntityName(const QString);
 
-    const BranchBase *branch() const;
-    BranchBase *branch();
+    const Branch *branch() const;
+    Branch *branch();
 
     QQmlListProperty<ShotgunField> shotgunFields_();
     // filters for find
@@ -36,7 +36,7 @@ public:
 
 signals:
     void shotgunEntityNameChanged(const QString shotgunEntity);
-    void branchChanged(const BranchBase *branch);
+    void branchChanged(const Branch *branch);
     void shotgunFieldsChanged();
 
     void shotgunPull(const QVariant context, Shotgun *shotgun);

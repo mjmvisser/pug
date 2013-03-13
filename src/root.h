@@ -1,11 +1,11 @@
 #ifndef ROOT_H
 #define ROOT_H
 
-#include "branchbase.h"
+#include "branch.h"
 
 class Operation;
 
-class Root : public BranchBase
+class Root : public Branch
 {
     Q_OBJECT
     Q_PROPERTY(QQmlListProperty<Operation> operations READ operations_ NOTIFY operationsChanged)
@@ -16,7 +16,7 @@ public:
 
     Q_INVOKABLE const QVariant parse(const QString nodeName, const QString path);
     Q_INVOKABLE const QString map(const QString nodeName, const QVariant fields);
-    Q_INVOKABLE BranchBase *findBranch(const QString path);
+    Q_INVOKABLE Branch *findBranch(const QString path);
 
     Q_INVOKABLE Operation *findOperation(const QString name);
 
@@ -26,7 +26,7 @@ signals:
     void operationsChanged();
 
 private:
-    BranchBase *findBranch(BranchBase *branch, const QString path);
+    Branch *findBranch(Branch *branch, const QString path);
 
     // operations property
     static void operations_append(QQmlListProperty<Operation> *, Operation *);

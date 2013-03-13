@@ -1,10 +1,10 @@
 #include "shotgunentity.h"
 #include "shotgunfield.h"
-#include "branchbase.h"
+#include "branch.h"
 #include "shotgunoperation.h"
 
 ShotgunEntity::ShotgunEntity(QObject *parent) :
-    NodeBase(parent)
+    Node(parent)
 {
     setActive(true);
 
@@ -18,9 +18,9 @@ ShotgunEntity::ShotgunEntity(QObject *parent) :
 
 void ShotgunEntity::componentComplete()
 {
-    NodeBase::componentComplete();
+    Node::componentComplete();
     if (branch())
-        connect(branch(), &NodeBase::countChanged, this, &NodeBase::setCount);
+        connect(branch(), &Node::countChanged, this, &Node::setCount);
 
     updateCount();
 }
@@ -38,15 +38,15 @@ void ShotgunEntity::setShotgunEntityName(const QString sen)
     }
 }
 
-const BranchBase *ShotgunEntity::branch() const
+const Branch *ShotgunEntity::branch() const
 {
     // TODO: how do we emit branchChanged() when the parent changes?
-    return parent<BranchBase>();
+    return parent<Branch>();
 }
 
-BranchBase *ShotgunEntity::branch()
+Branch *ShotgunEntity::branch()
 {
-    return parent<BranchBase>();
+    return parent<Branch>();
 }
 
 QQmlListProperty<ShotgunField> ShotgunEntity::shotgunFields_()
@@ -118,7 +118,7 @@ void ShotgunEntity::onShotgunPull(const QVariant context, Shotgun *shotgun)
         error() << "Shotgun pull does not support branches with multiple details (" << branch() << ")";
         emit shotgunPulled(OperationAttached::Error);
     } else {
-        error() << "Branch" << branch() << "has no details";
+        error() << "Folder" << branch() << "has no details";
         emit shotgunPulled(OperationAttached::Error);
     }
 }
@@ -155,7 +155,7 @@ void ShotgunEntity::onShotgunPush(const QVariant context, Shotgun *shotgun)
         connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
                 this, &ShotgunEntity::onShotgunCreateError);
     } else {
-        error() << "Branch" << branch() << "has no details";
+        error() << "Folder" << branch() << "has no details";
         emit shotgunPushed(OperationAttached::Error);
     }
 }
