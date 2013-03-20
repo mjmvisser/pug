@@ -41,7 +41,7 @@ ShotgunEntity {
         var elementsView = Util.elementsView(parent);
 
         try {        
-            return elementsView.elements[index].frames[0].frame;
+            return elementsView.elements[index].firstFrame();
         } catch (e) {
             return null;
         } finally {
@@ -53,8 +53,7 @@ ShotgunEntity {
         var elementsView = Util.elementsView(parent);
         
         try {        
-            var numFrames = elementsView.elements[index].frames.length;
-            return elementsView.elements[index].frames[numFrames-1].frame;
+            return elementsView.elements[index].lastFrame();
         } catch (e) {
             return null;
         } finally {

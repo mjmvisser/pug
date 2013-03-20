@@ -1,6 +1,6 @@
 #include "detailsview.h"
 
-DetailsView::DetailsView(QObject *parent, Node *node) :
+DetailsView::DetailsView(Node *node, QObject *parent) :
     PugItem(parent),
     m_node(node)
 {

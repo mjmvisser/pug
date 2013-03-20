@@ -134,7 +134,7 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<Output>(uri, 1, 0, "Output");
     qmlRegisterType<Param>(uri, 1, 0, "Param");
     qmlRegisterType<Node>(uri, 1, 0, "Node");
-    qmlRegisterType<ElementsView>(uri, 1, 0, "ElementsView");
+    qmlRegisterType<ElementsView>();
     qmlRegisterType<ElementView>();
     qmlRegisterType<FrameView>();
     qmlRegisterType<Field>(uri, 1, 0, "Field");

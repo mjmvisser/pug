@@ -58,7 +58,7 @@ bool Util::copy(const QString src, const QString dest)
 
 ElementsView *Util::elementsView(Node *node)
 {
-    // TODO: probably shouldn't have a parent
+    // no parent means V8 takes ownership
     ElementsView *obj = new ElementsView(node);
     return obj;
 }

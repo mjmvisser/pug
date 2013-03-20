@@ -8,7 +8,7 @@ class DetailsView : public PugItem
 {
     Q_OBJECT
 public:
-    explicit DetailsView(QObject *parent, Node *node);
+    explicit DetailsView(Node *node, QObject *parent);
 
     const Node *node() const;
     Node *node();

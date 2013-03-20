@@ -2,12 +2,12 @@
 
 #include "elementsview.h"
 
-ElementsView::ElementsView(QObject *parent) :
-    DetailsView(parent, qobject_cast<Node *>(parent))
+ElementsView::ElementsView(Node *node, QObject *parent) :
+    DetailsView(node, parent)
 {
-    Q_ASSERT(node());
-    connect(node(), &Node::countChanged, this, &ElementsView::sync);
-    connect(node(), &Node::detailsChanged, this, &ElementsView::elementsChanged);
+    Q_ASSERT(node);
+    connect(node, &Node::countChanged, this, &ElementsView::sync);
+    connect(node, &Node::detailsChanged, this, &ElementsView::elementsChanged);
     sync();
 }
 
@@ -66,7 +66,7 @@ void ElementsView::sync()
 
     // add missing elements
     for (int i = m_elements.length(); i < count; i++)
-        m_elements.append(new ElementView(this, node(), i));
+        m_elements.append(new ElementView(node(), i, this));
 
     emit elementsChanged();
 

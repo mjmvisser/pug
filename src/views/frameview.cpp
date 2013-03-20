@@ -2,8 +2,8 @@
 #include "elementsview.h"
 #include "filepattern.h"
 
-FrameView::FrameView(QObject *parent, Node *node, int elementIndex, int frameIndex) :
-    DetailsView(parent, node),
+FrameView::FrameView(Node *node, int elementIndex, int frameIndex, QObject *parent) :
+    DetailsView(node, parent),
     m_elementIndex(elementIndex),
     m_frameIndex(frameIndex)
 {

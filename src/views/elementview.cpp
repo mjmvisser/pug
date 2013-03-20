@@ -18,8 +18,8 @@
     \brief
 */
 
-ElementView::ElementView(QObject *parent, Node *node, int index) :
-    DetailsView(parent, node),
+ElementView::ElementView(Node *node, int index, QObject *parent) :
+    DetailsView(node, parent),
     m_index(index)
 {
     Q_ASSERT(index >= 0);
@@ -91,7 +91,7 @@ int ElementView::frameCount() const
 void ElementView::setFrameCount(int count)
 {
     for (int i = m_frames.length(); i < count; i++)
-        m_frames.append(new FrameView(this, node(), m_index, i));
+        m_frames.append(new FrameView(node(), m_index, i, this));
 }
 
 const QDateTime ElementView::timestamp() const
@@ -183,7 +183,7 @@ void ElementView::append(const QFileInfo &info)
 
 
             // add the new frame
-            FrameView *newFrame = new FrameView(this, node(), m_index, m_frames.length());
+            FrameView *newFrame = new FrameView(node(), m_index, m_frames.length(), this);
             m_frames.append(newFrame);
             newFrame->setFrame(frame);
             newFrame->setTimestamp(info.lastModified());
@@ -206,6 +206,32 @@ void ElementView::scan(const QFileInfoList &entries)
             append(info);
         }
     }
+}
+
+const QList<int> ElementView::framesList() const
+{
+    QList<int> result;
+    for (int i = 0; i < m_frames.length(); i++)
+        result.append(i);
+    qSort(result);
+    return result;
+}
+
+int ElementView::firstFrame() const
+{
+    const QList<int> frames = framesList();
+    return !frames.empty() ? frames.first() : -1;
+}
+
+int ElementView::lastFrame() const
+{
+    const QList<int> frames = framesList();
+    return !frames.empty() > 0 ? frames.last() : -1;
+}
+
+const QString ElementView::framesPattern() const
+{
+    Q_ASSERT(false); // not implemented
 }
 
 Node::Status ElementView::status() const
@@ -267,7 +293,7 @@ void ElementView::sync()
 
     // add missing frames
     for (int i = m_frames.length(); i < frameCount; i++)
-        m_frames.append(new FrameView(this, node(), m_index, i));
+        m_frames.append(new FrameView(node(), m_index, i, this));
 
     emit elementChanged();
 

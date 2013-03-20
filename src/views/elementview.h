@@ -18,7 +18,7 @@ class ElementView : public DetailsView
     Q_PROPERTY(QDateTime timestamp READ timestamp WRITE setTimestamp NOTIFY elementChanged)
     Q_PROPERTY(QQmlListProperty<FrameView> frames READ frames_ NOTIFY elementChanged)
 public:
-    explicit ElementView(QObject *parent, Node *node, int index);
+    explicit ElementView(Node *node, int index, QObject *parent);
 
     const QString pattern() const;
     void setPattern(const QString);
@@ -36,6 +36,11 @@ public:
 
     const FrameView *frameAt(int index) const;
     FrameView *frameAt(int index);
+
+    Q_INVOKABLE const QList<int> framesList() const;
+    Q_INVOKABLE int firstFrame() const;
+    Q_INVOKABLE int lastFrame() const;
+    Q_INVOKABLE const QString framesPattern() const;
 
     int frameCount() const;
     void setFrameCount(int);

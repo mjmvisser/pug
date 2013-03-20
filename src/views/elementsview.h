@@ -12,7 +12,7 @@ class ElementsView : public DetailsView
     Q_OBJECT
     Q_PROPERTY(QQmlListProperty<ElementView> elements READ elements_ NOTIFY elementsChanged())
 public:
-    explicit ElementsView(QObject *parent = 0);
+    explicit ElementsView(Node *node, QObject *parent = 0);
 
     QQmlListProperty<ElementView> elements_();
 
