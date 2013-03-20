@@ -97,17 +97,9 @@ void TractorOperationAttached::generateTask()
         return;
     }
 
-    QString branchPath;
-    Element *element = branch->element(0);
-    if (element)
+    QString branchPath = branch->details().property(0).property("element").property("pattern").toString();
+    if (branchPath.isEmpty())
     {
-        branchPath = element->pattern();
-
-        if (branchPath.isEmpty()) {
-            error() << branch << "has no element path";
-            return;
-        }
-    } else {
         error() << branch << ".elements has no entries";
         return;
     }
@@ -327,7 +319,7 @@ TractorJob *TractorOperation::tractorJob()
 void TractorOperation::run(Node *node, const QVariant context, bool reset)
 {
     trace() << ".run(" << node << "," << context << "," << reset << ")";
-    m_target->resetAll(node);
+    m_target->resetAll(node, context.toMap());
     Operation::run(node, context, reset);
 
     if (m_mode == TractorOperation::Generate || m_mode == TractorOperation::Submit) {

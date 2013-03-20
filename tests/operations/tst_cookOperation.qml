@@ -74,42 +74,62 @@ PugTestCase {
                     pattern: "{FILENAME}"
                 }
 
-                DeprecatedNode {
+                Node {
                     id: copier
                     name: "copier"
-                    count: input ? input.details.length : 0
+                    count: input ? input.count : 0
                     
                     property var input: workFile
 
                     inputs: Input { name: "input" }
 
+                    signal updateAtIndex(int index, var context)
+                    signal updatedAtIndex(int index, int status)
+                    
+                    onUpdateAtIndex: {
+                        trace("onUpdateAtIndex(" + index + ", " + context);
+
+                        var inputElementsView = Util.elementsView(input);
+                        var elementsView = Util.elementsView(copier);
+                        
+                        var inputPath = elementsView.elements[index].path();
+                        var outputDir = inputElementsView.elements[index].directory() + "temp/";
+                        var outputPath = outputDir + "temp_" + inputElementsView.elements[index].baseName() + "." + inputElementsView.elements[index].extension();
+
+                        elementsView.elements[index].pattern = outputPath;
+                        details[index].context = input.details[index].context;
+                        for (var attrname in context) {
+                            if (context.hasOwnProperty(attrname)) {
+                                details[index].context[attrname] = context[attrname];
+                            }
+                        }
+                        
+                        inputElementsView.destroy();
+                        elementsView.destroy();
+                        
+                        updatedAtIndex(index, Operation.Finished);
+                    }
+
                     signal cookAtIndex(int index, var context)
                     signal cookedAtIndex(int index, int status)
                     
                     onCookAtIndex: {
-                        debug("onCookAtIndex");
+                        trace("onCookAtIndex(" + index + ", " + context);
                         
-                        debug("input is " + copier.input);
-                        debug("index is " + index);
-                        debug("input.details[index].element is " + copier.input.element(index));
-                        debug("input.details[index].element.path() is " + copier.input.element(index).path());
-                        debug("input.details[index].context " + JSON.stringify(copier.input.details[index].context));
-                        debug("input.count is " + input.count);
-                        debug("count is " + count);
-                        var inputPath = copier.input.element(index).path();
-                        var outputDir = copier.input.element(index).directory() + "temp/";
-                        var outputPath = outputDir + "temp_" + copier.input.element(index).baseName() + "." + copier.input.element(index).extension();
+                        var inputElementsView = Util.elementsView(input);
+                        var elementsView = Util.elementsView(copier);
+                        
+                        var inputPath = inputElementsView.elements[index].path();
+                        var outputDir = elementsView.elements[index].directory();
+                        var outputPath = elementsView.elements[index].path();
 
-                        debug("--- creating " + outputPath + " from " + inputPath);
                         if (!Util.exists(outputDir))
                             Util.mkpath(outputDir);
                         Util.copy(inputPath, outputPath);
                         
-                        var newElement = Util.element();
-                        newElement.pattern = outputPath;
+                        inputElementsView.destroy();
+                        elementsView.destroy();
                         
-                        details[index] = {"element": newElement, "context": copier.input.details[index].context};
-                        detailsChanged();
                         cookedAtIndex(index, Operation.Finished);
                     }
                 }
@@ -123,13 +143,9 @@ PugTestCase {
             }
         }
         
-        DeprecatedNode {
+        Node {
             id: nodeA
             name: "nodeA"
-    
-            // onInputsChanged: {
-                // inputChanged(self.input);
-            // }
     
             count: 5
             
@@ -174,13 +190,17 @@ PugTestCase {
 
         update.run(cookFile, context);
         updateSpy.wait(500);
+
+        var workFileElementsView = Util.elementsView(workFile);
+        var cookFileElementsView = Util.elementsView(cookFile);
+
         compare(update.status, Operation.Finished);
         compare(workFile.UpdateOperation.status, Operation.Finished);
         compare(cookFile.UpdateOperation.status, Operation.Finished);
-        compare(workFile.element(0).path(), workPaths[0]);
-        compare(workFile.element(1).path(), workPaths[1]);
-        compare(workFile.element(2).path(), workPaths[2]);
-        compare(cookFile.details.length, 0);
+        compare(workFileElementsView.elements[0].path(), workPaths[0]);
+        compare(workFileElementsView.elements[1].path(), workPaths[1]);
+        compare(workFileElementsView.elements[2].path(), workPaths[2]);
+        compare(cookFile.details.length, 3);
 
         cook.run(cookFile, context);
         cookSpy.wait(1000);
@@ -193,9 +213,12 @@ PugTestCase {
         compare(workFile.CookOperation.status, Operation.Finished);
         compare(copier.details.length, 3);
         compare(cookFile.details.length, 3);
-        compare(cookFile.element(0).path(), cookPaths[0]);
-        compare(cookFile.element(1).path(), cookPaths[1]);
-        compare(cookFile.element(2).path(), cookPaths[2]);
+        compare(cookFileElementsView.elements[0].path(), cookPaths[0]);
+        compare(cookFileElementsView.elements[1].path(), cookPaths[1]);
+        compare(cookFileElementsView.elements[2].path(), cookPaths[2]);
+        
+        workFileElementsView.destroy();
+        cookFileElementsView.destroy();
     }
     
     function test_cookCompound() {

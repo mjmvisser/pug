@@ -1,6 +1,6 @@
 import Pug 1.0
 
-DeprecatedNode {
+Node {
     id: self
     property Node input
 
@@ -10,7 +10,7 @@ DeprecatedNode {
 
     details: nodeC.details
 
-    DeprecatedNode {
+    Node {
         id: nodeB
         name: "nodeB"
 
@@ -31,7 +31,7 @@ DeprecatedNode {
         }
     }
 
-    DeprecatedNode {
+    Node {
         id: nodeC
         name: "nodeC"
         property Node input: nodeB

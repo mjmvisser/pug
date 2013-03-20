@@ -148,13 +148,18 @@ PugTestCase {
         var releasePath_v003 = tmpDir + "releasetests/abc/foo/release/main/v003/bar.txt";
         var releasePath_v004 = tmpDir + "releasetests/abc/foo/release/main/v004/bar.txt";
         
+        var workFileElementsView = Util.elementsView(workFile);
+        var releaseFileElementsView = Util.elementsView(releaseFile);
+        
         release.run(workFile, context);
         releaseSpy.wait(500);
         compare(release.status, Operation.Finished);
         compare(workFile.details.length, 1);
-        compare(workFile.element(0).path(), workPath);
+        compare(workFileElementsView.elements.length, 1);
+        compare(workFileElementsView.elements[0].path(), workPath);
         compare(workFile.ReleaseOperation.status, Operation.Finished);
-        compare(releaseFile.element(0).path(), releasePath_v003);
+        compare(releaseFileElementsView.elements.length, 1);
+        compare(releaseFileElementsView.elements[0].path(), releasePath_v003);
         compare(releaseFile.details.length, 1);
         verify(Util.exists(releasePath_v003));
         
@@ -164,8 +169,12 @@ PugTestCase {
         compare(workFile.ReleaseOperation.status, Operation.Finished);
         compare(workFile.details.length, 1);
         compare(releaseFile.details.length, 1);
-        compare(releaseFile.element(0).path(), releasePath_v004);
+        compare(releaseFileElementsView.elements.length, 1);
+        compare(releaseFileElementsView.elements[0].path(), releasePath_v004);
         verify(Util.exists(releasePath_v004));
+        
+        workFileElementsView.destroy();
+        releaseFileElementsView.destroy();
     }
     
     function zeroFill( number, width ) {
@@ -180,6 +189,8 @@ PugTestCase {
         var context = {ROOT: tmpDir, FOO: "foo", DAG: "dag"};
         update.run(workSeq, context);
         updateSpy.wait(500);
+
+        var releaseSeqElementsView = Util.elementsView(releaseSeq);
         
         release.run(workSeq, context);
         releaseSpy.wait(500);
@@ -193,12 +204,14 @@ PugTestCase {
         
         compare(workSeq.details.length, 1);
         compare(releaseSeq.details.length, 1);
-        compare(releaseSeq.element(0).pattern, releasePath);
-        compare(releaseBranch.element(0).path(), tmpDir + "releasetests/abc/foo/release/main/v003/");
+        compare(releaseSeqElementsView.elements.length, 1);
+        compare(releaseSeqElementsView.elements[0].pattern, releasePath);
         
         for (var frame = 1; frame <= 4; frame++) {
             var framePath = releasePath.replace("%04d", zeroFill(frame, 4));
             verify(Util.exists(framePath), framePath);
         }
+        
+        releaseSeqElementsView.destroy();
     }
 }

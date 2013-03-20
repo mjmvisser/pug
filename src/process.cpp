@@ -5,10 +5,11 @@
 #include <QJsonDocument>
 
 #include "process.h"
-#include "element.h"
+//#include "elementmanager.h"
+//#include "elementview.h"
 
 Process::Process(QObject *parent) :
-    DeprecatedNode(parent),
+    Node(parent),
     m_ignoreExitCode(false)
 {
     connect(this, &Process::cookAtIndex, this, &Process::onCookAtIndex);
@@ -145,11 +146,11 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     debug() << "stdout:" << stdout;
 
     QVariantMap context = m_contexts.take(process);
-    if (!parseDetails(stdout, context)) {
+//    if (!parseDetails(stdout, context)) {
         setDetail(i, "context", toScriptValue(context));
         setDetail(i, "process", "stdout", toScriptValue(stdout));
         setDetail(i, "process", "exitCode", toScriptValue(process->exitCode()));
-    }
+    //}
 
     m_processes[i] = 0;
     process->deleteLater();
@@ -158,63 +159,66 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     emit cookedAtIndex(i, status);
 }
 
-bool Process::parseDetails(const QString stdout, const QVariantMap context)
-{
-    trace() << ".parseDetails(" << stdout << "," << context << ")";
-    QRegularExpression regex("^begin-json details$(.*)^====$",
-            QRegularExpression::DotMatchesEverythingOption|
-            QRegularExpression::MultilineOption);
-
-    QRegularExpressionMatch match = regex.match(stdout);
-
-    if (match.hasMatch()) {
-        QJsonDocument json = QJsonDocument::fromJson(match.captured(1).trimmed().toUtf8());
-        if (json.isArray()) {
-            QVariantList l = json.toVariant().toList();
-
-            int index = details().property("length").toInt();
-            foreach (const QVariant v, l) {
-                QVariantMap m = v.toMap();
-
-                QMapIterator<QString, QVariant> i(m);
-                while (i.hasNext()) {
-                    i.next();
-                    if (i.key() == "element") {
-                        Element *element = new Element(this);
-                        element->setPattern(i.value().toMap()["pattern"].toString());
-
-                        // TODO: frames
-
-                        setDetail(index, i.key(), newQObject(element));
-                    } else if (i.key() == "context") {
-                        QVariantMap detailContext = m["context"].toMap();
-                        // merge contexts
-                        QMapIterator<QString, QVariant> i(context);
-                        while (i.hasNext()) {
-                            i.next();
-                            // don't overwrite
-                            if (!detailContext.contains(i.key()))
-                                detailContext.insert(i.key(), i.value());
-                        }
-                        setDetail(index, i.key(), toScriptValue(detailContext));
-                    } else {
-                        setDetail(index, i.key(), toScriptValue(i.value()));
-                    }
-                }
-                index++;
-            }
-
-            return true;
-        } else {
-            error() << "json written to stdout is not an array";
-            return false;
-        }
-    } else {
-        // no json matched
-        debug() << "no json matched from" << stdout;
-        return false;
-    }
-}
+//bool Process::parseDetails(const QString stdout, const QVariantMap context)
+//{
+//    trace() << ".parseDetails(" << stdout << "," << context << ")";
+//    QRegularExpression regex("^begin-json details$(.*)^====$",
+//            QRegularExpression::DotMatchesEverythingOption|
+//            QRegularExpression::MultilineOption);
+//
+//    QRegularExpressionMatch match = regex.match(stdout);
+//
+//    if (match.hasMatch()) {
+//        QJsonDocument json = QJsonDocument::fromJson(match.captured(1).trimmed().toUtf8());
+//        if (json.isArray()) {
+//            QVariantList l = json.toVariant().toList();
+//
+//            ElementManagerAttached *elementManagerAttached = attachedPropertiesObject<ElementManager, ElementManagerAttached>();
+//            Q_ASSERT(elementManagerAttached);
+//
+//            int index = e;
+//            foreach (const QVariant v, l) {
+//                QVariantMap m = v.toMap();
+//
+//                QMapIterator<QString, QVariant> i(m);
+//                while (i.hasNext()) {
+//                    i.next();
+//                    if (i.key() == "element") {
+//                        Element *element = new Element(this);
+//                        element->setPattern(i.value().toMap()["pattern"].toString());
+//
+//                        // TODO: frames
+//
+//                        setDetail(index, i.key(), newQObject(element));
+//                    } else if (i.key() == "context") {
+//                        QVariantMap detailContext = m["context"].toMap();
+//                        // merge contexts
+//                        QMapIterator<QString, QVariant> i(context);
+//                        while (i.hasNext()) {
+//                            i.next();
+//                            // don't overwrite
+//                            if (!detailContext.contains(i.key()))
+//                                detailContext.insert(i.key(), i.value());
+//                        }
+//                        setDetail(index, i.key(), toScriptValue(detailContext));
+//                    } else {
+//                        setDetail(index, i.key(), toScriptValue(i.value()));
+//                    }
+//                }
+//                index++;
+//            }
+//
+//            return true;
+//        } else {
+//            error() << "json written to stdout is not an array";
+//            return false;
+//        }
+//    } else {
+//        // no json matched
+//        debug() << "no json matched from" << stdout;
+//        return false;
+//    }
+//}
 
 void Process::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {

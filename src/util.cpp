@@ -56,7 +56,9 @@ bool Util::copy(const QString src, const QString dest)
     return QFile::copy(src, dest);
 }
 
-Element *Util::element()
+ElementsView *Util::elementsView(Node *node)
 {
-    return new Element;
+    // TODO: probably shouldn't have a parent
+    ElementsView *obj = new ElementsView(node);
+    return obj;
 }

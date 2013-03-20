@@ -1,34 +1,36 @@
-#ifndef FRAMELIST_H
-#define FRAMELIST_H
+#ifndef FRAMELISTVIEW_H
+#define FRAMELISTVIEW_H
 
 #include <QObject>
 #include <QVariantList>
 
 #include "pugitem.h"
+#include "node.h"
 
-class FrameList : public PugItem
+class FrameListView : public PugItem
 {
     Q_OBJECT
-    Q_PROPERTY(QVariantList frames READ frames WRITE setFrames NOTIFY framesChanged)
-    Q_PROPERTY(QString pattern READ pattern WRITE setPattern NOTIFY patternChanged)
+    Q_PROPERTY(QVariantList frames READ frames WRITE setFrames NOTIFY frameListChanged)
+    Q_PROPERTY(QString pattern READ pattern WRITE setPattern NOTIFY frameListChanged)
 public:
-    explicit FrameList(QObject *parent = 0);
+    explicit FrameListView(QObject *parent, Node *node, int index);
 
-    QVariantList frames();
     const QVariantList frames() const;
     void setFrames(const QVariantList);
 
     const QString pattern() const;
     void setPattern(const QString);
 
+    Q_INVOKABLE void clear();
     Q_INVOKABLE const QVariant firstFrame() const;
     Q_INVOKABLE const QVariant lastFrame() const;
 
     const QString toString() const;
 
+    DetailsManagerAttached::Status status() const;
+
 signals:
-    void framesChanged(const QVariantList& frames);
-    void patternChanged(const QString& pattern);
+    void frameListChanged();
 
 private:
     static const QString framesToPattern(const QVariantList &frames);
@@ -36,9 +38,8 @@ private:
     static const QVariantList sortAndRemoveDuplicates(const QVariantList &frames);
 
 private:
-    QVariantList m_frames;
+    Node *m_node;
+    int m_index;
 };
-
-Q_DECLARE_METATYPE(FrameList*) // makes available to QVariant
 
 #endif

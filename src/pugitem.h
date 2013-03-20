@@ -74,18 +74,33 @@ public:
         return qobject_cast<T *>(p);
     }
 
-    template <class T>
-    const T *attachedPropertiesObject(const QMetaObject *mo, bool create = true) const
+    template <class TA>
+    const TA *attachedPropertiesObject(const QMetaObject *mo, bool create = true) const
     {
         int idx = -1;
-        return qobject_cast<const T *>(qmlAttachedPropertiesObject(&idx, this, mo, create));
+        return qobject_cast<const TA *>(qmlAttachedPropertiesObject(&idx, this, mo, create));
     }
 
-    template <class T>
-    T *attachedPropertiesObject(const QMetaObject *mo, bool create = true)
+    template <class TA>
+    TA *attachedPropertiesObject(const QMetaObject *mo, bool create = true)
     {
         int idx = -1;
-        return qobject_cast<T *>(qmlAttachedPropertiesObject(&idx, this, mo, create));
+        return qobject_cast<TA *>(qmlAttachedPropertiesObject(&idx, this, mo, create));
+    }
+
+    // TODO: if T::Attached is defined, we only need T
+    template <class T, class TA>
+    const TA *attachedPropertiesObject(bool create = true) const
+    {
+        int idx = -1;
+        return qobject_cast<const TA *>(qmlAttachedPropertiesObject(&idx, this, &T::staticMetaObject, create));
+    }
+
+    template <class T, class TA>
+    TA *attachedPropertiesObject(bool create = true)
+    {
+        int idx = -1;
+        return qobject_cast<TA *>(qmlAttachedPropertiesObject(&idx, this, &T::staticMetaObject, create));
     }
 
     Q_INVOKABLE void trace(const QString message) const;
@@ -107,39 +122,6 @@ protected:
     virtual void classBegin() {};
     virtual void componentComplete() {};
 
-    template <typename T>
-    QJSValue toScriptValue(T value) const
-    {
-        QQmlContext *context = QQmlEngine::contextForObject(this);
-        Q_ASSERT(context);
-
-        return context->engine()->toScriptValue(value);
-    }
-
-    QJSValue newArray(uint length = 0) const
-    {
-        QQmlContext *context = QQmlEngine::contextForObject(this);
-        Q_ASSERT(context);
-
-        return context->engine()->newArray(length);
-    }
-
-    QJSValue newObject() const
-    {
-        QQmlContext *context = QQmlEngine::contextForObject(this);
-        Q_ASSERT(context);
-
-        return context->engine()->newObject();
-    }
-
-    QJSValue newQObject(QObject *object) const
-    {
-        QQmlContext *context = QQmlEngine::contextForObject(this);
-        Q_ASSERT(context);
-
-        return context->engine()->newQObject(object);
-    }
-
     Logger trace() const;
     Logger debug() const;
     Logger info() const;
@@ -157,6 +139,20 @@ private:
     mutable Log *m_log;
     Log::MessageType m_logLevel;
 };
+
+// http://stackoverflow.com/questions/123758/how-do-i-remove-code-duplication-between-similar-const-and-non-const-member-func
+// http://stackoverflow.com/questions/6483422/qt-qlist-const-correctness
+template<class T>
+inline const QList<T *>& unConstList(const QList<const T*>& list)
+{
+    return reinterpret_cast<const QList<T*>&>(const_cast<const QList<const T*>&>(list));
+}
+
+template<class T>
+inline const QList<const T *>& constList(const QList<T*>& list)
+{
+    return reinterpret_cast<const QList<const T*>&>(const_cast<const QList<T*>&>(list));
+}
 
 Q_DECLARE_METATYPE(PugItem*) // makes available to QVariant
 

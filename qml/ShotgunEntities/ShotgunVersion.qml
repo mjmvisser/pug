@@ -59,11 +59,36 @@ ShotgunEntity {
         type: ShotgunField.Path
     }
 
+    function _firstFrame(index) {
+        var elementsView = Util.elementsView(parent);
+
+        try {        
+            return elementsView.elements[index].frames[0].frame;
+        } catch (e) {
+            return null;
+        } finally {
+            elementsView.destroy();
+        }
+    }
+
+    function _lastFrame(index) {
+        var elementsView = Util.elementsView(parent);
+        
+        try {        
+            var numFrames = elementsView.elements[index].frames.length;
+            return elementsView.elements[index].frames[numFrames-1].frame;
+        } catch (e) {
+            return null;
+        } finally {
+            elementsView.destroy();
+        }
+    }
+
     ShotgunField {
         name: "sg_first_frame"
         shotgunField: "sg_first_frame"
         type: ShotgunField.Number
-        value: parent.details[index].element.firstFrame                         
+        value: _firstFrame(index)                         
 
     }
 
@@ -71,7 +96,7 @@ ShotgunEntity {
         name: "sg_last_frame"
         shotgunField: "sg_last_frame"
         type: ShotgunField.Number
-        value: parent.details[index].element.firstFrame                         
+        value: _lastFrame(index)                         
     }
     
     ShotgunField {

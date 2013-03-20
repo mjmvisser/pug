@@ -6,6 +6,8 @@
 #include <QList>
 #include <QString>
 #include <QVariant>
+#include <QFileInfoList>
+#include <QMap>
 
 #include "node.h"
 #include "field.h"
@@ -34,6 +36,8 @@ public:
     Field *findField(const QString name);
     const Field *findField(const QString name) const;
 
+    //bool hasField(const QString name) const;
+
     const QList<const Field *> fields(const QStringList fieldNameList = QStringList()) const;
 
     bool fieldsComplete(const QString pattern, const QVariantMap fields) const;
@@ -47,13 +51,10 @@ public:
     Q_INVOKABLE const QVariant parse(const QString path) const;
     Q_INVOKABLE const QString map(const QVariant fields) const;
 
-    Q_INVOKABLE const QStringList listMatchingPaths(const QVariantMap context) const;
-    Q_INVOKABLE void setPaths(const QStringList paths, const QVariantMap context);
+    Q_INVOKABLE const QMap<QString, QFileInfoList> listMatchingPatterns(const QVariantMap context) const;
+    //Q_INVOKABLE void setPaths(const QStringList paths, const QVariantMap context);
 
 signals:
-    void update(const QVariant context);
-    void updated(int status);
-
     void rootChanged(Branch *root);
     void patternChanged(const QString pattern);
 
@@ -62,7 +63,7 @@ protected:
     void setExactMatch(bool f);
 
 private:
-    const QStringList listMatchingPathsHelper(const QDir parentDir, const QVariantMap context) const;
+    const QMap<QString, QFileInfoList> listMatchingPatternsHelper(const QDir, const QVariantMap, const QMap<QString, QFileInfoList>) const;
     bool containsFields(const QVariantMap& needle, const QVariantMap& haystack) const;
 
     Branch *m_root;
@@ -70,6 +71,5 @@ private:
     QString m_pattern;
     bool m_exactMatchFlag;
 };
-Q_DECLARE_METATYPE(Branch*) // makes available to QVariant
 
 #endif // BRANCHBASE_H

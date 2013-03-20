@@ -31,15 +31,15 @@ TestCase {
         compare(param.text, "testText");
     }
 
-    DeprecatedNode {
+    Node {
         id: node
         name: "testNode"
     }
     
     function test_node() {
         verify(node);
-        verify(node.inherits("DeprecatedNode"));
-        compare(node.className, "DeprecatedNode");
+        verify(node.inherits("Node"));
+        compare(node.className, "Node");
         compare(node.name, "testNode");
         verify(node.node);
     }

@@ -5,80 +5,82 @@
 #include <QVariantList>
 #include <QSet>
 
-#include "framelist.h"
+#include "framelistview.h"
 
 /*!
-    \class FrameList
+    \class FrameListView
     \inmodule Pug
 */
 
 /*!
-    \qmltype FrameList
-    \instantiates FrameList
+    \qmltype FrameListView
+    \instantiates FrameListView
     \inqmlmodule Pug
-    \brief A FrameList represents a list of frames, which may or may not be contiguous.
+    \brief
 */
 
-FrameList::FrameList(QObject *parent) :
-    PugItem(parent)
+FrameListView::FrameListView(QObject *parent, Node *node, int index) :
+    PugItem(parent),
+    m_node(node),
+    m_index(index)
 {
+    Q_ASSERT(node);
+
+    connect(node, &Node::detailsChanged, this, &FrameListView::frameListChanged);
 }
 
-QVariantList FrameList::frames()
+const QVariantList FrameListView::frames() const
 {
-    return m_frames;
+     return parent<Node>()->detail(m_index, "element", "frames").toVariant().toList();
 }
 
-const QVariantList FrameList::frames() const
+void FrameListView::setFrames(const QVariantList fl)
 {
-    return m_frames;
-}
-
-void FrameList::setFrames(const QVariantList frames)
-{
-    // check that we can convert each frame to a int
-    foreach (QVariant v, frames) {
-        if (!v.canConvert<float>()) {
-            qWarning() << this << "invalid frame:" << v;
-            return;
+    if (frames() != fl) {
+        // check that we can convert each frame to a float
+        foreach (QVariant v, fl) {
+            if (!v.canConvert<float>()) {
+                qWarning() << this << "invalid frame:" << v;
+                return;
+            }
         }
-    }
 
-    QVariantList newFrames = sortAndRemoveDuplicates(frames);
+        QVariantList cfl = sortAndRemoveDuplicates(fl);
 
-    if (m_frames != newFrames) {
-        m_frames = newFrames;
-        emit patternChanged(framesToPattern(m_frames));
-        emit framesChanged(m_frames);
+        parent<Node>()->setDetail(m_index, "element", "frames", toScriptValue(cfl));
     }
 }
 
-const QVariant FrameList::firstFrame() const
+void FrameListView::clear()
 {
-    return m_frames.isEmpty() ? QVariant() : m_frames.first();
+    parent<Node>()->setDetail(m_index, "element", "frames", newArray());
 }
 
-const QVariant FrameList::lastFrame() const
+const QVariant FrameListView::firstFrame() const
 {
-    return m_frames.isEmpty() ? QVariant() : m_frames.last();
+    return frames().isEmpty() ? QVariant() : frames().first();
 }
 
-const QString FrameList::pattern() const
+const QVariant FrameListView::lastFrame() const
 {
-    return framesToPattern(m_frames);
+    return frames().isEmpty() ? QVariant() : frames().last();
 }
 
-void FrameList::setPattern(const QString pattern)
+const QString FrameListView::pattern() const
 {
-    const QVariantList newFrames = patternToFrames(pattern);
-    if (m_frames != newFrames) {
-        m_frames = newFrames;
-        emit patternChanged(framesToPattern(m_frames));
-        emit framesChanged(m_frames);
+    return framesToPattern(frames());
+}
+
+void FrameListView::setPattern(const QString p)
+{
+    if (pattern() != p) {
+        const QVariantList fl = patternToFrames(p);
+        parent<Node>()->setDetail(m_index, "element", "frames", toScriptValue(fl));
+        emit frameListChanged();
     }
 }
 
-const QString FrameList::toString() const
+const QString FrameListView::toString() const
 {
     return pattern();
 }
@@ -93,7 +95,7 @@ static const QString formatRange(float start, float end, float by)
         return QString("%1-%2x%3").arg(start).arg(end).arg(by);
 }
 
-const QString FrameList::framesToPattern(const QVariantList& frames)
+const QString FrameListView::framesToPattern(const QVariantList& frames)
 {
     if (frames.length() == 0) {
         return QString();
@@ -127,7 +129,7 @@ const QString FrameList::framesToPattern(const QVariantList& frames)
     }
 }
 
-const QVariantList FrameList::patternToFrames(const QString& pattern)
+const QVariantList FrameListView::patternToFrames(const QString& pattern)
 {
     QVariantList frames;
     QStringList patterns = pattern.split(',');
@@ -159,7 +161,7 @@ const QVariantList FrameList::patternToFrames(const QString& pattern)
     return sortAndRemoveDuplicates(frames);
 }
 
-const QVariantList FrameList::sortAndRemoveDuplicates(const QVariantList &frames)
+const QVariantList FrameListView::sortAndRemoveDuplicates(const QVariantList &frames)
 {
     // convert to float
     QList<float> floatFrames;

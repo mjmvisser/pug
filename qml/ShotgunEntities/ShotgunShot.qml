@@ -4,8 +4,8 @@ ShotgunEntity {
     shotgunEntity: "Shot"
 
     property var project
-    property var scene
-    property var sequence
+    property var scene: null
+    property var sequence: null
     
     
     inputs: [

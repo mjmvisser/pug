@@ -11,7 +11,6 @@
 #include "input.h"
 #include "output.h"
 #include "operation.h"
-#include "element.h"
 
 class Node : public PugItem
 {
@@ -26,13 +25,18 @@ class Node : public PugItem
     Q_PROPERTY(int index READ index WRITE setIndex NOTIFY indexChanged)
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
+    Q_ENUMS(Status)
 public:
+    enum Status { Invalid, UpToDate, OutOfDate, Missing };
+
     explicit Node(QObject *parent = 0);
 
     QQmlListProperty<Input> inputs_();
     QQmlListProperty<Output> outputs_();
     QQmlListProperty<Param> params_();
     QQmlListProperty<Node> nodes_();
+
+    const QList<const Input*> inputs() const;
 
     bool isActive() const;
     void setActive(bool o);
@@ -45,6 +49,9 @@ public:
     const QList<Node *> upstream();
     Q_INVOKABLE const QVariantList upstreamNodes();
     const QList<const Node *> upstream() const;
+
+    const QList<Node *> upstream(const Input *);
+    const QList<const Node *> upstream(const Input *) const;
 
     const QList<Node *> downstream();
     Q_INVOKABLE const QVariantList downstreamNodes();
@@ -70,19 +77,15 @@ public:
     const Node *rootBranch() const;
     Node *rootBranch();
 
-    Q_INVOKABLE QJSValue detail(int index, const QString arg1=QString(), const QString arg2=QString(),
-            const QString arg3=QString(), const QString arg4=QString(), const QString arg5=QString()) const;
+//    Q_INVOKABLE QJSValue detail(int index, const QString arg1=QString(), const QString arg2=QString(),
+//                                const QString arg3=QString(), const QString arg4=QString(), const QString arg5=QString()) const;
 
-    void setDetail(int, QJSValue, bool=true);
-    void setDetail(int, const QString, QJSValue, bool=true);
-    void setDetail(int, const QString, const QString, QJSValue, bool=true);
-    void setDetail(int, const QString, const QString, const QString, QJSValue, bool=true);
-    void setDetail(int, const QString, const QString, const QString, const QString, QJSValue, bool=true);
-    void setDetail(int, const QString, const QString, const QString, const QString, const QString, QJSValue, bool=true);
-
-    const Element *element(int index) const;
-    Q_INVOKABLE Element *element(int index);
-    Q_INVOKABLE void setElement(int index, const Element *element, bool emitChanged=true);
+    Q_INVOKABLE void setDetail(int, QJSValue, bool=true);
+    Q_INVOKABLE void setDetail(int, const QString, QJSValue, bool=true);
+    Q_INVOKABLE void setDetail(int, const QString, const QString, QJSValue, bool=true);
+    Q_INVOKABLE void setDetail(int, const QString, const QString, const QString, QJSValue, bool=true);
+    Q_INVOKABLE void setDetail(int, const QString, const QString, quint32, QJSValue, bool=true);
+    Q_INVOKABLE void setDetail(int, const QString, const QString, quint32, const QString, QJSValue, bool=true);
 
     Q_INVOKABLE const QVariantMap context(int index) const;
     Q_INVOKABLE void setContext(int index, const QVariantMap context, bool emitChanged=true);
@@ -108,11 +111,44 @@ signals:
     void yChanged(qreal y);
 
 protected:
-    void addParam(const QString name);
-    void addInput(const QString name);
-    void addOutput(const QString name);
+    Param *addParam(const QString name);
+    Input *addInput(const QString name);
+    Output *addOutput(const QString name);
 
     virtual void componentComplete();
+
+    template <typename T>
+    QJSValue toScriptValue(T value) const
+    {
+        QQmlContext *context = QQmlEngine::contextForObject(this);
+        Q_ASSERT(context);
+
+        return context->engine()->toScriptValue(value);
+    }
+
+    QJSValue newArray(uint length = 0) const
+    {
+        QQmlContext *context = QQmlEngine::contextForObject(this);
+        Q_ASSERT(context);
+
+        return context->engine()->newArray(length);
+    }
+
+    QJSValue newObject() const
+    {
+        QQmlContext *context = QQmlEngine::contextForObject(this);
+        Q_ASSERT(context);
+
+        return context->engine()->newObject();
+    }
+
+    QJSValue newQObject(QObject *object) const
+    {
+        QQmlContext *context = QQmlEngine::contextForObject(this);
+        Q_ASSERT(context);
+
+        return context->engine()->newQObject(object);
+    }
 
 private:
     const Node *nodeInChildren(const QString n) const;
@@ -155,6 +191,7 @@ private:
     QJSValue m_details;
     int m_count;
     int m_index;
+    QJSValue m_frames;
     qreal m_x, m_y; // should this be QVector2D? does it matter?
 //    QList<Node *> m_extraDependencies;
 };

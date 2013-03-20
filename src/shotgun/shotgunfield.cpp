@@ -2,6 +2,7 @@
 #include "shotgunentity.h"
 #include "branch.h"
 #include "shotgunoperation.h"
+#include "elementsview.h"
 
 ShotgunField::ShotgunField(QObject *parent) :
     Node(parent),
@@ -351,11 +352,12 @@ const QVariant ShotgunField::buildPathValue(int index) const
         return QVariant();
     }
 
-    Q_ASSERT(m_file->details().isArray());
+    const QScopedPointer<const ElementsView> elementsView(new ElementsView(m_file));
+    const ElementView *element = elementsView->elementAt(index);
 
     QVariant result;
-    if (m_file->details().property("length").toInt() > index) {
-        result = qjsvalue_cast<Element *>(m_file->details().property(index).property("element"))->pattern();
+    if (element) {
+        result = element->pattern();
     } else {
         error() << "Can't get detail" << index << "from" << m_file;
     }
@@ -374,25 +376,24 @@ const QVariant ShotgunField::buildPatternValue(int index, const QVariantMap cont
         return QVariant();
     }
 
-    Q_ASSERT(branch->details().isArray());
-
     QVariant result;
-    if (branch->details().property("length").toInt() > index) {
-        QVariantMap data = qjsvalue_cast<QVariantMap>(branch->details().property(index).property("context"));
-        for (QVariantMap::const_iterator i = context.constBegin(); i != context.constEnd(); ++i) {
-            if (!data.contains(i.key()))
-                data.insert(i.key(), i.value());
+    if (index < branch->count()) {
+        QVariantMap branchContext = branch->context(index);
+        QMapIterator<QString, QVariant> i(context);
+        while (i.hasNext()) {
+            i.next();
+            branchContext.insert(i.key(), i.value());
         }
 
-        if (branch->fieldsComplete(m_pattern, data)) {
-            QString value = branch->formatFields(m_pattern, data);
+        if (branch->fieldsComplete(m_pattern, context)) {
+            QString value = branch->formatFields(m_pattern, context);
             if (!value.isEmpty())
                 result = value;
             else
-                error() << branch << ".formatFields(" << m_pattern << "," << data << ") returned null";
+                error() << branch << ".formatFields(" << m_pattern << "," << context << ") returned null";
         } else {
             // run it anyway, so we can log the errors
-            branch->formatFields(m_pattern, data);
+            branch->formatFields(m_pattern, context);
             error() << branch << "missing fields for" << m_pattern;
         }
     } else {
@@ -412,7 +413,7 @@ const QVariant ShotgunField::buildLinkValue(int index) const
         const Node *linkedEntity = m_links.at(0);
 
         if (linkedEntity) {
-            const QVariantMap sg_entity = qjsvalue_cast<QVariantMap>(linkedEntity->detail(index, "entity"));
+            const QVariantMap sg_entity = linkedEntity->details().property(index).property("entity").toVariant().toMap();
 
             if (sg_entity.contains("id") && sg_entity.contains("type")) {
                 QVariantMap link;
@@ -442,7 +443,7 @@ const QVariant ShotgunField::buildMultiLinkValue(int index) const
     QVariantList result;
     for (int i = 0; i < m_links.length(); i++) {
         if (m_links[i]) {
-            const QVariantMap sg_entity = qjsvalue_cast<QVariantMap>(link()->detail(index, "entity"));
+            const QVariantMap sg_entity = link()->details().property(index).property("entity").toVariant().toMap();
 
             if (sg_entity.contains("id") && sg_entity.contains("type")) {
                 QVariantMap link;

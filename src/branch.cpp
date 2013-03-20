@@ -4,11 +4,14 @@
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
 #include <QDir>
+#include <QSet>
+
 
 #include "branch.h"
 #include "root.h"
 #include "field.h"
 #include "param.h"
+#include "filepattern.h"
 
 /*!
     \class Branch
@@ -127,53 +130,54 @@ QQmlListProperty<Field> Branch::fields_()
     return QQmlListProperty<Field>(this, m_fields);
 }
 
-void Branch::setPaths(const QStringList paths, const QVariantMap context)
-{
-    trace() << ".setPaths(" << paths << ")";
-
-    clearDetails();
-
-    int index = 0;
-    foreach (const QString path, paths) {
-        bool found = false;
-
-        for (int i = 0; i < details().property("length").toInt(); i++) {
-            Element *element = element(i);
-            if (element->hasFrames() && element->matches(path)) {
-                element->append(path);
-                setElement(index, element, false);
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            Element *element = new Element;
-            element->setPattern(path);
-            if (element->hasFrames())
-                element->append(path);
-            QVariantMap elementContext = parse(element->pattern()).toMap();
-
-            // merge input field values
-            QMapIterator<QString, QVariant> i(context);
-            while (i.hasNext()) {
-                i.next();
-                // don't overwrite
-                if (!elementContext.contains(i.key()))
-                    elementContext.insert(i.key(), i.value());
-            }
-
-            setContext(index, elementContext, false);
-            setElement(index, element, false);
-            index++;
-        }
-    }
-
-    setCount(index);
-    debug() << details().property("length").toInt();
-    debug() << details().toVariant();
-    emit detailsChanged();
-}
+//void Branch::setPaths(const QStringList paths, const QVariantMap context)
+//{
+//
+//    trace() << ".setPaths(" << paths << ")";
+//
+//    clearDetails();
+//
+//    int index = 0;
+//    foreach (const QString path, paths) {
+//        bool found = false;
+//
+//        for (int i = 0; i < details().property("length").toInt(); i++) {
+//            Element *element = element(i);
+//            if (element->hasFrames() && element->matches(path)) {
+//                element->append(path);
+//                setElement(index, element, false);
+//                found = true;
+//                break;
+//            }
+//        }
+//
+//        if (!found) {
+//            Element *element = new Element;
+//            element->setPattern(path);
+//            if (element->hasFrames())
+//                element->append(path);
+//            QVariantMap elementContext = parse(element->pattern()).toMap();
+//
+//            // merge input field values
+//            QMapIterator<QString, QVariant> i(context);
+//            while (i.hasNext()) {
+//                i.next();
+//                // don't overwrite
+//                if (!elementContext.contains(i.key()))
+//                    elementContext.insert(i.key(), i.value());
+//            }
+//
+//            setContext(index, elementContext, false);
+//            setElement(index, element, false);
+//            index++;
+//        }
+//    }
+//
+//    setCount(index);
+//    debug() << details().property("length").toInt();
+//    debug() << details().toVariant();
+//    emit detailsChanged();
+//}
 
 const QString Branch::pattern() const
 {
@@ -244,6 +248,16 @@ const Field *Branch::findField(const QString name) const
 
     return 0;
 }
+
+//bool Branch::hasField(const QString name) const
+//{
+//    foreach (const Field *field, m_fields) {
+//        if (field->name() == name) {
+//            return true;
+//        }
+//    }
+//    return false;
+//}
 
 const QStringList Branch::fieldNames(const QString pattern) const
 {
@@ -498,52 +512,36 @@ const QString Branch::map(const QVariant fields) const
     return mappedParent + formatFields(m_pattern, fields.toMap());
 }
 
-const QStringList Branch::listMatchingPaths(const QVariantMap context) const
+const QMap<QString, QFileInfoList> Branch::listMatchingPatterns(const QVariantMap context) const
 {
-    trace() << ".listMatchingPaths(" << context << ")";
-    QStringList result;
+    trace() << ".listMatchingPatterns(" << context << ")";
+    QMap<QString, QFileInfoList> result;
 
     // cases to handle:
-    // 1. we have all the fields we need to match a single path
+    // 1. we have all the fields we need to match a single path or sequence
     // 2. we have all the fields we need to match a single sequence
     // 3. we are missing some fields and thus will match multiple paths/sequences
 
     if (fieldsComplete(m_pattern, context)) {
+        debug() << "fields complete, mapping";
         // case 1 or 2
         QString path = map(context);
-        debug() << "listing paths, map of" << context << "got" << path;
+        debug() << "map got" << path;
         Q_ASSERT(!path.isEmpty());
 
-        // check for case 1
-        QFileInfo pathInfo(path);
-        if (!pathInfo.isHidden() &&
-              ((pathInfo.isDir() && !m_exactMatchFlag) ||
-               (pathInfo.isFile() && m_exactMatchFlag)))
-        {
-            result << path;
-            // early exit, we map to a single path exactly that exists
-            debug() << "matched" << result;
-            return result;
-        }
-
-        // check for case 2
-        if (m_pattern.length() > 0 && m_pattern[0] == '/') {
-            // absolute
-            debug() << "absolute file path detected";
-            QFileInfo pathInfo(path);
-            result = listMatchingPathsHelper(pathInfo.absoluteDir(), context);
-            debug() << "matched" << result;
-            return result;
-        }
+        FilePattern fp(path);
+        debug() << "adding empty match" << fp.pattern();
+        result.insert(fp.pattern(), QFileInfoList());
     }
 
+    // now scan for files
     if (root()) {
         QString parentPath = root()->map(context);
 
         if (!parentPath.isEmpty()) {
             QDir parentDir(parentPath);
             if (parentDir.isAbsolute()) {
-                result = listMatchingPathsHelper(parentDir, context);
+                result = listMatchingPatternsHelper(parentDir, context, result);
             } else {
                 warning() << ".map returned a relative path" << parentPath;
             }
@@ -570,36 +568,45 @@ bool Branch::containsFields(const QVariantMap& needle, const QVariantMap& haysta
     return true;
 }
 
-const QStringList Branch::listMatchingPathsHelper(const QDir parentDir, const QVariantMap fields) const
+const QMap<QString, QFileInfoList> Branch::listMatchingPatternsHelper(const QDir parentDir, const QVariantMap context, const QMap<QString, QFileInfoList> matches) const
 {
-    trace() << ".listMatchingPathsHelper(" << parentDir << "," << fields << ")";
+    trace() << ".listMatchingPatternsHelper(" << parentDir << "," << context << ")";
     Q_ASSERT(!parentDir.isRoot());
-    QStringList result;
+
+    QMap<QString, QFileInfoList> result = matches;
+
     QFileInfoList entries = parentDir.entryInfoList();
     foreach (QFileInfo entry, entries) {
         if (!entry.isHidden()) {
             debug() << "checking" << entry.absoluteFilePath();
             if (entry.isDir()) {
                 if (!m_exactMatchFlag) {
+                    // not looking for exact match, and we found a directory
                     QVariant entryFields = parse(entry.absoluteFilePath() + "/");
+
                     // if we've got an exact match, the "_" entry will be invalid
-                    if (entryFields.isValid() && containsFields(fields, entryFields.toMap()) && !entryFields.toMap()["_"].isValid()) {
-                        debug() << "found" << entry.absoluteFilePath();
-                        result.append(entry.absoluteFilePath() + "/");
+                    if (entryFields.isValid() && containsFields(context, entryFields.toMap()) && !entryFields.toMap()["_"].isValid()) {
+                        const QString path = entry.absoluteFilePath() + "/";
+                        FilePattern fp(path);
+                        result[fp.pattern()].append(entry);
+                        debug() << "adding match" << fp.pattern() << "[file" << entry.filePath() << "]";
                     }
                 }
-                result.append(listMatchingPathsHelper(entry.absoluteFilePath(), fields));
-
+                // recurse
+                result = listMatchingPatternsHelper(entry.absoluteFilePath(), context, result);
             } else if (m_exactMatchFlag) {
+                // found a file and we're looking for an exact match
                 QVariant entryFields = parse(entry.absoluteFilePath());
-                if (entryFields.isValid() && containsFields(fields, entryFields.toMap())) {
-                    debug() << "found" << entry.absoluteFilePath();
-                    result.append(entry.absoluteFilePath());
+                if (entryFields.isValid() && containsFields(context, entryFields.toMap())) {
+                    const QString path = entry.absoluteFilePath();
+                    FilePattern fp(path);
+                    result[fp.pattern()].append(entry);
+                    debug() << "adding match" << fp.pattern() << "[file" << entry.filePath() << "]";
                 }
             }
         }
     }
 
-    debug() << "got" << result;
     return result;
 }
+

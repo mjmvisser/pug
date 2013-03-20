@@ -3,7 +3,6 @@
 #include <QMetaProperty>
 #include <QDebug>
 
-#include "element.h"
 #include "serializers.h"
 
 enum jsvalueType { UNDEFINED_VALUE, NULL_VALUE, BOOLEAN, NUMBER, STRING, OBJECT, ARRAY, DATE, VARIANT, QOBJECT };

@@ -4,6 +4,7 @@
 #include "folder.h"
 #include "root.h"
 #include "field.h"
+#include "elementsview.h"
 
 Folder::Folder(QObject *parent) :
     Branch(parent)
@@ -18,10 +19,33 @@ void Folder::onUpdate(const QVariant context)
 {
     trace() << ".onUpdate(" << context << ")";
 
-    QStringList paths = listMatchingPaths(context.toMap());
+    QScopedPointer<ElementsView> elementsView(new ElementsView(this));
 
-    info() << "Update matched" << paths << "from" << pattern();
+    QMap<QString, QFileInfoList> matches = listMatchingPatterns(context.toMap());
 
-    setPaths(paths, context.toMap());
+    info() << "Update matched" << matches.keys() << "from" << pattern();
+
+    setCount(matches.size());
+
+    int index = 0;
+    QMapIterator<QString, QFileInfoList> i(matches);
+    while (i.hasNext()) {
+        i.next();
+        ElementView *element = elementsView->elementAt(index);
+        element->setPattern(i.key());
+        element->scan(i.value());
+
+        QVariantMap elementContext = parse(i.key()).toMap();
+        // override with calling context
+        QMapIterator<QString, QVariant> i(context.toMap());
+        while (i.hasNext()) {
+            i.next();
+            elementContext.insert(i.key(), i.value());
+        }
+        setContext(index, elementContext);
+
+        index++;
+    }
+
     emit updated(OperationAttached::Finished);
 }

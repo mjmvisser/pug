@@ -26,14 +26,19 @@ signals:
     void inputChanged(Node *input);
     void linkTypeChanged(LinkType linkType);
 
-    void cook(const QVariant context);
-    void cooked(int status);
+    void update(const QVariant context);
+    void updated(int status);
+
+    void cookAtIndex(int index, const QVariant context);
+    void cookedAtIndex(int index, int status);
 
 protected slots:
     void onUpdate(const QVariant context);
-    void onCook(const QVariant context);
+    void onCookAtIndex(int index, const QVariant context);
 
 private:
+    bool makeLink(const QString &src, const QString &dest) const;
+
     Node *m_input;
     LinkType m_linkType;
 };

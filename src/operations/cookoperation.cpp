@@ -67,6 +67,10 @@ void CookOperationAttached::onCooked(int s)
 {
     trace() << node() << ".onCooked(" << static_cast<OperationAttached::Status>(s) << ")";
     setStatus(static_cast<OperationAttached::Status>(s));
+
+    info() << node() << "cook status is" << status();
+    info() << node() << "cook result is" << node()->details().toVariant();
+
     continueRunning();
 }
 

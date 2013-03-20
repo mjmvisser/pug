@@ -9,6 +9,10 @@ class Folder : public Branch
 public:
     explicit Folder(QObject *parent = 0);
 
+signals:
+    void update(const QVariant context);
+    void updated(int status);
+
 protected slots:
     void onUpdate(const QVariant env);
 };

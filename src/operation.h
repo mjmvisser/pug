@@ -45,10 +45,10 @@ public:
     Q_INVOKABLE virtual void reset();
     Q_INVOKABLE virtual void run() = 0;
 
-    void run(Operation *, const QVariant);
+    void run(Operation *);
 
     void resetAllStatus();
-    void resetAll();
+    void resetAll(const QVariantMap);
 
 signals:
     void statusChanged(Status status);
@@ -69,9 +69,7 @@ protected:
     void resetChildrenStatus();
     virtual void resetExtraStatus();
 
-    void resetInputs();
     void resetChildren();
-    virtual void resetExtra();
 
     void runInputs();
     void runChildren();
@@ -161,7 +159,7 @@ public:
     OperationAttached::Status status() const;
     void setStatus(OperationAttached::Status);
 
-    void resetAll(Node *node);
+    void resetAll(Node *node, const QVariantMap context);
     Q_INVOKABLE virtual void run(Node *node, const QVariant context, bool reset=true);
 
     //static OperationAttached *qmlAttachedProperties(QObject *); // must be defined in subclasses
@@ -182,7 +180,7 @@ protected slots:
     void onFinished(OperationAttached *);
 
 protected:
-    void startRunning(Node *node, const QVariant context);
+    void startRunning(Node *node);
     void continueRunning();
 
     OperationAttached::Status dependenciesStatus() const;
@@ -204,7 +202,7 @@ private:
     QList<Operation *> m_triggers;
 
     Node *m_node;
-    QVariant m_context;
+    QVariantMap m_context;
     OperationAttached::Status m_status;
 };
 

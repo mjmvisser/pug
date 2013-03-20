@@ -196,6 +196,11 @@ void Node::outputs_clear(QQmlListProperty<Output> *prop)
     emit that->outputsChanged();
 }
 
+const QList<const Input*> Node::inputs() const
+{
+    return constList(m_inputs);
+}
+
 bool Node::isActive() const
 {
     return m_activeFlag;
@@ -448,38 +453,7 @@ const QList<const Node *> Node::upstream() const
 
 const QList<Node *> Node::upstream()
 {
-    trace() << ".upstream()";
-    QList<Node *> result;
-    // loop through inputs and find upstream nodes
-    foreach (const Input *in, m_inputs) {
-        if (hasProperty(in->name().toUtf8())) {
-            QVariant v = QQmlProperty::read(const_cast<Node *>(this), in->name());
-            if (v.canConvert<Node *>()) {
-                // single input
-                Node *input = v.value<Node*>();
-                if (input) {
-                    result.append(input);
-                }
-            } else if (v.canConvert<QQmlListReference>()) {
-                // multi-input
-                QQmlListReference l = v.value<QQmlListReference>();
-                for (int i = 0; i < l.count(); i++) {
-                    Node *input = qobject_cast<Node *>(l.at(i));
-                    if (input) {
-                        result.append(input);
-                    }
-                }
-            } else if (v.isNull()) {
-                // skip
-            } else {
-                error() << "can't interpret input" << in->name() << v;
-            }
-        } else {
-            error() << "can't find input" << in->name();
-        }
-    }
-    trace() << "    ->" << result;
-    return result;
+    return unConstList(static_cast<const Node &>(*this).upstream());
 }
 
 const QVariantList Node::upstreamNodes()
@@ -494,21 +468,42 @@ const QVariantList Node::upstreamNodes()
     return result;
 }
 
-const QList<Node *> Node::downstream()
+const QList<const Node *> Node::upstream(const Input *in) const
 {
-    trace() << ".downstream()";
-    QList<Node *> result;
-    if (parent<Node>()) {
-        // loop through siblings params and find inputs
-        foreach (QObject *o, QObject::parent()->children()) {
-            Node *n = qobject_cast<Node*>(o);
-            if (n && n->upstream().contains(this))
-                result.append(n);
+    trace() << ".upstream(" << in << ")";
+    QList<const Node *> result;
+    if (hasProperty(in->name().toUtf8())) {
+        const QVariant v = QQmlProperty::read(const_cast<Node *>(this), in->name());
+        if (v.canConvert<Node *>()) {
+            // single input
+            const Node *input = v.value<Node *>();
+            if (input) {
+                result.append(input);
+            }
+        } else if (v.canConvert<QQmlListReference>()) {
+            // multi-input
+            QQmlListReference l = v.value<QQmlListReference>();
+            for (int i = 0; i < l.count(); i++) {
+                const Node *input = qobject_cast<const Node *>(l.at(i));
+                if (input) {
+                    result.append(input);
+                }
+            }
+        } else if (v.isNull()) {
+            // skip
+        } else {
+            error() << "can't interpret input" << in->name() << v;
         }
+    } else {
+        error() << "can't find input" << in->name();
     }
-
     trace() << "    ->" << result;
     return result;
+}
+
+const QList<Node *> Node::upstream(const Input *in)
+{
+    return unConstList(static_cast<const Node &>(*this).upstream(in));
 }
 
 const QList<const Node *> Node::downstream() const
@@ -526,6 +521,14 @@ const QList<const Node *> Node::downstream() const
 
     trace() << "    ->" << result;
     return result;
+}
+
+
+const QList<Node *> Node::downstream()
+{
+    // ugly, but correct
+    // http://stackoverflow.com/questions/123758/how-do-i-remove-code-duplication-between-similar-const-and-non-const-member-func
+    return unConstList(static_cast<const Node &>(*this).downstream());
 }
 
 const QVariantList Node::downstreamNodes()
@@ -613,29 +616,29 @@ Node *Node::rootBranch()
     return p;
 }
 
-QJSValue Node::detail(int index, const QString arg1, const QString arg2,
-        const QString arg3, const QString arg4, const QString arg5) const
-{
-    // access details[index]?.arg1?.arg2?.arg3?.arg4?.arg5? for each non-empty arg
-    QJSValue result = m_details.property(index);
-    if (!result.isUndefined() && !arg1.isEmpty()) {
-        result = result.property(arg1);
-        if (!result.isUndefined() && !arg2.isEmpty()) {
-            result = result.property(arg2);
-            if (!result.isUndefined() && !arg3.isEmpty()) {
-                result = result.property(arg3);
-                if (!result.isUndefined() && !arg4.isEmpty()) {
-                    result = result.property(arg4);
-                    if (!result.isUndefined() && !arg5.isEmpty()) {
-                        result = result.property(arg5);
-                    }
-                }
-            }
-        }
-    }
-
-    return result;
-}
+//QJSValue Node::detail(int index, const QString arg1, const QString arg2,
+//        const QString arg3, const QString arg4, const QString arg5) const
+//{
+//    // access details[index]?.arg1?.arg2?.arg3?.arg4?.arg5? for each non-empty arg
+//    QJSValue result = m_details.property(index);
+//    if (!result.isUndefined() && !arg1.isEmpty()) {
+//        result = result.property(arg1);
+//        if (!result.isUndefined() && !arg2.isEmpty()) {
+//            result = result.property(arg2);
+//            if (!result.isUndefined() && !arg3.isEmpty()) {
+//                result = result.property(arg3);
+//                if (!result.isUndefined() && !arg4.isEmpty()) {
+//                    result = result.property(arg4);
+//                    if (!result.isUndefined() && !arg5.isEmpty()) {
+//                        result = result.property(arg5);
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
+//    return result;
+//}
 
 void Node::setDetail(int index, QJSValue value, bool emitChanged)
 {
@@ -643,6 +646,7 @@ void Node::setDetail(int index, QJSValue value, bool emitChanged)
     m_details.setProperty(index, value);
     if (emitChanged)
         emit detailsChanged();
+    //trace() << ".setDetail(" << index << "," << value << "," << emitChanged << ")";
 }
 
 void Node::setDetail(int index, const QString arg1, QJSValue value, bool emitChanged)
@@ -657,6 +661,7 @@ void Node::setDetail(int index, const QString arg1, QJSValue value, bool emitCha
     detail.setProperty(arg1, value);
     if (emitChanged)
         emit detailsChanged();
+    //trace() << ".setDetail(" << index << "," << arg1 << "," << value << "," << emitChanged << ")";
 }
 
 void Node::setDetail(int index, const QString arg1, const QString arg2, QJSValue value, bool emitChanged)
@@ -671,6 +676,7 @@ void Node::setDetail(int index, const QString arg1, const QString arg2, QJSValue
     obj.setProperty(arg2, value);
     if (emitChanged)
         emit detailsChanged();
+    //trace() << ".setDetail(" << index << "," << arg1 << "," << arg2 << "," << value << "," << emitChanged << ")";
 }
 
 void Node::setDetail(int index, const QString arg1, const QString arg2, const QString arg3, QJSValue value, bool emitChanged)
@@ -685,9 +691,27 @@ void Node::setDetail(int index, const QString arg1, const QString arg2, const QS
     obj.setProperty(arg3, value);
     if (emitChanged)
         emit detailsChanged();
+
+    //trace() << ".setDetail(" << index << "," << arg1 << "," << arg2 << "," << arg3 << "," << value << "," << emitChanged << ")";
 }
 
-void Node::setDetail(int index, const QString arg1, const QString arg2, const QString arg3, const QString arg4, QJSValue value, bool emitChanged)
+void Node::setDetail(int index, const QString arg1, const QString arg2, quint32 arg3, QJSValue value, bool emitChanged)
+{
+    Q_ASSERT(m_details.isArray());
+    QJSValue arr = m_details.property(index).property(arg1).property(arg2);
+    if (arr.isUndefined()) {
+        arr = newArray();
+        setDetail(index, arg1, arg2, arr, false);
+    }
+
+    arr.setProperty(arg3, value);
+
+    if (emitChanged)
+        emit detailsChanged();
+    //trace() << ".setDetail(" << index << "," << arg1 << "," << arg2 << "," << arg3 << "," << value << "," << emitChanged << ")";
+}
+
+void Node::setDetail(int index, const QString arg1, const QString arg2, quint32 arg3, const QString arg4, QJSValue value, bool emitChanged)
 {
     Q_ASSERT(m_details.isArray());
     QJSValue obj = m_details.property(index).property(arg1).property(arg2).property(arg3);
@@ -699,20 +723,7 @@ void Node::setDetail(int index, const QString arg1, const QString arg2, const QS
     obj.setProperty(arg4, value);
     if (emitChanged)
         emit detailsChanged();
-}
-
-void Node::setDetail(int index, const QString arg1, const QString arg2, const QString arg3, const QString arg4, const QString arg5, QJSValue value, bool emitChanged)
-{
-    Q_ASSERT(m_details.isArray());
-    QJSValue obj = m_details.property(index).property(arg1).property(arg2).property(arg3).property(arg4);
-    if (obj.isUndefined()) {
-        obj = newObject();
-        setDetail(index, arg1, arg2, arg3, arg4, obj, false);
-    }
-
-    obj.setProperty(arg5, value);
-    if (emitChanged)
-        emit detailsChanged();
+    //trace() << ".setDetail(" << index << "," << arg1 << "," << arg2 << "," << arg3 << "," << arg4 << "," << value << "," << emitChanged << ")";
 }
 
 void Node::clearDetails()
@@ -720,74 +731,45 @@ void Node::clearDetails()
     setDetails(newArray());
 }
 
-const Element *Node::element(int index) const
-{
-    if (m_details.isArray() && m_details.property("length").toInt() > index) {
-        QJSValue detail = m_details.property(index);
-
-        if (detail.property("element").isQObject()) {
-            return qjsvalue_cast<Element *>(detail.property("element"));
-        }
-    }
-
-    return 0;
-}
-
-Element *Node::element(int index)
-{
-    if (m_details.isArray() && m_details.property("length").toInt() > index) {
-        QJSValue detail = m_details.property(index);
-
-        if (detail.property("element").isQObject()) {
-            return qjsvalue_cast<Element *>(detail.property("element"));
-        }
-    }
-
-    // return a default element so we don't have to worry about undefineds
-    return new Element(this);
-}
-
-void Node::setElement(int index, const Element *element, bool emitChanged)
-{
-    if (qjsvalue_cast<const Element *>(detail(index, "element")) != element) {
-        setDetail(index, "element", newQObject(element), emitChanged);
-    }
-}
-
 const QVariantMap Node::context(int index) const
 {
-    return qjsvalue_cast<QVariantMap>(detail(index, "context"));
+    return details()
+            .property(index)
+            .property("context").toVariant().toMap();
 }
 
-void Node::setContext(int index, const QVariantMap context, bool emitChanged)
+void Node::setContext(int index, const QVariantMap v, bool emitChanged)
 {
-    if (qjsvalue_cast<const QVariantMap>(detail(index, "context")) != context) {
-        setDetail(index, "context", toScriptValue(context), emitChanged);
+    if (context(index) != v) {
+        setDetail(index, "context", toScriptValue(v), emitChanged);
     }
 }
 
-void Node::addParam(const QString name)
+Param *Node::addParam(const QString name)
 {
     Param *param = new Param(this);
     param->setName(name);
     m_params.append(param);
     emit paramsChanged();
+    return param;
 }
 
-void Node::addInput(const QString name)
+Input *Node::addInput(const QString name)
 {
     Input *input = new Input(this);
     input->setName(name);
     m_inputs.append(input);
     emit inputsChanged();
+    return input;
 }
 
-void Node::addOutput(const QString name)
+Output *Node::addOutput(const QString name)
 {
     Output *output = new Output(this);
     output->setName(name);
     m_outputs.append(output);
     emit outputsChanged();
+    return output;
 }
 
 void Node::componentComplete()

@@ -9,7 +9,10 @@
 #include <errno.h>
 
 #include "file.h"
-#include "element.h"
+#include "elementsview.h"
+#include "elementview.h"
+#include "frameview.h"
+#include "filepattern.h"
 
 File::File(QObject *parent) :
     Branch(parent),
@@ -20,9 +23,10 @@ File::File(QObject *parent) :
 
     // update -> onUpdate
     connect(this, &File::update, this, &File::onUpdate);
-    connect(this, &File::cook, this, &File::onCook);
+    connect(this, &File::cookAtIndex, this, &File::onCookAtIndex);
 
-    addInput("input");
+    Input *input = addInput("input");
+    input->setDependency(Input::Frame);
 }
 
 Node *File::input()
@@ -60,110 +64,163 @@ void File::onUpdate(const QVariant context)
 {
     trace() << ".onUpdate(" << context << ")";
 
-    QStringList paths = listMatchingPaths(context.toMap());
+    QScopedPointer<ElementsView> elementsView(new ElementsView(this));
 
-    setPaths(paths, context.toMap());
+    if (m_input) {
+        setCount(m_input->count());
 
-    info() << "Update matched" << paths << "from" << pattern();
+        debug() << "input count is" << m_input->count();
+        debug() << "element manager count is" << elementsView->elementCount();
+
+        for (int index = 0; index < elementsView->elementCount(); index++) {
+            QVariantMap elementContext = m_input->context(index);
+            // override with calling context
+            QMapIterator<QString, QVariant> i(context.toMap());
+            while (i.hasNext()) {
+                i.next();
+                elementContext.insert(i.key(), i.value());
+            }
+
+            debug() << "elementContext is" << elementContext;
+
+            if (fieldsComplete(pattern(), elementContext)) {
+                const FilePattern elementPattern (map(elementContext));
+                debug() << "elementPattern is" << elementPattern.pattern();
+
+                QMap<QString, QFileInfoList> matches = listMatchingPatterns(elementContext);
+                debug() << "matched patterns" << matches.keys();
+
+                Q_ASSERT(matches.count() == 1);
+                Q_ASSERT(matches.contains(elementPattern.pattern()));
+
+                ElementView *element = elementsView->elementAt(index);
+
+                element->setPattern(elementPattern.pattern());
+                element->scan(matches[elementPattern.pattern()]);
+            }
+        }
+    } else {
+        QMap<QString, QFileInfoList> matches = listMatchingPatterns(context.toMap());
+        debug() << "matched patterns" << matches.keys();
+
+        setCount(matches.size());
+
+        int index = 0;
+        QMapIterator<QString, QFileInfoList> i(matches);
+        while (i.hasNext()) {
+            i.next();
+            ElementView *element = elementsView->elementAt(index);
+            element->setPattern(i.key());
+            element->scan(i.value());
+
+            QVariantMap elementContext = parse(i.key()).toMap();
+            // override with calling context
+            QMapIterator<QString, QVariant> i(context.toMap());
+            while (i.hasNext()) {
+                i.next();
+                elementContext.insert(i.key(), i.value());
+            }
+            setContext(index, elementContext);
+
+            index++;
+        }
+    }
 
     emit updated(OperationAttached::Finished);
 }
 
-void File::onCook(const QVariant context)
+void File::onCookAtIndex(int index, const QVariant context)
 {
-    trace() << ".onCook(" << context << ")";
+    trace() << ".onCookAtIndex(" << index << "," << context << ")";
 
     if (m_input) {
-        debug() << "has input" << m_input;
-        // hard link to input, pass data along
+        QScopedPointer<ElementsView> elementsView(new ElementsView(this));
+        ElementView *element = elementsView->elementAt(index);
+        Q_ASSERT(element);
 
-        if (m_input->details().property("length").toInt() == 0) {
-            warning() << "no input details";
-        }
+        QScopedPointer<ElementsView> inputElementsView(new ElementsView(m_input));
+        ElementView *inputElement = inputElementsView->elementAt(index);
+        Q_ASSERT(inputElement);
 
-        setCount(m_input->details().property("length").toInt());
-        clearDetails();
+        FilePattern inputPattern = FilePattern(inputElement->pattern());
+        FilePattern destPattern = FilePattern(element->pattern());
 
-        for (int index=0; index < count(); index++) {
-            debug() << "cooking index" << index;
+        if (inputPattern.isSequence()) {
+            if (destPattern.isSequence()) {
+                // input and this are both sequences
+                for (int frameIndex = 0; frameIndex < inputElement->frameCount(); frameIndex++) {
+                    debug() << "cooking frameIndex" << frameIndex;
+                    FrameView *inputFrame = inputElement->frameAt(frameIndex);
+                    Q_ASSERT(inputFrame);
 
-            const Element *inputElement = m_input->element(index);
-            const QVariantMap inputContext = m_input->context(index);
-            if (inputElement) {
-                debug() << "input" << m_input;
-                debug() << "input fields" << inputContext;
-                debug() << "input element pattern" << inputElement->pattern();
-                debug() << "input element" << inputElement->toString();
+                    const QString srcPath = inputPattern.path(inputFrame->frame());
+                    const QString destPath = destPattern.path(inputFrame->frame());
 
-                Element *destElement = new Element(this);
-
-                destElement->setPattern(map(inputContext));
-                destElement->setFrames(inputElement->frames());
-
-                // create a new field values based off our default
-                QVariantMap destContext(context.toMap());
-
-                debug() << "dest context" << destContext;
-                debug() << "dest element" << destElement->toString();
-
-                // merge input context
-                QMapIterator<QString, QVariant> i(inputContext);
-                while (i.hasNext()) {
-                    i.next();
-                    // don't overwrite
-                    destContext.insert(i.key(), i.value());
-                }
-
-                foreach (const QString inputPath, inputElement->paths()) {
-                    QVariant srcFrame = inputElement->frame(inputPath);
-                    QString destPath = destElement->path(srcFrame);
-
-                    debug() << "cooking" << inputPath << "->" << destPath;
-
-                    if (!destPath.isEmpty()) {
-                        QFileInfo destInfo(destPath);
-                        destInfo.absoluteDir().mkpath(".");
-
-                        QFile destFile(destPath);
-                        if (destFile.exists())
-                            destFile.remove();
-
-                        debug() << "linking" << inputPath << "to" << destPath;
-
-                        if (m_linkType == File::Hard) {
-                            // META TODO: no cross-platform hardlink support in Qt
-                            if (link(inputPath.toUtf8().constData(), destPath.toUtf8().constData()) != 0) {
-                                error() << "link failed:" << inputPath.toUtf8().constData() << "->" << destPath.toUtf8().constData();
-                                error() << "error is:" << strerror(errno);
-
-                                emit cooked(OperationAttached::Error);
-                                return;
-                            }
-                        } else {
-                            if (symlink(inputPath.toUtf8().constData(), destPath.toUtf8().constData()) != 0) {
-                                error() << "symlink failed:" << inputPath.toUtf8().constData() << "->" << destPath.toUtf8().constData();
-                                error() << "error is:" << strerror(errno);
-
-                                emit cooked(OperationAttached::Error);
-                                return;
-                            }
-                        }
+                    // TODO: dependency check
+                    if (!makeLink(srcPath, destPath)) {
+                        emit cookedAtIndex(index, OperationAttached::Error);
+                        break;
                     }
                 }
+            } else {
+                error() << "input is a sequence, but this node is not";
+                debug() << "inputPattern is" << inputPattern.pattern();
+                debug() << "destPattern is" << destPattern.pattern();
+                emit cookedAtIndex(index, OperationAttached::Error);
+            }
+        } else {
+            if (destPattern.isSequence()) {
+                // TODO: at some point we want to support this
+                // how? need a frame range for this node tho
+                error() << "this node is a sequence, but input node is not";
+                emit cookedAtIndex(index, OperationAttached::Error);
+            } else {
+                debug() << "cooking element";
+                const QString srcPath = inputPattern.path();
+                const QString destPath = destPattern.path();
 
-                setElement(index, destElement, false);
-                setContext(index, destContext, false);
-                debug() << "set detail[" << index << "] to " << details().property(index);
-
-                info() << "Cook generated:" << destElement->paths();
-
-            } else if (!inputDetail.property("element").isQObject()) {
-                error() << "input.details[" << index << "].element does not exist or is not an Element";
+                // TODO: dependency check
+                if (!makeLink(srcPath, destPath))
+                    emit cookedAtIndex(index, OperationAttached::Error);
             }
         }
-
-        emit detailsChanged();
     }
 
-    emit cooked(OperationAttached::Finished);
+    emit cookedAtIndex(index, OperationAttached::Finished);
+}
+
+bool File::makeLink(const QString &src, const QString &dest) const
+{
+    debug() << "linking" << src << "to" << dest;
+
+    bool success = true;
+
+    // make sure the destination directory exists
+    QFileInfo destInfo(dest);
+    QDir().mkpath(destInfo.dir().absolutePath());
+
+    switch (m_linkType) {
+    case File::Hard:
+        // META TODO: no cross-platform hardlink support in Qt
+        if (link(src.toUtf8().constData(), dest.toUtf8().constData()) != 0) {
+            error() << "link failed:" << dest << "->" << src;
+            error() << "error is:" << strerror(errno);
+            success = false;
+        }
+        break;
+    case File::Symbolic:
+        if (symlink(destInfo.dir().relativeFilePath(src).toUtf8().constData(), dest.toUtf8().constData()) != 0) {
+            error() << "symlink failed:" << dest << "->" << src;
+            error() << "error is:" << strerror(errno);
+            success = false;
+        }
+        break;
+
+    default:
+        Q_ASSERT(false);
+        success = false;
+        break;
+    }
+
+    return success;
 }

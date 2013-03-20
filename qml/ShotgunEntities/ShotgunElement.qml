@@ -22,16 +22,6 @@ ShotgunEntity {
     
     params: Param { name: "code" }
     
-    property var __subdir: {
-        var parentDir = ShotgunUtils.safeElementAttribute(parent, "directory");
-        var grandparentDir =  ShotgunUtils.safeElementAttribute(parent.node(".."), "directory");
-        if (parentDir && grandparentDir) {
-            return parentDir.replace(grandparentDir, "");
-        } else {
-            return null;
-        }
-    }
-
     ShotgunField {
         id: codeField
         name: "code"
@@ -47,10 +37,29 @@ ShotgunEntity {
         // link: sourcePathLink
     // }
     
-    ShotgunField {
-        name: "sg_subdir"
-        shotgunField: "sg_subdir"
-        value: __subdir 
+    function _firstFrame(index) {
+        var elementsView = Util.elementsView(parent);
+
+        try {        
+            return elementsView.elements[index].frames[0].frame;
+        } catch (e) {
+            return null;
+        } finally {
+            elementsView.destroy();
+        }
+    }
+
+    function _lastFrame(index) {
+        var elementsView = Util.elementsView(parent);
+        
+        try {        
+            var numFrames = elementsView.elements[index].frames.length;
+            return elementsView.elements[index].frames[numFrames-1].frame;
+        } catch (e) {
+            return null;
+        } finally {
+            elementsView.destroy();
+        }
     }
 
     ShotgunField {
@@ -58,7 +67,7 @@ ShotgunEntity {
         name: "sg_start_frame"
         shotgunField: "sg_start_frame"
         type: ShotgunField.Number
-        value: parent.element(index).firstFrame()                       
+        value: _firstFrame()                       
     }
 
     ShotgunField {
@@ -66,7 +75,7 @@ ShotgunEntity {
         name: "sg_end_frame"
         shotgunField: "sg_end_frame"
         type: ShotgunField.Number
-        value: parent.element(index).lastFrame()                         
+        value: _lastFrame()                         
     }
     
     ShotgunField {

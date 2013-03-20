@@ -9,7 +9,8 @@ class UpdateOperationAttached : public OperationAttached
 public:
     explicit UpdateOperationAttached(QObject *parent = 0);
 
-    Q_INVOKABLE virtual void run();
+    virtual void reset();
+    virtual void run();
 
 signals:
     void update(const QVariant env);

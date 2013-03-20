@@ -174,7 +174,7 @@ const QVariantList ShotgunEntity::data() const
             const ShotgunField *sgf = qobject_cast<const ShotgunField *>(o);
             if (sgf) {
                 // name: value pairs
-                QJSValue jsvalue = sgf->detail(0, "value");
+                QJSValue jsvalue = sgf->details().property(0).property("value");
                 QVariant value;
                 if (jsvalue.isNull())
                     value = QVariant(QVariant::String); // null QVariant
@@ -212,7 +212,7 @@ const QVariantList ShotgunEntity::filters() const
         if (sgf && sgf->type() != ShotgunField::Url) {
             // we skip Url fields, since they can't be filtered against
             // ["<shotgun field name>", "is", <value for field name>]
-            QJSValue jsvalue = sgf->detail(0, "value");
+            QJSValue jsvalue = sgf->details().property(0).property("value");
             QVariant value;
             if (jsvalue.isNull())
                 value = QVariant(QVariant::String); // null QVariant

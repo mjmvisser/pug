@@ -1,12 +1,13 @@
 #include <QMetaType>
 
-#include "element.h"
-#include "framelist.h"
-#include "root.h"
+#include "pugitem.h"
 #include "param.h"
 #include "input.h"
 #include "output.h"
-#include "deprecatednode.h"
+#include "node.h"
+#include "elementsview.h"
+#include "elementview.h"
+#include "frameview.h"
 #include "field.h"
 #include "branch.h"
 #include "folder.h"
@@ -44,106 +45,103 @@ static QObject *Util_provider(QQmlEngine *engine, QJSEngine *scriptEngine)
     return new Util();
 }
 
-// template specializations so we can instantiate Element and FrameList
-
-namespace QtMetaTypePrivate {
-template <>
-struct QMetaTypeFunctionHelper<Element, true> {
-    static void Delete(void *t)
-    {
-        delete static_cast<Element*>(t);
-    }
-
-    static void *Create(const void *t)
-    {
-        Q_UNUSED(t)
-        return new Element();
-    }
-
-    static void Destruct(void *t)
-    {
-        Q_UNUSED(t) // Silence MSVC that warns for POD types.
-        static_cast<Element*>(t)->~Element();
-    }
-
-    static void *Construct(void *where, const void *t)
-    {
-        Q_UNUSED(t)
-        return new (where) Element;
-    }
-#ifndef QT_NO_DATASTREAM
-    static void Save(QDataStream &stream, const void *t)
-    {
-        stream << *static_cast<const Element*>(t);
-    }
-
-    static void Load(QDataStream &stream, void *t)
-    {
-        stream >> *static_cast<Element*>(t);
-    }
-#endif // QT_NO_DATASTREAM
-};
-}
-
-namespace QtMetaTypePrivate {
-template <>
-struct QMetaTypeFunctionHelper<FrameList, true> {
-    static void Delete(void *t)
-    {
-        delete static_cast<FrameList*>(t);
-    }
-
-    static void *Create(const void *t)
-    {
-        Q_UNUSED(t)
-        return new FrameList();
-    }
-
-    static void Destruct(void *t)
-    {
-        Q_UNUSED(t) // Silence MSVC that warns for POD types.
-        static_cast<FrameList*>(t)->~FrameList();
-    }
-
-    static void *Construct(void *where, const void *t)
-    {
-        Q_UNUSED(t)
-        return new (where) FrameList;
-    }
-#ifndef QT_NO_DATASTREAM
-    static void Save(QDataStream &stream, const void *t)
-    {
-        stream << *static_cast<const FrameList*>(t);
-    }
-
-    static void Load(QDataStream &stream, void *t)
-    {
-        stream >> *static_cast<FrameList*>(t);
-    }
-#endif // QT_NO_DATASTREAM
-};
-}
+//// template specializations so we can instantiate Element and FrameList
+//
+//namespace QtMetaTypePrivate {
+//template <>
+//struct QMetaTypeFunctionHelper<Element, true> {
+//    static void Delete(void *t)
+//    {
+//        delete static_cast<Element*>(t);
+//    }
+//
+//    static void *Create(const void *t)
+//    {
+//        Q_UNUSED(t)
+//        return new Element();
+//    }
+//
+//    static void Destruct(void *t)
+//    {
+//        Q_UNUSED(t) // Silence MSVC that warns for POD types.
+//        static_cast<Element*>(t)->~Element();
+//    }
+//
+//    static void *Construct(void *where, const void *t)
+//    {
+//        Q_UNUSED(t)
+//        return new (where) Element;
+//    }
+//#ifndef QT_NO_DATASTREAM
+//    static void Save(QDataStream &stream, const void *t)
+//    {
+//        stream << *static_cast<const Element*>(t);
+//    }
+//
+//    static void Load(QDataStream &stream, void *t)
+//    {
+//        stream >> *static_cast<Element*>(t);
+//    }
+//#endif // QT_NO_DATASTREAM
+//};
+//}
+//
+//namespace QtMetaTypePrivate {
+//template <>
+//struct QMetaTypeFunctionHelper<FrameList, true> {
+//    static void Delete(void *t)
+//    {
+//        delete static_cast<FrameList*>(t);
+//    }
+//
+//    static void *Create(const void *t)
+//    {
+//        Q_UNUSED(t)
+//        return new FrameList();
+//    }
+//
+//    static void Destruct(void *t)
+//    {
+//        Q_UNUSED(t) // Silence MSVC that warns for POD types.
+//        static_cast<FrameList*>(t)->~FrameList();
+//    }
+//
+//    static void *Construct(void *where, const void *t)
+//    {
+//        Q_UNUSED(t)
+//        return new (where) FrameList;
+//    }
+//#ifndef QT_NO_DATASTREAM
+//    static void Save(QDataStream &stream, const void *t)
+//    {
+//        stream << *static_cast<const FrameList*>(t);
+//    }
+//
+//    static void Load(QDataStream &stream, void *t)
+//    {
+//        stream >> *static_cast<FrameList*>(t);
+//    }
+//#endif // QT_NO_DATASTREAM
+//};
+//}
 
 void PugPlugin::registerTypes(const char *uri)
 {
     Q_ASSERT(uri == QLatin1String("Pug"));
 
-    qRegisterMetaType<Element>("Element");
-    qRegisterMetaType<FrameList>("FrameList");
-    qmlRegisterType<Root>();
-    qmlRegisterType<FrameList>(uri, 1, 0, "FrameList");
-    qmlRegisterType<Element>(uri, 1, 0, "Element");
     qmlRegisterType<PugItem>(uri, 1, 0, "PugItem");
     qmlRegisterType<Input>(uri, 1, 0, "Input");
     qmlRegisterType<Output>(uri, 1, 0, "Output");
     qmlRegisterType<Param>(uri, 1, 0, "Param");
     qmlRegisterType<Node>(uri, 1, 0, "Node");
-    qmlRegisterType<DeprecatedNode>(uri, 1, 0, "DeprecatedNode");
+    qmlRegisterType<ElementsView>(uri, 1, 0, "ElementsView");
+    qmlRegisterType<ElementView>();
+    qmlRegisterType<FrameView>();
     qmlRegisterType<Field>(uri, 1, 0, "Field");
     qmlRegisterType<Branch>();
     qmlRegisterType<Folder>(uri, 1, 0, "Folder");
-    qmlRegisterType<Root>(uri, 1, 0, "Root");
     qmlRegisterType<File>(uri, 1, 0, "File");
+    qmlRegisterType<Root>(uri, 1, 0, "Root");
     qmlRegisterType<Process>(uri, 1, 0, "Process");
     qmlRegisterType<Operation>(uri, 1, 0, "Operation");
     qmlRegisterType<TestOperation>(uri, 1, 0, "TestOperation");

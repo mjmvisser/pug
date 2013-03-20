@@ -38,6 +38,11 @@ UpdateOperationAttached::UpdateOperationAttached(QObject *parent) :
     }
 }
 
+void UpdateOperationAttached::reset()
+{
+    node()->clearDetails();
+}
+
 void UpdateOperationAttached::run()
 {
     info() << "Updating" << node() << "with" << context();
@@ -67,6 +72,10 @@ void UpdateOperationAttached::onUpdated(int s)
 {
     Q_ASSERT(operation());
     setStatus(static_cast<OperationAttached::Status>(s));
+
+    info() << node() << "update status is" << status();
+    info() << node() << "update result is" << node()->details().toVariant();
+
     continueRunning();
 }
 

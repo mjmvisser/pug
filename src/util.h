@@ -2,9 +2,9 @@
 
 #include <QObject>
 #include <QString>
-#include <QSharedPointer>
 
-#include "element.h"
+#include "node.h"
+#include "elementsview.h"
 
 class Util : public QObject
 {
@@ -19,7 +19,7 @@ public:
     Q_INVOKABLE bool touch(const QString path);
     Q_INVOKABLE bool remove(const QString path);
     Q_INVOKABLE bool copy(const QString src, const QString dest);
-    Q_INVOKABLE Element *element();
+    Q_INVOKABLE ElementsView *elementsView(Node *node);
 };
 
 #endif

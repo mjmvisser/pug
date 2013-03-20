@@ -28,44 +28,47 @@ PugTestCase {
         dependencies: update
     }
  
-    Folder {
-        id: branch
-        pattern: tmpDir + "filetests/"
-    
-        fields: [
-            Field {
-                name: "FOO" 
-            },
-            Field {
-                name: "BAR"
-                regexp: "\\d{4}|(?:%04d)"
-            },
-            Field {
-                name: "BAZ"
+    Root {
+        Folder {
+            id: branch
+            pattern: tmpDir + "filetests/"
+        
+            fields: [
+                Field {
+                    name: "FOO" 
+                },
+                Field {
+                    name: "BAR"
+                    regexp: "\\d{4}|(?:%04d)"
+                    defaultValue: "%04d"
+                },
+                Field {
+                    name: "BAZ"
+                }
+            ]
+            
+            File {
+                id: file
+                name: "file"
+                pattern: "abc/{FOO}.{BAR}.{BAZ}"
             }
-        ]
-        
-        File {
-            id: file
-            name: "file"
-            pattern: "abc/{FOO}.{BAR}.{BAZ}"
-        }
-        
-        File {
-            id: file2
-            name: "file2"
-            input: file
-            pattern: "def/{FOO}.{BAR}.{BAZ}"
-            linkType: File.Symbolic
-        }
-        
-        File {
-            id: absFile
-            name: "absFile"
-            pattern: tmpDir + "filetests/abc/foo.{BAR}.baz"
+            
+            File {
+                id: file2
+                name: "file2"
+                input: file
+                pattern: "def/{FOO}.{BAR}.{BAZ}"
+                linkType: File.Symbolic
+            }
+            
+            File {
+                id: absFile
+                name: "absFile"
+                pattern: tmpDir + "filetests/abc/foo.{BAR}.baz"
+            }
         }
     }
-    
+        
     SignalSpy {
         id: updateSpy
         target: update
@@ -83,11 +86,21 @@ PugTestCase {
         
         update.run(file, {FOO: "foo", BAR: "0001", BAZ: "baz"});
         updateSpy.wait(500);
+        
+        var fileElementsView = Util.elementsView(file);
+        var branchElementsView = Util.elementsView(branch);
+        
+        console.log(fileElementsView);
+        console.log(fileElementsView.elements.length);
+        console.log(fileElementsView.elements[0]);
+        
         compare(file.UpdateOperation.status, Operation.Finished);
         compare(branch.details.length, 1);
-        compare(branch.element(0).path(), tmpDir + "filetests/");
-        compare(file.element(0).pattern, tmpDir + "filetests/abc/foo.%04d.baz");
-        compare(file.element(0).paths()[0], tmpDir + "filetests/abc/foo.0001.baz");
+        compare(branchElementsView.elements[0].path(), tmpDir + "filetests/");
+        compare(fileElementsView.elements[0].pattern, tmpDir + "filetests/abc/foo.%04d.baz");
+        compare(fileElementsView.elements[0].frames[0].frame, 1);
+        compare(fileElementsView.elements[0].frames[0].path(), tmpDir + "filetests/abc/foo.0001.baz");
+        fileElementsView.destroy();
     }
     
     function test_fileLink() {
@@ -104,7 +117,13 @@ PugTestCase {
         updateSpy.wait(500);
         
         compare(absFile.UpdateOperation.status, Operation.Finished);
-        compare(absFile.element(0).pattern, tmpDir + "filetests/abc/foo.%04d.baz");
-        compare(absFile.element(0).paths()[0], tmpDir + "filetests/abc/foo.0001.baz");
+
+        var absFileElementsView = Util.elementsView(absFile);
+        compare(absFileElementsView.elements.length, 1);
+        compare(absFileElementsView.elements[0].frames.length, 1);
+        compare(absFileElementsView.elements[0].frames[0].frame, 1);
+        compare(absFileElementsView.elements[0].pattern, tmpDir + "filetests/abc/foo.%04d.baz");
+        compare(absFileElementsView.elements[0].frames[0].path(), tmpDir + "filetests/abc/foo.0001.baz");
+        absFileElementsView.destroy();
     }
 }    
