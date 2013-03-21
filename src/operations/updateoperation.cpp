@@ -12,23 +12,36 @@ UpdateOperationAttached::UpdateOperationAttached(QObject *parent) :
     bool haveUpdatedSignal = node()->hasSignal(SIGNAL(updated(int)));
 
     if (haveUpdateAtIndexSignal && haveUpdatedAtIndexSignal) {
+        m_mode = UpdateOperationAttached::UpdateAtIndex;
+        debug() << node() << "found updateAtIndex and updatedAtIndex signals";
+
         connect(this, SIGNAL(updateAtIndex(int, const QVariant)),
                 node(), SIGNAL(updateAtIndex(int, const QVariant)));
         connect(node(), SIGNAL(updatedAtIndex(int, int)),
                 this, SLOT(onUpdatedAtIndex(int, int)));
-        m_mode = UpdateOperationAttached::UpdateAtIndex;
-        debug() << node() << "found .updateAtIndex";
+
+        if (haveUpdateSignal) {
+            debug() << node() << "found update signal";
+            connect(this, SIGNAL(update(const QVariant)),
+                    node(), SIGNAL(update(const QVariant)));
+        }
+
+        if (haveUpdatedSignal) {
+            warning() << node() << "ignoring updated signal";
+        }
+
     } else if (!haveUpdateAtIndexSignal && haveUpdatedAtIndexSignal) {
         error() << node() << "is missing the updateAtIndex signal";
     } else if (haveUpdateAtIndexSignal && !haveUpdatedAtIndexSignal) {
         error() << node() << "is missing the updatedAtIndex signal";
     } else if (haveUpdateSignal && haveUpdatedSignal) {
+        m_mode = UpdateOperationAttached::Update;
+        debug() << node() << "found update and updated signals";
+
         connect(this, SIGNAL(update(const QVariant)),
                 node(), SIGNAL(update(const QVariant)));
         connect(node(), SIGNAL(updated(int)),
                 this, SLOT(onUpdated(int)));
-        m_mode = UpdateOperationAttached::Update;
-        debug() << node() << "found .update";
     } else if (!haveUpdateSignal && haveUpdatedSignal) {
         error() << node() << "is missing the update signal";
     } else if (haveUpdateSignal && !haveUpdatedSignal) {
@@ -53,8 +66,10 @@ void UpdateOperationAttached::run()
         emit update(context());
     } else if (m_mode == UpdateOperationAttached::UpdateAtIndex) {
         if (node()->count() > 0) {
-            debug() << "updating" << node()->count() << "details";
+            debug() << node() << "updating" << node()->count() << "details";
+            emit update(context());
             for (int i = 0; i < node()->count(); i++) {
+                debug() << node() << "emitting updateAtIndex" << i << context();
                 emit updateAtIndex(i, context());
             }
         } else {

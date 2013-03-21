@@ -12,23 +12,36 @@ CookOperationAttached::CookOperationAttached(QObject *parent) :
     bool haveCookedSignal = node()->hasSignal(SIGNAL(cooked(int)));
 
     if (haveCookAtIndexSignal && haveCookedAtIndexSignal) {
+        m_mode = CookOperationAttached::CookAtIndex;
+        debug() << node() << "found cookAtIndex and cookedAtIndex signals";
+
         connect(this, SIGNAL(cookAtIndex(int, const QVariant)),
                 node(), SIGNAL(cookAtIndex(int, const QVariant)));
         connect(node(), SIGNAL(cookedAtIndex(int, int)),
                 this, SLOT(onCookedAtIndex(int, int)));
-        m_mode = CookOperationAttached::CookAtIndex;
-        debug() << node() << "found .cookAtIndex";
+
+        if (haveCookSignal) {
+            debug() << node() << "found cook signal";
+            connect(this, SIGNAL(cook(const QVariant)),
+                    node(), SIGNAL(cook(const QVariant)));
+        }
+
+        if (haveCookedSignal) {
+            warning() << node() << "ignoring cooked signal";
+        }
+
     } else if (!haveCookAtIndexSignal && haveCookedAtIndexSignal) {
         error() << node() << "is missing the cookAtIndex signal";
     } else if (haveCookAtIndexSignal && !haveCookedAtIndexSignal) {
         error() << node() << "is missing the cookedAtIndex signal";
     } else if (haveCookSignal && haveCookedSignal) {
+        m_mode = CookOperationAttached::Cook;
+        debug() << node() << "found cook and cooked signals";
+
         connect(this, SIGNAL(cook(const QVariant)),
                 node(), SIGNAL(cook(const QVariant)));
         connect(node(), SIGNAL(cooked(int)),
                 this, SLOT(onCooked(int)));
-        m_mode = CookOperationAttached::Cook;
-        debug() << node() << "found .cook";
     } else if (!haveCookSignal && haveCookedSignal) {
         error() << node() << "is missing the cook signal";
     } else if (haveCookSignal && !haveCookedSignal) {
@@ -49,6 +62,7 @@ void CookOperationAttached::run()
     } else if (m_mode == CookOperationAttached::CookAtIndex) {
         if (node()->count() > 0) {
             debug() << "cooking" << node()->count() << "details";
+            emit cook(context());
             for (int i = 0; i < node()->count(); i++) {
                 emit cookAtIndex(i, context());
             }
