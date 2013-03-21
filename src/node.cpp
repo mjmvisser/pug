@@ -577,7 +577,15 @@ void Node::setCount(int count)
 {
     if (m_count != count) {
         m_count = count;
+
+        for (int i = 0; i < count; i++) {
+            if (!details().property(i).isObject()) {
+                setDetail(i, newObject(), false);
+            }
+        }
+
         emit countChanged(count);
+        emit detailsChanged();
     }
 }
 
