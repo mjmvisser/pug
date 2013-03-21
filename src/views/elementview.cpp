@@ -160,6 +160,13 @@ const QString ElementView::extension() const
     return fp.extension();
 }
 
+bool ElementView::isSequence() const
+{
+    FilePattern fp(pattern());
+
+    return fp.isSequence();
+}
+
 void ElementView::append(const QFileInfo &info)
 {
     FilePattern fp(pattern());

@@ -32,6 +32,8 @@ public:
     Q_INVOKABLE const QString frameSpec() const;
     Q_INVOKABLE const QString extension() const;
 
+    Q_INVOKABLE bool isSequence() const;
+
     QQmlListProperty<FrameView> frames_();
 
     const FrameView *frameAt(int index) const;
