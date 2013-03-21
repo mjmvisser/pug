@@ -111,8 +111,6 @@ public:
 
     Q_INVOKABLE QObject *sender();
 
-    Q_INVOKABLE const QString relativePath(const QString path);
-
 signals:
     void parentChanged(PugItem *parent);
     void nameChanged(const QString name);
