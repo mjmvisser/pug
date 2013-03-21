@@ -86,9 +86,5 @@ PugTestCase {
         compare(branch1ElementsView.elements[0].path(), tmpDir + "updatetests/abc/foo/def/bar/");
         compare(branch2ElementsView.elements[0].path(), tmpDir + "updatetests/abc/foo/def/bar/ghi/18/");
         compare(file1ElementsView.elements[0].pattern, tmpDir + "updatetests/abc/foo/def/bar/ghi/18/somefile.%04d.ext");
-        
-        branch1ElementsView.destroy();
-        branch2ElementsView.destroy();
-        file1ElementsView.destroy();
     }
 }

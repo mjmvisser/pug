@@ -172,9 +172,6 @@ PugTestCase {
         compare(releaseFileElementsView.elements.length, 1);
         compare(releaseFileElementsView.elements[0].path(), releasePath_v004);
         verify(Util.exists(releasePath_v004));
-        
-        workFileElementsView.destroy();
-        releaseFileElementsView.destroy();
     }
     
     function zeroFill( number, width ) {
@@ -211,7 +208,5 @@ PugTestCase {
             var framePath = releasePath.replace("%04d", zeroFill(frame, 4));
             verify(Util.exists(framePath), framePath);
         }
-        
-        releaseSeqElementsView.destroy();
     }
 }

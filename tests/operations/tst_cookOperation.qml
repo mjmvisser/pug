@@ -104,9 +104,6 @@ PugTestCase {
                             }
                         }
                         
-                        inputElementsView.destroy();
-                        elementsView.destroy();
-                        
                         updatedAtIndex(index, Operation.Finished);
                     }
 
@@ -126,9 +123,6 @@ PugTestCase {
                         if (!Util.exists(outputDir))
                             Util.mkpath(outputDir);
                         Util.copy(inputPath, outputPath);
-                        
-                        inputElementsView.destroy();
-                        elementsView.destroy();
                         
                         cookedAtIndex(index, Operation.Finished);
                     }
@@ -216,9 +210,6 @@ PugTestCase {
         compare(cookFileElementsView.elements[0].path(), cookPaths[0]);
         compare(cookFileElementsView.elements[1].path(), cookPaths[1]);
         compare(cookFileElementsView.elements[2].path(), cookPaths[2]);
-        
-        workFileElementsView.destroy();
-        cookFileElementsView.destroy();
     }
     
     function test_cookCompound() {

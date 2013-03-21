@@ -90,17 +90,12 @@ PugTestCase {
         var fileElementsView = Util.elementsView(file);
         var branchElementsView = Util.elementsView(branch);
         
-        console.log(fileElementsView);
-        console.log(fileElementsView.elements.length);
-        console.log(fileElementsView.elements[0]);
-        
         compare(file.UpdateOperation.status, Operation.Finished);
         compare(branch.details.length, 1);
         compare(branchElementsView.elements[0].path(), tmpDir + "filetests/");
         compare(fileElementsView.elements[0].pattern, tmpDir + "filetests/abc/foo.%04d.baz");
         compare(fileElementsView.elements[0].frames[0].frame, 1);
         compare(fileElementsView.elements[0].frames[0].path(), tmpDir + "filetests/abc/foo.0001.baz");
-        fileElementsView.destroy();
     }
     
     function test_fileLink() {
@@ -124,6 +119,5 @@ PugTestCase {
         compare(absFileElementsView.elements[0].frames[0].frame, 1);
         compare(absFileElementsView.elements[0].pattern, tmpDir + "filetests/abc/foo.%04d.baz");
         compare(absFileElementsView.elements[0].frames[0].path(), tmpDir + "filetests/abc/foo.0001.baz");
-        absFileElementsView.destroy();
     }
 }    
