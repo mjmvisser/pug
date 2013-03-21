@@ -536,7 +536,12 @@ const QMap<QString, QFileInfoList> Branch::listMatchingPatterns(const QVariantMa
 
     // now scan for files
     if (root()) {
-        QString parentPath = root()->map(context);
+
+        QString parentPath;
+        if (QFileInfo(pattern()).isAbsolute())
+            parentPath = QFileInfo(pattern()).dir().path();
+        else
+            parentPath = root()->map(context);
 
         if (!parentPath.isEmpty()) {
             QDir parentDir(parentPath);
@@ -572,6 +577,8 @@ const QMap<QString, QFileInfoList> Branch::listMatchingPatternsHelper(const QDir
 {
     trace() << ".listMatchingPatternsHelper(" << parentDir << "," << context << ")";
     Q_ASSERT(!parentDir.isRoot());
+
+    debug() << "matching patterns in" << parentDir << "from" << context;
 
     QMap<QString, QFileInfoList> result = matches;
 
