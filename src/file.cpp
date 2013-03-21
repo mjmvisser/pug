@@ -113,6 +113,13 @@ void File::onUpdate(const QVariant context)
             element->setPattern(i.key());
             element->scan(i.value());
 
+            QStringList files;
+            foreach (const QFileInfo info, i.value()) {
+                files << info.filePath();
+            }
+
+            debug() << "matched files" << files;
+
             QVariantMap elementContext = parse(i.key()).toMap();
             // override with calling context
             QMapIterator<QString, QVariant> i(context.toMap());
