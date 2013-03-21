@@ -48,10 +48,20 @@ TestCase {
         target: cook
         signalName: "finished"
     }
+
+    function test_seq() {
+        spy.clear();
+        cook.run(seq, {});
+        spy.wait(100);
+
+        var elementsView = Util.elementsView(seq);
+        compare(elementsView.elements[0].frames.length, 10);
+    }
     
     function test_makeThumbnail() {
+        spy.clear();
         cook.run(makeThumbnail, {});
-        spy.wait(25000);
+        spy.wait(5000);
 
         compare(cook.status, Operation.Finished)        
         compare(seq.details.length, 1);
@@ -59,8 +69,9 @@ TestCase {
     }
     
     function test_makeFilmstrip() {
+        spy.clear();
         cook.run(makeFilmstrip, {});
-        spy.wait(25000);
+        spy.wait(5000);
 
         compare(cook.status, Operation.Finished)        
         compare(seq.details.length, 1);

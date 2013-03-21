@@ -11,7 +11,7 @@ Process {
     inputs: Input { name: "input" }
     params: Param { name: "filmstrip" }
 
-    property string __outputPath: {
+    function __outputPath(index) {
         var inputElementsView = Util.elementsView(input);
         var directory = inputElementsView.elements[index].directory();
         var baseName = inputElementsView.elements[index].baseName();
@@ -23,21 +23,22 @@ Process {
     }
 
     argv: {
-        var inputElementsView = Util.elementsView(input);
-        return [relativePath("scripts/makeThumbnail.py"),
-                "--inputPath", inputElementsView.elements[index].pattern,
-                "--outputPath", __outputPath,
-                "--firstFrame", inputElementsView.elements[index].firstFrame(),
-                "--lastFrame", inputElementsView.elements[index].lastFrame()
-        ]
+        if (cooking) {
+            var inputElementsView = Util.elementsView(input);
+            return [Qt.resolvedUrl("scripts/makeThumbnail.py").replace("file://", ""),
+                    "--inputPath", inputElementsView.elements[index].pattern,
+                    "--outputPath", __outputPath(index),
+                    "--firstFrame", inputElementsView.elements[index].firstFrame(),
+                    "--lastFrame", inputElementsView.elements[index].lastFrame()]
+        } else {
+            return [];
+        }
     }
     
     onCookedAtIndex: {
         info("Generating thumbnail " + argv[4] + " from " + argv[2]);
-        var inputElementsView = Util.elementsView(input);
-        inputElementsView.elements[index].pattern = __outputPath 
-        details[index].context = input.details[index].context
-        detailsChanged();
+        var elementsView = Util.elementsView(self);
+        elementsView.elements[index].pattern = __outputPath(index) 
     }
     
 }
