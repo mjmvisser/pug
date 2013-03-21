@@ -10,8 +10,11 @@
 
 Process::Process(QObject *parent) :
     Node(parent),
-    m_ignoreExitCode(false)
+    m_ignoreExitCode(false),
+    m_updatingFlag(false),
+    m_cookingFlag(false)
 {
+    connect(this, &Process::updateAtIndex, this, &Process::onUpdateAtIndex);
     connect(this, &Process::cookAtIndex, this, &Process::onCookAtIndex);
 }
 
@@ -71,10 +74,65 @@ void Process::setIgnoreExitCode(bool flag)
     }
 }
 
+bool Process::isUpdating() const
+{
+    return m_updatingFlag;
+}
+
+void Process::setUpdating(bool f)
+{
+    if (m_updatingFlag != f) {
+        m_updatingFlag = f;
+        emit updatingChanged(f);
+    }
+}
+
+bool Process::isCooking() const
+{
+    return m_cookingFlag;
+}
+
+void Process::setCooking(bool f)
+{
+    if (m_cookingFlag != f) {
+        m_cookingFlag = f;
+        emit cookingChanged(f);
+    }
+}
+
+void Process::onUpdateAtIndex(int i, const QVariant context)
+{
+    trace() << ".onUpdateAtIndex(" << i << "," << context << ")";
+    setUpdating(true);
+    if (m_argv.isEmpty()) {
+        debug() << "no args, skipping update";
+        setUpdating(false);
+        emit updatedAtIndex(i, OperationAttached::Finished);
+        return;
+    }
+
+    Q_ASSERT(!m_cookingFlag);
+    executeAtIndex(i, context);
+}
+
 void Process::onCookAtIndex(int i, const QVariant context)
 {
     trace() << ".onCookAtIndex(" << i << "," << context << ")";
-    debug() << "intially details are:" << details();
+    setCooking(true);
+    if (m_argv.isEmpty()) {
+        debug() << "no args, skipping cook";
+        setCooking(false);
+        emit cookedAtIndex(i, OperationAttached::Finished);
+        return;
+    }
+
+    Q_ASSERT(!m_updatingFlag);
+    executeAtIndex(i, context);
+}
+
+void Process::executeAtIndex(int i, const QVariant context)
+{
+    Q_ASSERT(m_updatingFlag || m_cookingFlag);
 
     setIndex(i);
 
@@ -137,6 +195,7 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
 {
     trace() << ".handleFinishedProcess(" << process << "," << status << ")";
     Q_ASSERT(process);
+    Q_ASSERT(m_cookingFlag || m_updatingFlag);
 
     int i = m_processes.indexOf(process);
     Q_ASSERT(i >= 0);
@@ -146,79 +205,29 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     debug() << "stdout:" << stdout;
 
     QVariantMap context = m_contexts.take(process);
-//    if (!parseDetails(stdout, context)) {
-        setDetail(i, "context", toScriptValue(context));
-        setDetail(i, "process", "stdout", toScriptValue(stdout));
-        setDetail(i, "process", "exitCode", toScriptValue(process->exitCode()));
-    //}
+    setDetail(i, "context", toScriptValue(context));
+    setDetail(i, "process", "stdout", toScriptValue(stdout));
+    setDetail(i, "process", "exitCode", toScriptValue(process->exitCode()));
 
     m_processes[i] = 0;
     process->deleteLater();
 
-    emit detailsChanged();
-    emit cookedAtIndex(i, status);
+    int finishedProcessCount = 0;
+    qCount(m_processes, static_cast<QProcess *>(0), finishedProcessCount);
+    if (m_updatingFlag) {
+        if (finishedProcessCount == count()) {
+            // all done
+            setUpdating(false);
+        }
+        emit updatedAtIndex(i, status);
+    } else if (m_cookingFlag) {
+        if (finishedProcessCount == count()) {
+            // all done
+            setCooking(false);
+        }
+        emit cookedAtIndex(i, status);
+    }
 }
-
-//bool Process::parseDetails(const QString stdout, const QVariantMap context)
-//{
-//    trace() << ".parseDetails(" << stdout << "," << context << ")";
-//    QRegularExpression regex("^begin-json details$(.*)^====$",
-//            QRegularExpression::DotMatchesEverythingOption|
-//            QRegularExpression::MultilineOption);
-//
-//    QRegularExpressionMatch match = regex.match(stdout);
-//
-//    if (match.hasMatch()) {
-//        QJsonDocument json = QJsonDocument::fromJson(match.captured(1).trimmed().toUtf8());
-//        if (json.isArray()) {
-//            QVariantList l = json.toVariant().toList();
-//
-//            ElementManagerAttached *elementManagerAttached = attachedPropertiesObject<ElementManager, ElementManagerAttached>();
-//            Q_ASSERT(elementManagerAttached);
-//
-//            int index = e;
-//            foreach (const QVariant v, l) {
-//                QVariantMap m = v.toMap();
-//
-//                QMapIterator<QString, QVariant> i(m);
-//                while (i.hasNext()) {
-//                    i.next();
-//                    if (i.key() == "element") {
-//                        Element *element = new Element(this);
-//                        element->setPattern(i.value().toMap()["pattern"].toString());
-//
-//                        // TODO: frames
-//
-//                        setDetail(index, i.key(), newQObject(element));
-//                    } else if (i.key() == "context") {
-//                        QVariantMap detailContext = m["context"].toMap();
-//                        // merge contexts
-//                        QMapIterator<QString, QVariant> i(context);
-//                        while (i.hasNext()) {
-//                            i.next();
-//                            // don't overwrite
-//                            if (!detailContext.contains(i.key()))
-//                                detailContext.insert(i.key(), i.value());
-//                        }
-//                        setDetail(index, i.key(), toScriptValue(detailContext));
-//                    } else {
-//                        setDetail(index, i.key(), toScriptValue(i.value()));
-//                    }
-//                }
-//                index++;
-//            }
-//
-//            return true;
-//        } else {
-//            error() << "json written to stdout is not an array";
-//            return false;
-//        }
-//    } else {
-//        // no json matched
-//        debug() << "no json matched from" << stdout;
-//        return false;
-//    }
-//}
 
 void Process::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
