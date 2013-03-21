@@ -4,6 +4,10 @@
 #include <QFile>
 #include <QDir>
 #include <QCoreApplication>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
 
 #include "tractoroperation.h"
 #include "tractortask.h"
@@ -11,7 +15,6 @@
 #include "tractorjob.h"
 #include "node.h"
 #include "folder.h"
-#include "serializers.h"
 
 TractorOperationAttached::TractorOperationAttached(QObject *parent) :
         OperationAttached(parent),
@@ -90,31 +93,30 @@ void TractorOperationAttached::generateTask()
     m_tractorTask = new TractorTask(parentAttached() ? parentAttached()->m_tractorTask : 0);
     m_tractorTask->setTitle(node()->objectName());
 
-    // find the first branch parent and get the path
+    // find the first folder parent and get the context
     Folder *branch = node()->firstParent<Folder>();
     if (!branch) {
         setStatus(OperationAttached::Finished);
         return;
     }
 
-    QString branchPath = branch->details().property(0).property("element").property("pattern").toString();
-    if (branchPath.isEmpty())
-    {
-        error() << branch << ".elements has no entries";
-        return;
+    const QString tractorDataDirPattern = context()["TRACTOR_DATA_DIR"].toString();
+    if (branch->fieldsComplete(tractorDataDirPattern, context())) {
+        // build a unique path for this tractor job and node (%j is replaced by tractor with job id)
+        QString tractorDataDir = QDir(branch->formatFields(tractorDataDirPattern, context())).filePath("%j");
+
+        // get the executable path
+        QString pugExecutable = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("pug");
+
+        TractorRemoteCmd *cmd = new TractorRemoteCmd(m_tractorTask);
+        cmd->setCmd(QString("%1 %2 -properties mode=Execute -context TRACTOR_DATA_DIR=%4 %3").arg(pugExecutable).arg(operation()->objectName()).arg(node()->path()).arg(tractorDataDir));
+        m_tractorTask->addCmd(cmd);
+
+        setStatus(OperationAttached::Finished);
+    } else {
+        error() << node() << "Can't map TRACTOR_DATA_DIR=" << tractorDataDirPattern << "with" << context();
+        setStatus(OperationAttached::Error);
     }
-
-    // build a unique path for this tractor job and node (%j is replaced by tractor with job id)
-    QString tractorDataDir = QDir(QDir(branchPath).filePath("tractor")).filePath("%j");
-
-    // get the executable path
-    QString pugExecutable = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("pug");
-
-    TractorRemoteCmd *cmd = new TractorRemoteCmd(m_tractorTask);
-    cmd->setCmd(QString("%1 %2 -properties mode=Execute -context TRACTOR_DATA_DIR=%4 %3").arg(pugExecutable).arg(operation()->objectName()).arg(node()->path()).arg(tractorDataDir));
-    m_tractorTask->addCmd(cmd);
-
-    setStatus(OperationAttached::Finished);
 }
 
 void TractorOperationAttached::executeTask()
@@ -180,32 +182,34 @@ void TractorOperationAttached::writeTractorData(const QString &dataPath) const
         return;
     }
 
-    QQmlContext *context = QQmlEngine::contextForObject(node());
-    Q_ASSERT(context);
-    JSDataStream out(context->engine(), &file);
+    QJsonObject obj;
+    obj.insert("details", QJsonArray::fromVariantList(node()->details().toVariant().toList()));
+    obj.insert("statuses", QJsonArray::fromVariantList(tractorAttachedStatuses(targetOperation)));
 
     // write details and statuses to data dir
-    out << node()->details();
-
-    writeTractorAttachedStatuses(out, targetOperation);
+    file.write(QJsonDocument(obj).toJson());
 }
 
-void TractorOperationAttached::writeTractorAttachedStatuses(QDataStream &stream, const Operation *operation) const
+const QVariantList TractorOperationAttached::tractorAttachedStatuses(const Operation *operation, const QVariantList statuses) const
 {
+    QVariantList result = statuses;
+
     // write dependency statuses
     foreach(const Operation *dep, operation->dependencies()) {
-        writeTractorAttachedStatuses(stream, dep);
+        result = tractorAttachedStatuses(dep, result);
     }
 
     // write own status
     const OperationAttached *attached = node()->attachedPropertiesObject<OperationAttached>(operation->metaObject());
     Q_ASSERT(attached->status() != OperationAttached::Invalid);
-    stream << static_cast<int>(attached->status());
+    result << static_cast<int>(attached->status());
 
     // write trigger statuses
     foreach(const Operation *trig, operation->triggers()) {
-        writeTractorAttachedStatuses(stream, trig);
+        tractorAttachedStatuses(trig, result);
     }
+
+    return result;
 }
 
 void TractorOperationAttached::readTractorData(const QString &dataPath)
@@ -223,45 +227,44 @@ void TractorOperationAttached::readTractorData(const QString &dataPath)
         return;
     }
 
-    QQmlContext *context = QQmlEngine::contextForObject(node());
-    Q_ASSERT(context);
-    JSDataStream in(context->engine(), &file);
+    QJsonObject obj = QJsonDocument::fromJson(file.readAll()).object();
 
-    QJSValue details;
-    in >> details;
-    node()->setDetails(details);
+    node()->setDetails(toScriptValue(obj["details"].toArray().toVariantList()));
 
     // TODO: error handling
 
-    readTractorAttachedStatuses(in, targetOperation);
+    QVariantList leftovers = setTractorAttachedStatuses(targetOperation, obj["statuses"].toArray().toVariantList());
 
-    Q_ASSERT(in.atEnd());
+    Q_ASSERT(leftovers.isEmpty());
 }
 
-void TractorOperationAttached::readTractorAttachedStatuses(QDataStream &stream, Operation *operation)
+const QVariantList TractorOperationAttached::setTractorAttachedStatuses(Operation *operation, const QVariantList statuses)
 {
+    QVariantList result = statuses;
+
     // read dependency statuses
     foreach(Operation *dep, operation->dependencies()) {
-        readTractorAttachedStatuses(stream, dep);
+        result = setTractorAttachedStatuses(dep, result);
     }
 
     // read own status
     OperationAttached *attached = node()->attachedPropertiesObject<OperationAttached>(operation->metaObject());
 
-    int status;
-    stream >> status;
+    int status = result.takeFirst().toInt();
     attached->setStatus(static_cast<OperationAttached::Status>(status));
     Q_ASSERT(static_cast<OperationAttached::Status>(status) != OperationAttached::Invalid);
 
     // read trigger statuses
     foreach(Operation *trig, operation->triggers()) {
-        readTractorAttachedStatuses(stream, trig);
+        result = setTractorAttachedStatuses(trig, result);
     }
+
+    return result;
 }
 
 const QString TractorOperationAttached::tractorDataPath() const
 {
-    QString filename = node()->path() + ".dat";
+    QString filename = node()->path() + ".json";
     filename.replace(QDir::separator(), '-');
     QString path = QDir(context()["TRACTOR_DATA_DIR"].toString()).filePath(filename);
     return path;

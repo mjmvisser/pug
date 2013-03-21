@@ -36,7 +36,6 @@
 #include "tractoroperation.h"
 
 #include "pugplugin.h"
-#include "serializers.h"
 
 static QObject *Util_provider(QQmlEngine *engine, QJSEngine *scriptEngine)
 {
@@ -44,86 +43,6 @@ static QObject *Util_provider(QQmlEngine *engine, QJSEngine *scriptEngine)
     Q_UNUSED(scriptEngine)
     return new Util();
 }
-
-//// template specializations so we can instantiate Element and FrameList
-//
-//namespace QtMetaTypePrivate {
-//template <>
-//struct QMetaTypeFunctionHelper<Element, true> {
-//    static void Delete(void *t)
-//    {
-//        delete static_cast<Element*>(t);
-//    }
-//
-//    static void *Create(const void *t)
-//    {
-//        Q_UNUSED(t)
-//        return new Element();
-//    }
-//
-//    static void Destruct(void *t)
-//    {
-//        Q_UNUSED(t) // Silence MSVC that warns for POD types.
-//        static_cast<Element*>(t)->~Element();
-//    }
-//
-//    static void *Construct(void *where, const void *t)
-//    {
-//        Q_UNUSED(t)
-//        return new (where) Element;
-//    }
-//#ifndef QT_NO_DATASTREAM
-//    static void Save(QDataStream &stream, const void *t)
-//    {
-//        stream << *static_cast<const Element*>(t);
-//    }
-//
-//    static void Load(QDataStream &stream, void *t)
-//    {
-//        stream >> *static_cast<Element*>(t);
-//    }
-//#endif // QT_NO_DATASTREAM
-//};
-//}
-//
-//namespace QtMetaTypePrivate {
-//template <>
-//struct QMetaTypeFunctionHelper<FrameList, true> {
-//    static void Delete(void *t)
-//    {
-//        delete static_cast<FrameList*>(t);
-//    }
-//
-//    static void *Create(const void *t)
-//    {
-//        Q_UNUSED(t)
-//        return new FrameList();
-//    }
-//
-//    static void Destruct(void *t)
-//    {
-//        Q_UNUSED(t) // Silence MSVC that warns for POD types.
-//        static_cast<FrameList*>(t)->~FrameList();
-//    }
-//
-//    static void *Construct(void *where, const void *t)
-//    {
-//        Q_UNUSED(t)
-//        return new (where) FrameList;
-//    }
-//#ifndef QT_NO_DATASTREAM
-//    static void Save(QDataStream &stream, const void *t)
-//    {
-//        stream << *static_cast<const FrameList*>(t);
-//    }
-//
-//    static void Load(QDataStream &stream, void *t)
-//    {
-//        stream >> *static_cast<FrameList*>(t);
-//    }
-//#endif // QT_NO_DATASTREAM
-//};
-//}
 
 void PugPlugin::registerTypes(const char *uri)
 {

@@ -67,7 +67,6 @@ PugTestCase {
                 id: workBranch
                 name: "workBranch"
                 pattern: "work/"
-                root: foo
                 
                 File {
                     id: workFile
@@ -98,7 +97,7 @@ PugTestCase {
     }
 
     function test_tractorOperationGenerate() {
-        var context = {ROOT: tmpDir, FOO: "foo", TITLE: "title of record"};
+        var context = {ROOT: tmpDir, FOO: "foo", TITLE: "title of record", TRACTOR_DATA_DIR: "{ROOT}tractortests/abc/tractor"};
 
         tractor.mode = TractorOperation.Generate;
         
@@ -130,14 +129,14 @@ PugTestCase {
                 
                 if (nodes[i].name == "workFile") {
                     verify(nodes[i].details);
-                    compare(nodes[i].details[0].element.path, tmpDir + "tractortests/abc/foo/work/baa.txt");
-                    compare(nodes[i].details[1].element.path, tmpDir + "tractortests/abc/foo/work/bar.txt");
-                    compare(nodes[i].details[2].element.path, tmpDir + "tractortests/abc/foo/work/baz.txt");
+                    compare(nodes[i].details[0].element.pattern, tmpDir + "tractortests/abc/foo/work/baa.txt");
+                    compare(nodes[i].details[1].element.pattern, tmpDir + "tractortests/abc/foo/work/bar.txt");
+                    compare(nodes[i].details[2].element.pattern, tmpDir + "tractortests/abc/foo/work/baz.txt");
                 } else if (nodes[i].name == "cookFile") {
                     verify(nodes[i].details);
-                    compare(nodes[i].details[0].element.path, tmpDir + "tractortests/abc/foo/work/cooked/baa.txt");
-                    compare(nodes[i].details[1].element.path, tmpDir + "tractortests/abc/foo/work/cooked/bar.txt");
-                    compare(nodes[i].details[2].element.path, tmpDir + "tractortests/abc/foo/work/cooked/baz.txt");
+                    compare(nodes[i].details[0].element.pattern, tmpDir + "tractortests/abc/foo/work/cooked/baa.txt");
+                    compare(nodes[i].details[1].element.pattern, tmpDir + "tractortests/abc/foo/work/cooked/bar.txt");
+                    compare(nodes[i].details[2].element.pattern, tmpDir + "tractortests/abc/foo/work/cooked/baz.txt");
                 }
             }
             

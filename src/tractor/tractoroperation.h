@@ -47,10 +47,10 @@ private:
     const QString tractorDataPath() const;
 
     void writeTractorData(const QString &dataPath) const;
-    void writeTractorAttachedStatuses(QDataStream &stream, const Operation *operation) const;
+    const QVariantList tractorAttachedStatuses(const Operation *operation, const QVariantList statuses=QVariantList()) const;
 
     void readTractorData(const QString &dataPath);
-    void readTractorAttachedStatuses(QDataStream &stream, Operation *operation);
+    const QVariantList setTractorAttachedStatuses(Operation *operation, const QVariantList statuses);
 
     QString m_serviceKey;
     bool m_serialSubtasksFlag;
