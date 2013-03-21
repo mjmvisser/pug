@@ -77,9 +77,6 @@ public:
     const Node *rootBranch() const;
     Node *rootBranch();
 
-//    Q_INVOKABLE QJSValue detail(int index, const QString arg1=QString(), const QString arg2=QString(),
-//                                const QString arg3=QString(), const QString arg4=QString(), const QString arg5=QString()) const;
-
     Q_INVOKABLE void setDetail(int, QJSValue, bool=true);
     Q_INVOKABLE void setDetail(int, const QString, QJSValue, bool=true);
     Q_INVOKABLE void setDetail(int, const QString, const QString, QJSValue, bool=true);
