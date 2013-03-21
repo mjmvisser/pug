@@ -294,6 +294,8 @@ void OperationAttached::continueRunning()
             // we should never get here
             error() << node() << "status is invalid";
             Q_ASSERT(false);
+            //setStatus(OperationAttached::Error);
+            //emit finished(this);
             break;
         }
         break;
