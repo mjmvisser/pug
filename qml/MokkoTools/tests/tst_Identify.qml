@@ -45,7 +45,6 @@ TestCase {
         compare(file.details.length, 1);
         compare(identify.CookOperation.status, Operation.Finished);
         compare(identify.details.length, 1);
-        compare(identify.details[0].element.pattern, testImagePath);
         compare(identify.details[0].identify.FORMAT, "82x104");
     }
 }
