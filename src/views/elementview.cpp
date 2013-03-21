@@ -219,7 +219,7 @@ const QList<int> ElementView::framesList() const
 {
     QList<int> result;
     for (int i = 0; i < m_frames.length(); i++)
-        result.append(i);
+        result.append(m_frames[i]->frame());
     qSort(result);
     return result;
 }
