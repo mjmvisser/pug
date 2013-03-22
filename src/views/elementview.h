@@ -35,6 +35,7 @@ public:
     Q_INVOKABLE bool isSequence() const;
 
     QQmlListProperty<FrameView> frames_();
+    Q_INVOKABLE void setFrames(const QQmlListReference &list);
 
     const FrameView *frameAt(int index) const;
     FrameView *frameAt(int index);

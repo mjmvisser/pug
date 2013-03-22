@@ -54,6 +54,15 @@ QQmlListProperty<FrameView> ElementView::frames_()
                                        ElementView::frame_at);
 }
 
+void ElementView::setFrames(const QQmlListReference &ref)
+{
+    ElementView *that = static_cast<ElementView *>(ref.object());
+    setFrameCount(that->frameCount());
+    for (int i = 0; i < frameCount(); i++) {
+        m_frames[i]->setFrame(that->m_frames[i]->frame());
+    }
+}
+
 int ElementView::frame_count(QQmlListProperty<FrameView> *prop)
 {
     ElementView *that = static_cast<ElementView *>(prop->object);
