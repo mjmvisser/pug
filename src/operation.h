@@ -17,7 +17,8 @@ class Node;
 class OperationAttached : public PugItem
 {
     Q_OBJECT
-    Q_PROPERTY(Status status READ status WRITE setStatus NOTIFY statusChanged)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(QVariantMap context READ context NOTIFY contextChanged)
     Q_ENUMS(Status)
 public:
     // these are listed in order of increasing comparison precedence
@@ -29,10 +30,6 @@ public:
     void setStatus(Status);
 
     const QVariantMap context() const;
-
-    const QList<Node *> upstream();
-    Q_INVOKABLE const QVariantList upstreamNodes();
-    const QList<const Node *> upstream() const;
 
     // use like this: foo->operation<MyOperation>()
     template <class T>
@@ -58,6 +55,7 @@ public:
 
 signals:
     void statusChanged(Status status);
+    void contextChanged(QVariant context);
     void finished(OperationAttached *operation);
 
 protected slots:
@@ -114,6 +112,8 @@ protected:
     }
 
 private:
+    void setContext(const QVariantMap);
+
     Status m_status;
     QVariantMap m_context;
     Operation *m_operation;

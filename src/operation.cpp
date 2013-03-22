@@ -147,7 +147,7 @@ void OperationAttached::resetAll(const QVariantMap context)
 
     info() << "Resetting" << node() << "to" << context;
 
-    m_context = context;
+    setContext(context);
 
     // reset ourself
     reset();
@@ -348,6 +348,14 @@ void OperationAttached::onChildFinished(OperationAttached *attached)
             &OperationAttached::onChildFinished);
     // continue cooking
     continueRunning();
+}
+
+void OperationAttached::setContext(const QVariantMap context)
+{
+    if (m_context != context) {
+        m_context = context;
+        emit contextChanged(context);
+    }
 }
 
 Operation::Operation(QObject *parent) :
