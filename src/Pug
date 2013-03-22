@@ -7,6 +7,4 @@
 #include "file.h"
 #include "operation.h"
 #include "pugitem.h"
-#include "framelist.h"
-#include "element.h"
 #include "pug.h"
