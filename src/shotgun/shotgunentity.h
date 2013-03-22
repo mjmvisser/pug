@@ -25,14 +25,6 @@ public:
     Branch *branch();
 
     QQmlListProperty<ShotgunField> shotgunFields_();
-    // filters for find
-    Q_INVOKABLE const QVariantList buildFilters(const QVariantMap fields) const;
-
-    // data for create
-    Q_INVOKABLE const QVariantMap buildData(const QVariantMap fields) const;
-
-    // list of fields by name
-    Q_INVOKABLE const QStringList buildFields() const;
 
 signals:
     void shotgunEntityNameChanged(const QString shotgunEntity);
@@ -52,7 +44,6 @@ protected slots:
     void onShotgunPush(const QVariant context, Shotgun *shotgun);
 
 private slots:
-    void onBranchCountChanged(int count);
     void onReadFinished(const QVariant);
     void onCreateFinished(const QVariant);
     void onBatchCreateFinished(const QVariant);
