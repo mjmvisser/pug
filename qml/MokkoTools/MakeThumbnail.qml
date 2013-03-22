@@ -3,7 +3,7 @@ import Pug 1.0
 
 Process {
     id: self
-    property File input
+    property Node input
     property bool filmstrip: false 
 
     count: input ? input.count : 0
@@ -34,11 +34,15 @@ Process {
             return [];
         }
     }
+
+    onUpdatedAtIndex: {
+        var elementsView = Util.elementsView(self);
+        elementsView.elements[index].pattern = __outputPath(index); 
+    }
     
     onCookedAtIndex: {
-        info("Generating thumbnail " + argv[4] + " from " + argv[2]);
         var elementsView = Util.elementsView(self);
-        elementsView.elements[index].pattern = __outputPath(index) 
+        elementsView.elements[index].pattern = __outputPath(index); 
     }
     
 }

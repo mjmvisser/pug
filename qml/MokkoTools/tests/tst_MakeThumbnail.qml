@@ -66,6 +66,9 @@ TestCase {
         compare(cook.status, Operation.Finished)        
         compare(seq.details.length, 1);
         compare(makeThumbnail.details.length, 1);
+        
+        var elementsView = Util.elementsView(makeThumbnail);
+        verify(Util.exists(elementsView.elements[0].path()));
     }
     
     function test_makeFilmstrip() {
@@ -76,6 +79,9 @@ TestCase {
         compare(cook.status, Operation.Finished)        
         compare(seq.details.length, 1);
         compare(makeFilmstrip.details.length, 1);
+        
+        var elementsView = Util.elementsView(makeFilmstrip);
+        verify(Util.exists(elementsView.elements[0].path()));
     }
     
 }
