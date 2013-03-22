@@ -63,20 +63,4 @@ Process {
     onCookAtIndex: {
         __setDetails(index, context);
     }
-
-    // additional outputs
-    property MakeThumbnail thumbnail: thumbnail
-    property MakeThumbnail filmstrip: filmstrip
-
-    MakeThumbnail {
-        id: thumbnail
-        input: self
-        filmstrip: false
-    }
-
-    MakeThumbnail {
-        id: filmstrip
-        input: self
-        filmstrip: true
-    }
 }
