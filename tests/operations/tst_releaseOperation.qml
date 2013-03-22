@@ -82,21 +82,20 @@ PugTestCase {
                 id: releaseBranch
                 name: "releaseBranch"
                 pattern: "release/main/v{VERSION}/"
-                root: foo
                 ReleaseOperation.versionField: "VERSION"
                 
                 File {
                     id: releaseFile
                     name: "releaseFile"
                     pattern: "{BAR}.txt"
-                    root: releaseBranch
+                    ReleaseOperation.source: workFile
 
                 }
                 File {
                     id: releaseSeq
                     name: "releaseSeq"
                     pattern: "{DAG}.{FRAME}.txt"
-                    root: releaseBranch
+                    ReleaseOperation.source: workSeq
                 }
             }
             
@@ -110,16 +109,12 @@ PugTestCase {
                     id: workFile
                     name: "workFile"
                     pattern: "{BAR}.txt"
-                    root: workBranch
-                    ReleaseOperation.target: releaseFile
                 }
                 
                 File {
                     id: workSeq
                     name: "workSeq"
                     pattern: "{DAG}.{FRAME}.txt"
-                    root: workBranch
-                    ReleaseOperation.target: releaseSeq
                 }
             }
         }
@@ -151,7 +146,7 @@ PugTestCase {
         var workFileElementsView = Util.elementsView(workFile);
         var releaseFileElementsView = Util.elementsView(releaseFile);
         
-        release.run(workFile, context);
+        release.run(releaseFile, context);
         releaseSpy.wait(500);
         compare(release.status, Operation.Finished);
         compare(workFile.details.length, 1);
@@ -163,7 +158,7 @@ PugTestCase {
         compare(releaseFile.details.length, 1);
         verify(Util.exists(releasePath_v003));
         
-        release.run(workFile, context);
+        release.run(releaseFile, context);
         releaseSpy.wait(500);
         compare(release.status, Operation.Finished);
         compare(workFile.ReleaseOperation.status, Operation.Finished);
@@ -184,12 +179,12 @@ PugTestCase {
     
     function test_releaseSequence() {
         var context = {ROOT: tmpDir, FOO: "foo", DAG: "dag"};
-        update.run(workSeq, context);
+        update.run(releaseSeq, context);
         updateSpy.wait(500);
 
         var releaseSeqElementsView = Util.elementsView(releaseSeq);
         
-        release.run(workSeq, context);
+        release.run(releaseSeq, context);
         releaseSpy.wait(500);
         
         var releasePath = tmpDir + "releasetests/abc/foo/release/main/v003/dag.%04d.txt";

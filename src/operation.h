@@ -12,6 +12,8 @@
 class Operation;
 class Node;
 
+// TODO: add params
+
 class OperationAttached : public PugItem
 {
     Q_OBJECT
@@ -27,6 +29,10 @@ public:
     void setStatus(Status);
 
     const QVariantMap context() const;
+
+    const QList<Node *> upstream();
+    Q_INVOKABLE const QVariantList upstreamNodes();
+    const QList<const Node *> upstream() const;
 
     // use like this: foo->operation<MyOperation>()
     template <class T>
@@ -57,25 +63,18 @@ signals:
 protected slots:
     void onInputFinished(OperationAttached *);
     void onChildFinished(OperationAttached *);
-    virtual void onExtraFinished(OperationAttached *);
 
 protected:
     Status inputsStatus() const;
     Status childrenStatus() const;
-    virtual Status extraStatus() const;
-    Status dependenciesStatus() const;
 
     void resetInputsStatus();
     void resetChildrenStatus();
-    virtual void resetExtraStatus();
 
     void resetChildren();
 
     void runInputs();
     void runChildren();
-    virtual void runExtra();
-
-    void runDependencies();
 
     void continueRunning();
 

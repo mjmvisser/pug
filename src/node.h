@@ -95,6 +95,10 @@ public:
     qreal y() const;
     void setY(qreal);
 
+    Param *addParam(QObject *parent, const QString name);
+    Input *addInput(QObject *parent, const QString name);
+    Output *addOutput(const QString name);
+
 signals:
     void paramsChanged();
     void nodesChanged();
@@ -108,11 +112,7 @@ signals:
     void yChanged(qreal y);
 
 protected:
-    Param *addParam(const QString name);
-    Input *addInput(const QString name);
-    Output *addOutput(const QString name);
-
-    virtual void componentComplete();
+    virtual void classBegin();
 
     template <typename T>
     QJSValue toScriptValue(T value) const

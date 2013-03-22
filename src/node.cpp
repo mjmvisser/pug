@@ -421,30 +421,27 @@ const QList<const Node *> Node::upstream() const
     QList<const Node *> result;
     // loop through inputs and find upstream nodes
     foreach (const Input *in, m_inputs) {
-        if (hasProperty(in->name().toUtf8())) {
-            const QVariant v = QQmlProperty::read(const_cast<Node *>(this), in->name());
-            if (v.canConvert<Node *>()) {
-                // single input
-                const Node *input = v.value<Node*>();
+        const QVariant v = QQmlProperty::read(in->QObject::parent(), in->name());
+        debug() << "input property" << in->name() << "is" << v;
+        if (v.canConvert<Node *>()) {
+            // single input
+            const Node *input = v.value<Node*>();
+            if (input) {
+                result.append(input);
+            }
+        } else if (v.canConvert<QQmlListReference>()) {
+            // multi-input
+            QQmlListReference l = v.value<QQmlListReference>();
+            for (int i = 0; i < l.count(); i++) {
+                const Node *input = qobject_cast<const Node *>(l.at(i));
                 if (input) {
                     result.append(input);
                 }
-            } else if (v.canConvert<QQmlListReference>()) {
-                // multi-input
-                QQmlListReference l = v.value<QQmlListReference>();
-                for (int i = 0; i < l.count(); i++) {
-                    const Node *input = qobject_cast<const Node *>(l.at(i));
-                    if (input) {
-                        result.append(input);
-                    }
-                }
-            } else if (v.isNull()) {
-                // skip
-            } else {
-                error() << "can't interpret input" << in->name() << v;
             }
+        } else if (v.isNull()) {
+            // skip
         } else {
-            error() << "can't find input" << in->name();
+            error() << "can't interpret input" << in->name() << v;
         }
     }
     trace() << "    ->" << result;
@@ -472,30 +469,26 @@ const QList<const Node *> Node::upstream(const Input *in) const
 {
     trace() << ".upstream(" << in << ")";
     QList<const Node *> result;
-    if (hasProperty(in->name().toUtf8())) {
-        const QVariant v = QQmlProperty::read(const_cast<Node *>(this), in->name());
-        if (v.canConvert<Node *>()) {
-            // single input
-            const Node *input = v.value<Node *>();
+    const QVariant v = QQmlProperty::read(in->QObject::parent(), in->name());
+    if (v.canConvert<Node *>()) {
+        // single input
+        const Node *input = v.value<Node *>();
+        if (input) {
+            result.append(input);
+        }
+    } else if (v.canConvert<QQmlListReference>()) {
+        // multi-input
+        QQmlListReference l = v.value<QQmlListReference>();
+        for (int i = 0; i < l.count(); i++) {
+            const Node *input = qobject_cast<const Node *>(l.at(i));
             if (input) {
                 result.append(input);
             }
-        } else if (v.canConvert<QQmlListReference>()) {
-            // multi-input
-            QQmlListReference l = v.value<QQmlListReference>();
-            for (int i = 0; i < l.count(); i++) {
-                const Node *input = qobject_cast<const Node *>(l.at(i));
-                if (input) {
-                    result.append(input);
-                }
-            }
-        } else if (v.isNull()) {
-            // skip
-        } else {
-            error() << "can't interpret input" << in->name() << v;
         }
+    } else if (v.isNull()) {
+        // skip
     } else {
-        error() << "can't find input" << in->name();
+        error() << "can't interpret input" << in->name() << v;
     }
     trace() << "    ->" << result;
     return result;
@@ -729,18 +722,18 @@ void Node::setContext(int index, const QVariantMap v, bool emitChanged)
     }
 }
 
-Param *Node::addParam(const QString name)
+Param *Node::addParam(QObject *parent, const QString name)
 {
-    Param *param = new Param(this);
+    Param *param = new Param(parent);
     param->setName(name);
     m_params.append(param);
     emit paramsChanged();
     return param;
 }
 
-Input *Node::addInput(const QString name)
+Input *Node::addInput(QObject *parent, const QString name)
 {
-    Input *input = new Input(this);
+    Input *input = new Input(parent);
     input->setName(name);
     m_inputs.append(input);
     emit inputsChanged();
@@ -756,7 +749,7 @@ Output *Node::addOutput(const QString name)
     return output;
 }
 
-void Node::componentComplete()
+void Node::classBegin()
 {
     trace() << "componentComplete()";
     m_details = newArray();

@@ -70,8 +70,8 @@ Branch::Branch(QObject *parent) :
     Node(parent),
     m_root()
 {
-    addInput("root");
-    addParam("pattern");
+    addInput(this, "root");
+    addParam(this, "pattern");
 }
 
 const QList<const Field *> Branch::fields(const QStringList fieldNameList) const

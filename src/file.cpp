@@ -25,8 +25,10 @@ File::File(QObject *parent) :
     connect(this, &File::update, this, &File::onUpdate);
     connect(this, &File::cookAtIndex, this, &File::onCookAtIndex);
 
-    Input *input = addInput("input");
+    Input *input = addInput(this, "input");
     input->setDependency(Input::Frame);
+
+    addParam(this, "linkType");
 }
 
 Node *File::input()

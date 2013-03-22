@@ -92,30 +92,6 @@ OperationAttached::Status OperationAttached::childrenStatus() const
     return status;
 }
 
-OperationAttached::Status OperationAttached::extraStatus() const
-{
-    return OperationAttached::Invalid;
-}
-
-OperationAttached::Status OperationAttached::dependenciesStatus() const
-{
-    OperationAttached::Status status = OperationAttached::Invalid;
-
-    OperationAttached::Status is = inputsStatus();
-
-    if (is > status)
-        status = is;
-
-    OperationAttached::Status es = extraStatus();
-
-    if (es > status)
-        status = es;
-
-    trace() << node() << ".dependenciesStatus() ->" << status;
-
-    return status;
-}
-
 void OperationAttached::resetInputsStatus()
 {
     // reset inputs
@@ -137,10 +113,6 @@ void OperationAttached::resetChildrenStatus()
     }
 }
 
-void OperationAttached::resetExtraStatus()
-{
-}
-
 void OperationAttached::resetAllStatus()
 {
     // already reset?
@@ -155,7 +127,6 @@ void OperationAttached::resetAllStatus()
 
     resetInputsStatus();
     resetChildrenStatus();
-    resetExtraStatus();
 }
 
 void OperationAttached::resetChildren()
@@ -174,7 +145,7 @@ void OperationAttached::resetAll(const QVariantMap context)
 {
     trace() << node() << ".resetAll(" << context << ")";
 
-    info() << "Resetting " << node() << "to" << context;
+    info() << "Resetting" << node() << "to" << context;
 
     m_context = context;
 
@@ -191,7 +162,7 @@ void OperationAttached::run(Operation *op)
 
     // possible values of status:
     //   - None: has not been run since reset
-    //   - Idle: run already called by another dependency
+    //   - Idle: run already called by another input
     //   - Finished: finished by another index
     Q_ASSERT(status() == OperationAttached::None
             || status() == OperationAttached::Idle
@@ -213,32 +184,32 @@ void OperationAttached::continueRunning()
     trace() << node() << ".continueRunning()";
     Q_ASSERT(m_operation);
 
-    OperationAttached::Status depStatus = dependenciesStatus();
+    OperationAttached::Status inStatus = inputsStatus();
     OperationAttached::Status childStatus = childrenStatus();
-    debug() << node() << "-- depStatus" << depStatus << "status" << status()
+    debug() << node() << "-- inStatus" << inStatus << "status" << status()
             << "childStatus" << childStatus;
 
-    switch (depStatus) {
+    switch (inStatus) {
     case OperationAttached::Running:
         break;
 
     case OperationAttached::Idle:
     case OperationAttached::None:
-        // dependencies haven't been run yet
-        runDependencies();
+        // inputs haven't been run yet
+        runInputs();
         break;
 
     case OperationAttached::Error:
-        // error in dependencies
+        // error in inputs
         debug() << node()
-                << ".continueRunning, depStatus is error, emitting finished";
+                << ".continueRunning, inStatus is error, emitting finished";
         setStatus(OperationAttached::Error);
         emit finished(this);
         break;
 
     case OperationAttached::Invalid:
     case OperationAttached::Finished:
-        // no dependencies or finished
+        // no inputs or finished
         switch (status()) {
         case OperationAttached::Running:
             // nothing to do
@@ -361,20 +332,6 @@ void OperationAttached::runChildren()
     }
 }
 
-void OperationAttached::runExtra()
-{
-}
-
-void OperationAttached::runDependencies()
-{
-    trace() << node() << ".runDependencies()";
-    Q_ASSERT(m_operation);
-    // TODO: check for cycles
-
-    runInputs();
-    runExtra();
-}
-
 void OperationAttached::onInputFinished(OperationAttached *attached)
 {
     trace() << node() << ".onInputFinished(" << attached->node() << ")";
@@ -389,15 +346,6 @@ void OperationAttached::onChildFinished(OperationAttached *attached)
     trace() << node() << ".onChildFinished(" << attached->node() << ")";
     disconnect(attached, &OperationAttached::finished, this,
             &OperationAttached::onChildFinished);
-    // continue cooking
-    continueRunning();
-}
-
-void OperationAttached::onExtraFinished(OperationAttached *attached)
-{
-    trace() << node() << ".onExtraFinished(" << attached->node() << ")";
-    disconnect(attached, SIGNAL(finished(OperationAttached *)),
-            this, SLOT(onExtraFinished(OperationAttached *)));
     // continue cooking
     continueRunning();
 }

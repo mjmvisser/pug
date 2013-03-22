@@ -14,7 +14,7 @@ class ReleaseOperationAttached : public OperationAttached
 {
     Q_OBJECT
     Q_ENUMS(Mode)
-    Q_PROPERTY(Branch *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(Branch *source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QString versionField READ versionFieldName WRITE setVersionFieldName NOTIFY versionFieldChanged)
     Q_PROPERTY(Mode mode READ mode WRITE setMode NOTIFY modeChanged)
 public:
@@ -22,9 +22,9 @@ public:
 
     explicit ReleaseOperationAttached(QObject *parent = 0);
 
-    Branch *target();
-    const Branch *target() const;
-    void setTarget(Branch *);
+    Branch *source();
+    const Branch *source() const;
+    void setSource(Branch *);
 
     const QString versionFieldName() const;
     void setVersionFieldName(const QString);
@@ -36,10 +36,10 @@ public:
     Q_INVOKABLE virtual void run();
 
     Q_INVOKABLE const QString findVersionFieldName() const;
-    Q_INVOKABLE int findLastVersion(const QVariantMap data) const;
+    Q_INVOKABLE int findLastVersion(const QVariantMap) const;
 
 signals:
-    void targetChanged(Branch *target);
+    void sourceChanged(Branch *source);
     void versionFieldChanged(const QString versionField);
     void modeChanged(Mode mode);
 
@@ -48,16 +48,14 @@ protected:
 
     virtual const QMetaObject *operationMetaObject() const;
 
-    void resetVersion(const QVariantMap context);
+    void resetVersion();
 
 private slots:
     void onFileOpQueueFinished();
     void onFileOpQueueError();
 
-    //void regenerateDetails();
-
 private:
-    Branch *m_target;
+    Branch *m_source;
     QString m_versionFieldName;
     int m_version;
     Mode m_mode;

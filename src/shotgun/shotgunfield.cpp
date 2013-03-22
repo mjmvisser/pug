@@ -12,17 +12,17 @@ ShotgunField::ShotgunField(QObject *parent) :
 {
     setActive(true);
 
-    addInput("file");
-    addInput("links");
+    addInput(this, "file");
+    addInput(this, "links");
 
-    addParam("field");
-    addParam("type");
-    addParam("pattern");
-    addParam("value");
-    addParam("displayName");
-    addParam("urlType");
-    addParam("contentType");
-    addParam("localStorage");
+    addParam(this, "field");
+    addParam(this, "type");
+    addParam(this, "pattern");
+    addParam(this, "value");
+    addParam(this, "displayName");
+    addParam(this, "urlType");
+    addParam(this, "contentType");
+    addParam(this, "localStorage");
 
     connect(this, &ShotgunField::shotgunPullAtIndex, this, &ShotgunField::onShotgunPullAtIndex);
     connect(this, &ShotgunField::shotgunPushAtIndex, this, &ShotgunField::onShotgunPushAtIndex);
