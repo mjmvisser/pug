@@ -3,32 +3,12 @@
 import sys, os, subprocess, math, json
 from optparse import OptionParser
 
-def frange(limit1, limit2 = None, increment = 1.):
-    """
-    Range function that accepts floats (and integers).
-    
-    Usage:
-    frange(-2, 2, 0.1)
-    frange(10)
-    frange(10, increment = 0.5)
-    
-    The returned value is an iterator.  Use list(frange) for a list.
-    """
-    
-    if limit2 is None:
-        limit2, limit1 = limit1, 0.
-    else:
-        limit1 = float(limit1)
-    
-    count = int(math.ceil(limit2 - limit1)/increment)
-    return (limit1 + n*increment for n in range(count))
-
 parser = OptionParser()
 parser.add_option("", "--inputPath", dest="input_path", metavar="FILE")
 parser.add_option("", "--outputPath", dest="output_path", metavar="FILE")
 parser.add_option("", "--filmstrip", dest="film_strip", action="store_true", default=False)
-parser.add_option("", "--firstFrame", dest="first_frame", type="float")
-parser.add_option("", "--lastFrame", dest="last_frame", type="float")
+parser.add_option("", "--firstFrame", dest="first_frame", type="int")
+parser.add_option("", "--lastFrame", dest="last_frame", type="int")
 
 (options, args) = parser.parse_args()
 
@@ -58,7 +38,7 @@ if options.film_strip:
     num_frames = max(num_frames, 5)
     num_frames = min(num_frames, 100)
     step = (options.last_frame - options.first_frame + 1) / num_frames
-    for frame in frange(options.first_frame, options.last_frame + 1, step):
+    for frame in range(options.first_frame, options.last_frame + 1, step):
         args += [options.input_path % frame, "-resize", "240x240"]
     args += ["+append", "-quality", "80", options.output_path]
 

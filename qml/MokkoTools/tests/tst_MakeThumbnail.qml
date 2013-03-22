@@ -18,28 +18,23 @@ TestCase {
         
         fields: FrameSpecField { name: "FRAME" }
         
-        Folder {
-            name: "mokkotoolstests"
-            pattern: "/usr/tmp/mokkotoolstests"
+        File {
+            id: seq
+            name: "seq"
+            pattern: testSequencePath
+        }
 
-            File {
-                id: seq
-                name: "seq"
-                pattern: testSequencePath
-            }
-    
-            MakeThumbnail {
-                name: "makeThumbnail"
-                id: makeThumbnail
-                input: seq
-            }
-            
-            MakeThumbnail {
-                name: "makeFilmstrip"
-                id: makeFilmstrip
-                input: seq
-                filmstrip: true
-            }
+        MakeThumbnail {
+            name: "makeThumbnail"
+            id: makeThumbnail
+            input: seq
+        }
+        
+        MakeThumbnail {
+            name: "makeFilmstrip"
+            id: makeFilmstrip
+            input: seq
+            filmstrip: true
         }
     }
     
@@ -60,7 +55,7 @@ TestCase {
     
     function test_makeThumbnail() {
         spy.clear();
-        cook.run(makeThumbnail, {});
+        cook.run(makeThumbnail, {"PUGWORK": "/usr/tmp/mokkotoolstests/"});
         spy.wait(5000);
 
         compare(cook.status, Operation.Finished)        
@@ -73,7 +68,7 @@ TestCase {
     
     function test_makeFilmstrip() {
         spy.clear();
-        cook.run(makeFilmstrip, {});
+        cook.run(makeFilmstrip, {"PUGWORK": "/usr/tmp/mokkotoolstests/"});
         spy.wait(5000);
 
         compare(cook.status, Operation.Finished)        

@@ -11,15 +11,12 @@ Process {
     inputs: Input { name: "input" }
     params: Param { name: "filmstrip" }
 
-    function __outputPath(index) {
+    function __outputPath(index, context) {
         var inputElementsView = Util.elementsView(input);
-        var directory = inputElementsView.elements[index].directory();
+        var directory = context["PUGWORK"] + (self.name ? self.name + "/" : "");
         var baseName = inputElementsView.elements[index].baseName();
         var ext = self.filmstrip ? "_filmstrip.jpg" : "_thumbnail.jpg";
-        if (typeof directory !== "undefined" && typeof baseName !== "undefined")
-            return directory + baseName + ext;
-        else
-            return "";
+        return directory + baseName + ext;
     }
 
     argv: {
@@ -27,22 +24,23 @@ Process {
             var inputElementsView = Util.elementsView(input);
             return [Qt.resolvedUrl("scripts/makeThumbnail.py").replace("file://", ""),
                     "--inputPath", inputElementsView.elements[index].pattern,
-                    "--outputPath", __outputPath(index),
+                    "--outputPath", __outputPath(index, CookOperation.context),
                     "--firstFrame", inputElementsView.elements[index].firstFrame(),
-                    "--lastFrame", inputElementsView.elements[index].lastFrame()]
+                    "--lastFrame", inputElementsView.elements[index].lastFrame(),
+                    "--filmstrip", filmstrip]
         } else {
             return [];
         }
     }
 
-    onUpdatedAtIndex: {
+    onUpdateAtIndex: {
         var elementsView = Util.elementsView(self);
-        elementsView.elements[index].pattern = __outputPath(index); 
+        elementsView.elements[index].pattern = __outputPath(index, context); 
     }
     
-    onCookedAtIndex: {
+    onCookAtIndex: {
         var elementsView = Util.elementsView(self);
-        elementsView.elements[index].pattern = __outputPath(index); 
+        elementsView.elements[index].pattern = __outputPath(index, context); 
     }
     
 }
