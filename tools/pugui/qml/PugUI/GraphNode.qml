@@ -4,7 +4,7 @@ import PugUI 1.0
 
 Item {
     id: self
-    property NodeBase node
+    property Node node
     property Item output: output
     
     x: node.x
