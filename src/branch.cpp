@@ -535,23 +535,18 @@ const QMap<QString, QFileInfoList> Branch::listMatchingPatterns(const QVariantMa
     }
 
     // now scan for files
-    if (root()) {
+    QString parentPath;
+    if (QFileInfo(pattern()).isAbsolute())
+        parentPath = QFileInfo(pattern()).dir().path();
+    else
+        parentPath = root()->map(context);
 
-        QString parentPath;
-        if (QFileInfo(pattern()).isAbsolute())
-            parentPath = QFileInfo(pattern()).dir().path();
-        else
-            parentPath = root()->map(context);
-
-        if (!parentPath.isEmpty()) {
-            QDir parentDir(parentPath);
-            if (parentDir.isAbsolute()) {
-                result = listMatchingPatternsHelper(parentDir, context, result);
-            } else {
-                warning() << ".map returned a relative path" << parentPath;
-            }
+    if (!parentPath.isEmpty()) {
+        QDir parentDir(parentPath);
+        if (parentDir.isAbsolute()) {
+            result = listMatchingPatternsHelper(parentDir, context, result);
         } else {
-            warning() << ".map returned an empty path!";
+            warning() << ".map returned a relative path" << parentPath;
         }
     }
 
