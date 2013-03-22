@@ -5,10 +5,10 @@ import "js/shotgunutils.js" as ShotgunUtils
 ShotgunEntity {
     shotgunEntity: "Element"
 
-    property var project
-    property var delivery
-    property var release
-    property var user
+    property ShotgunEntity project
+    property ShotgunEntity delivery
+    property ShotgunEntity release
+    property ShotgunEntity user
 
     property string code
     //property var sourcePathLink

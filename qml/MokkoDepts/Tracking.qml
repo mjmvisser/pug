@@ -10,7 +10,18 @@ Folder {
         id: release
         name: "release"
         pattern: "release/{VARIATION}/v{VERSION}"
-        ReleaseOperation.versionField: findField("VERSION")
+        ReleaseOperation.versionField: "VERSION"
+
+        ShotgunVersion {
+            id: sg_releaseFullUndistVersion
+            name: "sg_releaseFullUndistVersion"
+            project: node("/project/sg_project")
+            release: sg_releasePublishEvent
+            user: node("/sg_user")
+            code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
+            thumbnail: workFullUndistThumbnail
+            filmstrip: workFullUndistFilmstrip
+        }
 
         ShotgunPublishEvent {
             id: sg_releasePublishEvent
@@ -26,6 +37,7 @@ Folder {
             root: release
             name: "release3deScene"
             pattern: "3de/{SEQUENCE}_{SHOT}.3de"
+            ReleaseOperation.source: work3deScene
 
             ShotgunFile {
                 id: sg_release3deSceneFile
@@ -41,6 +53,7 @@ Folder {
             name: "releaseNukeScript"
             root: release
             pattern: "nk/{SEQUENCE}_{SHOT}_cam.nk"
+            ReleaseOperation.source: workNukeScript
 
             ShotgunFile {
                 id: sg_releaseNukeScriptFile
@@ -56,6 +69,7 @@ Folder {
             name: "releaseMelScript"
             root: release
             pattern: "mel/{SEQUENCE}_{SHOT}_cam.mel"
+            ReleaseOperation.source: workMelScript
 
             ShotgunFile {
                 id: sg_releaseMelScriptFile
@@ -71,6 +85,7 @@ Folder {
             name: "releaseLowUndist"
             root: release
             pattern: "render/1280x675/jpg/{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_{VERSION}_1280x675.%04d.jpg"
+            ReleaseOperation.source: workLowUndist
 
             ShotgunFile {
                 id: sg_releaseLowUndistFile
@@ -78,8 +93,8 @@ Folder {
                 project: node("/project/sg_project")
                 release: sg_releasePublishEvent
                 user: node("/sg_user")
-                thumbnail: workLow.thumbnail
-                filmstrip: workLow.filmstrip
+                thumbnail: workLowUndistThumbnail
+                filmstrip: workLowUndistFilmstrip
             }
         }
 
@@ -88,17 +103,7 @@ Folder {
             name: "releaseFullUndist"
             root: release
             pattern: "render/2560x1350/jpg/{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_{VERSION}_2560x1350.%04d.jpg"
-
-            ShotgunVersion {
-                id: sg_releaseFullUndistVersion
-                name: "sg_releaseFullUndistVersion"
-                project: node("/project/sg_project")
-                release: sg_releasePublishEvent
-                user: node("/sg_user")
-                code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
-                thumbnail: workFull.thumbnail
-                filmstrip: workFull.filmstrip
-            }
+            ReleaseOperation.source: workFullUndist
 
             ShotgunFile {
                 id: sg_releaseFullUndistFile
@@ -106,8 +111,8 @@ Folder {
                 project: node("/project/sg_project")
                 release: sg_releasePublishEvent
                 user: node("/sg_user")
-                thumbnail: workFull.thumbnail
-                filmstrip: workFull.filmstrip
+                thumbnail: workFullUndistThumbnail
+                filmstrip: workFullUndistFilmstrip
             }
         }
         
@@ -124,8 +129,6 @@ Folder {
             name: "work3deScene"
             root: work
             pattern: "3de/{SHOT}.3de"
-            ReleaseOperation.releasable: true
-            ReleaseOperation.target: release3deScene
         }
         
         File {
@@ -133,8 +136,6 @@ Folder {
             name: "workNukeScript"
             root: work
             pattern: "exports/{SEQUENCE}_{SHOT}_cam.nk"
-            ReleaseOperation.releasable: true
-            ReleaseOperation.target: releaseNukeScript
         }
 
         File {
@@ -142,28 +143,49 @@ Folder {
             name: "workMelScript"
             root: work
             pattern: "exports/{SEQUENCE}_{SHOT}_cam.nk"
-            ReleaseOperation.releasable: true
-            ReleaseOperation.target: releaseMelScript
         }
         
-        GenUndist {
+        LensDistort {
             id: workLowUndist
             name: "workLowUndist"
             plateFile: node("../../plate/release/releaseSeq")
             nukeFile: workNukeScript
-            format: "1k_und"
-            ReleaseOperation.releasable: true
-            ReleaseOperation.target: releaseLowUndist
+            format: "low"
+            mode: "undistort"
         }
         
+        MakeThumbnail {
+            id: workLowUndistThumbnail
+            name: "workLowUndistThumbnail"
+            input: workLowUndist
+        }
+        
+        MakeFilmstrip {
+            id: workLowUndistFilmstrip
+            name: "workLowUndistFilmstrip"
+            input: workLowUndist
+        }
+
         GenUndist {
             id: workFullUndist
             name: "workFullUndist"
             plateFile: node("../../plate/release/releaseSeq")
             nukeFile: workNukeScript
-            format: "2k_und"
-            ReleaseOperation.releasable: true
-            ReleaseOperation.target: releaseFullUndist
+            format: "full"
+            mode: "undistort"
+        }
+        
+        MakeThumbnail {
+            id: workFullUndistThumbnail
+            name: "workFullUndistThumbnail"
+            input: workFullUndist
+        }
+        
+        MakeThumbnail {
+            id: workFullUndistFilmstrip
+            name: "workFullUndistFilmstrip"
+            input: workFullUndist
+            filmstrip: true
         }
     }
 }

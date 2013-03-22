@@ -3,7 +3,7 @@ import Pug 1.0
 ShotgunEntity {
     shotgunEntity: "Scene"
     
-    property var project
+    property ShotgunEntity project
 
     inputs: Input { name: "project" }
 

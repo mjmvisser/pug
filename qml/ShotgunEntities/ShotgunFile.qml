@@ -3,11 +3,11 @@ import Pug 1.0
 ShotgunEntity {
     shotgunEntity: "Attachment"
 
-    property var project
-    property var release
+    property ShotgunEntity project
+    property ShotgunEntity release
     property Node thumbnail
     property Node filmstrip
-    property var user
+    property ShotgunEntity user
 
     inputs: [
         Input { name: "project" },

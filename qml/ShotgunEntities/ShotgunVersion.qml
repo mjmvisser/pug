@@ -5,13 +5,13 @@ import "js/shotgunutils.js" as ShotgunUtils
 ShotgunEntity {
     shotgunEntity: "Version"
 
-    property var project
-    property var entity
-    property var release
+    property ShotgunEntity project
+    property ShotgunEntity entity
+    property ShotgunEntity release
     property string code
-    property var thumbnail
-    property var filmstrip 
-    property var user
+    property Node thumbnail
+    property Node filmstrip 
+    property ShotgunEntity user
 
     inputs: [
         Input { name: "project" },

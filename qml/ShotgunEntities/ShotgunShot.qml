@@ -3,9 +3,9 @@ import Pug 1.0
 ShotgunEntity {
     shotgunEntity: "Shot"
 
-    property var project
-    property var scene: null
-    property var sequence: null
+    property ShotgunEntity project
+    property ShotgunEntity scene: null
+    property ShotgunEntity sequence: null
     
     
     inputs: [

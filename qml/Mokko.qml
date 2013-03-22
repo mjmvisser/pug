@@ -146,16 +146,16 @@ Root {
         // root: shot
     // }
     
-    Folder {
-        id: asset
-        name: "asset"
-        pattern: "assets/{ASSET_TYPE}/{ASSET}/"
-        root: project
-    }
-    
-    Modeling {
-        id: model
-        name: "model"
-        root: asset
-    }
+    // Folder {
+        // id: asset
+        // name: "asset"
+        // pattern: "assets/{ASSET_TYPE}/{ASSET}/"
+        // root: project
+    // }
+//     
+    // Modeling {
+        // id: model
+        // name: "model"
+        // root: asset
+    // }
 }

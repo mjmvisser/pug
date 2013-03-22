@@ -3,12 +3,12 @@ import Pug 1.0
 ShotgunEntity {
     shotgunEntity: "PublishEvent"
     
-    property var project
-    property var entity
+    property ShotgunEntity project
+    property ShotgunEntity entity
     property string code 
     property var thumbnail
     property var filmstrip 
-    property var user
+    property ShotgunEntity user
 
     inputs: [
         Input { name: "project" },

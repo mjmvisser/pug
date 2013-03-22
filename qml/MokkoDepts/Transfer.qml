@@ -12,7 +12,8 @@ Folder {
     ]
     
     ShotgunDelivery {
-        project: node("/project")
+        id: sg_delivery
+        project: node("/project/sg_project")
     }
 
     Folder {
@@ -29,10 +30,10 @@ Folder {
         ShotgunOperation.action: ShotgunOperation.Create
 
         ShotgunPublishEvent {
-            entityType: "Delivery"
-            entity: transfer
-            project: node("/project")
-            user: node("/prod")
+            id: sg_release
+            entity: sg_delivery
+            project: node("/project/sg_project")
+            user: node("/sg_user")
             code: "from_client_{TRANSFER}_v{VERSION}"
         }
         
@@ -41,19 +42,20 @@ Folder {
             name: "releaseFile"
             pattern: "{FILENAME}.{EXT}"
             ShotgunOperation.action: ShotgunOperation.Create
+            ReleaseOperation.source: workFile
 
             ShotgunElement {
                 code: "{FILENAME}.{EXT}"
-                project: node("/project")
-                user: node("/prod")
-                delivery: transfer
-                release: release
+                project: node("/project/sg_project")
+                user: node("/sg_user")
+                delivery: sg_delivery
+                release: sg_release
             }
             
             ShotgunFile {
-                project: node("/project")
-                release: release
-                user: node("/prod")
+                project: node("/project/sg_project")
+                release: sg_release
+                user: node("/sg_user")
                 thumbnail: workSeqThumbnail
             }
         }
@@ -63,19 +65,20 @@ Folder {
             name: "releaseSeq"
             pattern: "{FILENAME}.{FRAME}.{EXT}"
             ShotgunOperation.action: ShotgunOperation.Create
+            ReleaseOperation.source: workSeq
 
             ShotgunElement {
-                project: node("/project")
-                user: node("/prod")
-                delivery: transfer
-                release: release
+                project: node("/project/sg_project")
+                user: node("/sg_user")
+                delivery: sg_delivery
+                release: sg_release
                 code: "{FILENAME}.{FRAME}.{EXT}"
             }
             
             ShotgunFile {
-                project: node("/project")
-                release: release
-                user: node("/prod")
+                project: node("/project/sg_project")
+                release: sg_release
+                user: node("/sg_user")
                 thumbnail: workSeqThumbnail
                 filmstrip: workSeqfilmstrip
             }
@@ -91,7 +94,6 @@ Folder {
             id: workFile
             name: "workFile"
             pattern: "{FILENAME}.{EXT}"
-            ReleaseOperation.target: releaseFile
         }
 
         MakeThumbnail {
@@ -105,7 +107,6 @@ Folder {
             id: workSeq
             name: "workSeq"
             pattern: "{FILENAME}.{FRAME}.{EXT}"
-            ReleaseOperation.target: releaseSeq
         }
         
         MakeThumbnail {

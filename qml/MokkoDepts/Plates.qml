@@ -16,40 +16,41 @@ Folder {
         ShotgunOperation.action: ShotgunOperation.Create
 
         ShotgunPublishEvent {
-            id: sg_releasePublishEvent
-            name: "sg_releasePublishEvent"
+            id: sg_release
+            name: "sg_release"
             project: node("/project/sg_project")
             entity: node("/shot/sg_shot")
             user: node("/sg_user")
             code: "{SEQUENCE}_{SHOT}_comp_v{VERSION}"
         }
 
-        Sequence {
+        File {
             id: releaseSeq
             name: "releaseSeq"
             pattern: "render/{FORMAT}/{EXT}/{SEQUENCE}_{SHOT}_{DEPARTMENT}_{VARIATION}_v{VERSION}_{FORMAT}.{FRAME}.{EXT}"
             ShotgunOperation.action: ShotgunOperation.Create
+            ReleaseOperation.source: workSeq
 
             ShotgunVersion {
                 id: sg_releaseSeqVersion
                 name: "sg_releaseSeqVersion"
                 project: node("/project/sg_project")
                 entity: node("/shot/sg_shot")
-                release: sg_releasePublishEvent
+                release: sg_release
                 user: node("/sg_user")
                 code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
-                thumbnail: workSeq.thumbnail
-                filmstrip: workSeq.filmstrip
+                thumbnail: workSeqThumbnail
+                filmstrip: workSeqFilmstrip
             }
 
             ShotgunFile {
                 id: sg_releaseSeqFile
                 name: "sg_releaseSeqFile"
                 project: node("/project/sg_project")
-                release: sg_releasePublishEvent
+                release: sg_release
                 user: node("/sg_user")
-                thumbnail: workSeq.thumbnail
-                filmstrip: workSeq.filmstrip
+                thumbnail: workSeqThumbnail
+                filmstrip: workSeqFilmstrip
             }
         }
     }
@@ -59,12 +60,25 @@ Folder {
         name: "work"
         pattern: "work/{USER}/"
 
-        Sequence {
+        File {
             id: workSeq
             name: "workSeq"
             pattern: "images/{SEQUENCE}_{SHOT}_{DEPARTMENT}.{FRAME}.{EXT}"
-            ReleaseOperation.target: releaseSeq
             active: true
         }
+
+        MakeThumbnail {
+            id: workSeqThumbnail
+            name: "workSeqThumbnail"
+            input: workSeq
+        }
+        
+        MakeThumbnail {
+            id: workSeqFilmstrip
+            name: "workSeqFilmstrip"
+            input: workSeq
+            filmstrip: true
+        }
+        
     }
 }
