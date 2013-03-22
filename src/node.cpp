@@ -232,6 +232,24 @@ void Node::setDetails(const QJSValue &details)
     }
 }
 
+int Node::childIndex() const
+{
+    const Node *p = parent<Node>();
+    if (p) {
+        int index = 0;
+        foreach (const QObject *o, p->children()) {
+            const Node *child = qobject_cast<const Node *>(o);
+            if (child) {
+                if (child == this)
+                    return index;
+                index++;
+            }
+        }
+    }
+
+    return -1;
+}
+
 Node *Node::child(int i)
 {
     int index = 0;

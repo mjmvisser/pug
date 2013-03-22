@@ -87,6 +87,7 @@ public:
     Q_INVOKABLE const QVariantMap context(int index) const;
     Q_INVOKABLE void setContext(int index, const QVariantMap context, bool emitChanged=true);
 
+    Q_INVOKABLE int childIndex() const;
     Node *child(int index);
     int childCount() const;
 
