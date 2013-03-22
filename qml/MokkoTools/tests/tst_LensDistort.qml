@@ -21,23 +21,24 @@ TestCase {
             name: "mokkotoolstests"
             pattern: "/usr/tmp/mokkotoolstests"
 
-            FileRef {
+            File {
                 id: seq
                 name: "seq"
                 pattern: testSequencePath
             }
     
-            FileRef {
+            File {
                 name: "nukeDistortFile"
                 id: nukeDistortFile
                 pattern: testNukeDist
             }
     
-            MakeDistorted {
-                id: makeDist
+            LensDistort {
+                id: undist
                 input: seq
-                nukeDistortFile: nukeDistortFile
-                outputFormat: "100"
+                nukeScript: nukeDistortFile
+                format: "100"
+                fileType: "jpg"
             }
         }
     }
@@ -48,12 +49,17 @@ TestCase {
         signalName: "finished"
     }
     
-    function test_makeDistorted() {
-        cook.run(makeDist, {});
+    function test_undistorted() {
+        cook.run(undist, {"PUGWORK": "/usr/tmp/mokkotoolstests/"});
         spy.wait(25000);
 
         verify(seq.details.length == 1);
-        verify(makeDist.details.length == 1);
+        verify(undist.details.length == 1);
+        
+        var elementsView = Util.elementsView(undist);
+        for (var i = 0; i < elementsView.elements[0].frames.length; i++) {
+            verify(Util.exists(elementsView.element[0].frames[i].path()));
+        }
         
     }
 }

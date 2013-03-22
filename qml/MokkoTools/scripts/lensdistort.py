@@ -7,17 +7,17 @@ import nuke, nukescripts
 usage = "usage: %prog [options]"
 parser = OptionParser(usage=usage)
 parser.add_option("", "--nukeNodePath", action="store")
-parser.add_option("", "--platePath", action="store")
+parser.add_option("", "--inputPath", action="store")
 parser.add_option("", "--outputFormat", action="store")
 parser.add_option("", "--outputPath", action="store")
 
 options, args = parser.parse_args()
 
-for required_attr in ["platePath", "outputFormat", "outputPath"]:
+for required_attr in ["inputPath", "outputFormat", "outputPath"]:
     if not getattr(options, required_attr):
         parser.error("No --%s specified." % required_attr)
 
-plate_path = options.platePath
+input_path = options.inputPath
 nuke_node_path = options.nukeNodePath
 output_format = options.outputFormat
 output_path = options.outputPath
@@ -28,14 +28,14 @@ elif not nuke_node_path and output_format.endswith("_und"):
     parser.error("no nukeNodePath specified, but outputFormat is _und")
     
 # use Nuke-style instead of hashes
-plate_path = nukescripts.replaceHashes(plate_path)
-plate_path = os.path.abspath(plate_path)
+input_path = nukescripts.replaceHashes(input_path)
+input_path = os.path.abspath(input_path)
 
 # (*&#(*&@# Nuke doesn't detect the frame range, so we have to do it ourselves
 first = 1
 last = 1
 for f in range(0, 2000):
-    if os.path.exists(plate_path % f):
+    if os.path.exists(input_path % f):
         if f < first:
             first = f
         if f > last:
@@ -48,7 +48,7 @@ if nuke_node_path:
 
 # read the input
 read_plate = nuke.nodes.Read(name="plate_in")
-read_plate["file"].fromUserText(plate_path)
+read_plate["file"].fromUserText(input_path)
 read_plate["first"].setValue(first)
 read_plate["last"].setValue(last)
 read_plate["colorspace"].setValue("Cineon")
@@ -89,13 +89,8 @@ last_node = reformat_output
 write_output = nuke.nodes.Write(file=output_path, name="write_output")
 write_output.setInput(0, last_node)
 
+# make sure the output dir exists
+if not os.path.exists(os.path.dirname(output_path)):
+    os.makedirs(os.path.dirname(output_path))
+
 nuke.executeMultiple([write_output], [(first, last, 1)])
-
-details = [{"element": {"path": output_path},
-            "context": {"FORMAT": output_format}}]
-
-# pass outputs back
-print "begin-json details"
-print json.dumps(details, indent=4)
-print "===="
-
