@@ -20,8 +20,8 @@ protected:
     virtual const QMetaObject *operationMetaObject() const;
 
 private slots:
-    void onUpdated(int);
-    void onUpdatedAtIndex(int, int);
+    void onUpdateFinished(int);
+    void onUpdateAtIndexFinished(int, int);
 
 private:
     enum Mode { Skip, Update, UpdateAtIndex };
@@ -29,7 +29,7 @@ private:
 
     Mode m_mode;
     OperationStatusList m_indexStatus;
-    int m_updatedAtIndexCount;
+    int m_updateAtIndexFinishedCount;
 };
 
 inline QDebug operator<<(QDebug dbg, UpdateOperationAttached::Mode m)

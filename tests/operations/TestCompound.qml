@@ -21,13 +21,13 @@ Node {
         count: self.count
         
         signal cookAtIndex(int index, var context)
-        signal cookedAtIndex(int index, int status)
+        signal cookAtIndexFinished(int index, int status)
 
         onCookAtIndex: {
             details[index] = {"result": input.details[index].result + " -> " + name + index,
                               "context": context};
             detailsChanged();
-            cookedAtIndex(index, Operation.Finished);                              
+            cookAtIndexFinished(index, Operation.Finished);                              
         }
     }
 
@@ -42,13 +42,13 @@ Node {
         count: input.count
         
         signal cookAtIndex(int index, var context)
-        signal cookedAtIndex(int index, int status)
+        signal cookAtIndexFinished(int index, int status)
 
         onCookAtIndex: {
             details[index] = {"result": input.details[index].result + " -> " + name + index,
                               "context": context};
             detailsChanged();
-            cookedAtIndex(index, Operation.Finished);                              
+            cookAtIndexFinished(index, Operation.Finished);                              
         }
     }
 }        

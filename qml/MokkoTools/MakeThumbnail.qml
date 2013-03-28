@@ -36,13 +36,13 @@ Process {
     onUpdateAtIndex: {
         var elementsView = Util.elementsView(self);
         elementsView.elements[index].pattern = __outputPath(index, context);
-        updatedAtIndex(index, Operation.Finished);
+        updateAtIndexFinished(index, Operation.Finished);
     }
     
     onCookAtIndex: {
         var elementsView = Util.elementsView(self);
         elementsView.elements[index].pattern = __outputPath(index, context); 
-        cookedAtIndex(index, Operation.Finished);
+        cookAtIndexFinished(index, Operation.Finished);
     }
     
 }

@@ -32,9 +32,9 @@ signals:
     void shotgunFieldsChanged();
 
     void shotgunPull(const QVariant context, Shotgun *shotgun);
-    void shotgunPulled(int status);
+    void shotgunPullFinished(int status);
     void shotgunPush(const QVariant context, Shotgun *shotgun);
-    void shotgunPushed(int status);
+    void shotgunPushFinished(int status);
 
 protected:
     virtual void componentComplete();

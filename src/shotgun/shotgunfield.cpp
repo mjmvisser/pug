@@ -256,10 +256,10 @@ void ShotgunField::onShotgunPullAtIndex(int index, const QVariant context, Shotg
         // TODO: Qt bug? null QVariant converts to a non-null QJSValue
         setDetail(index, "value", value.isNull() ? QJSValue(QJSValue::NullValue) : toScriptValue(value));
         info() << "Shotgun pull result is" << details();
-        emit shotgunPulledAtIndex(index, OperationAttached::Finished);
+        emit shotgunPullAtIndexFinished(index, OperationAttached::Finished);
     } else {
         error() << "Unable to build value";
-        emit shotgunPulledAtIndex(index, OperationAttached::Error);
+        emit shotgunPullAtIndexFinished(index, OperationAttached::Error);
     }
 }
 
@@ -278,10 +278,10 @@ void ShotgunField::onShotgunPushAtIndex(int index, const QVariant context, Shotg
         // TODO: Qt bug? null QVariant converts to a non-null QJSValue
         setDetail(index, "value", value.isNull() ? QJSValue(QJSValue::NullValue) : toScriptValue(value));
         info() << "Shotgun push result is" << details().property(index);
-        emit shotgunPushedAtIndex(index, OperationAttached::Finished);
+        emit shotgunPushAtIndexFinished(index, OperationAttached::Finished);
     } else {
         error() << "Unable to build value";
-        emit shotgunPushedAtIndex(index, OperationAttached::Error);
+        emit shotgunPushAtIndexFinished(index, OperationAttached::Error);
     }
 }
 

@@ -33,10 +33,10 @@ signals:
     void framesChanged(FrameList *frames);
 
     void update(const QVariant context);
-    void updated(int status);
+    void updateFinished(int status);
 
     void cookAtIndex(int index, const QVariant context);
-    void cookedAtIndex(int index, int status);
+    void cookAtIndexFinished(int index, int status);
 
 protected slots:
     void onUpdate(const QVariant context);

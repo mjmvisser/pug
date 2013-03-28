@@ -77,7 +77,7 @@ Node {
         inputs: Input { name: "input" }
         
         signal updateAtIndex(int index, var context);
-        signal updatedAtIndex(int index, int status);
+        signal updateAtIndexFinished(int index, int status);
 
         onUpdateAtIndex: {
             info("onUpdateAtIndex(" + index + ", " + JSON.stringify(context) + ")");
@@ -100,7 +100,7 @@ Node {
                 }
             }
             
-            updatedAtIndex(index, Operation.Finished);
+            updateAtIndexFinished(index, Operation.Finished);
         }
     }
 }        

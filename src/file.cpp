@@ -185,7 +185,7 @@ void File::onUpdate(const QVariant context)
         }
     }
 
-    emit updated(status);
+    emit updateFinished(status);
 }
 
 void File::onCookAtIndex(int index, const QVariant context)
@@ -231,20 +231,20 @@ void File::onCookAtIndex(int index, const QVariant context)
 
                             // TODO: dependency check
                             if (!makeLink(srcPath, destPath)) {
-                                emit cookedAtIndex(index, OperationAttached::Error);
+                                emit cookAtIndexFinished(index, OperationAttached::Error);
                                 return;
                             }
                         }
                     } else {
                         error() << "frames [" << m_frames->pattern() << "] do not match input element frames [" << inputElement->framePattern() << "]";
-                        emit cookedAtIndex(index, OperationAttached::Error);
+                        emit cookAtIndexFinished(index, OperationAttached::Error);
                         return;
                     }
                 } else {
                     error() << "input is a sequence, but this node is not";
                     debug() << "inputPattern is" << inputPattern.pattern();
                     debug() << "destPattern is" << destPattern.pattern();
-                    emit cookedAtIndex(index, OperationAttached::Error);
+                    emit cookAtIndexFinished(index, OperationAttached::Error);
                     return;
                 }
             } else {
@@ -252,7 +252,7 @@ void File::onCookAtIndex(int index, const QVariant context)
                     // TODO: at some point we want to support this
                     // how? need a frame range for this node tho
                     error() << "this node is a sequence, but input node is not";
-                    emit cookedAtIndex(index, OperationAttached::Error);
+                    emit cookAtIndexFinished(index, OperationAttached::Error);
                 } else {
                     debug() << "cooking element";
                     const QString srcPath = inputPattern.path();
@@ -260,19 +260,19 @@ void File::onCookAtIndex(int index, const QVariant context)
 
                     // TODO: dependency check
                     if (!makeLink(srcPath, destPath)) {
-                        emit cookedAtIndex(index, OperationAttached::Error);
+                        emit cookAtIndexFinished(index, OperationAttached::Error);
                         return;
                     }
                 }
             }
         } else {
             error() << "fields incomplete for input context" << inputContext;
-            emit cookedAtIndex(index, OperationAttached::Error);
+            emit cookAtIndexFinished(index, OperationAttached::Error);
             return;
         }
     }
 
-    emit cookedAtIndex(index, OperationAttached::Finished);
+    emit cookAtIndexFinished(index, OperationAttached::Finished);
 }
 
 bool File::makeLink(const QString &src, const QString &dest) const

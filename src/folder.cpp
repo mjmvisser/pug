@@ -50,10 +50,10 @@ void Folder::onUpdate(const QVariant context)
             index++;
         }
 
-        emit updated(OperationAttached::Finished);
+        emit updateFinished(OperationAttached::Finished);
     } else {
         error() << "no match found for" << pattern() << "with" << localContext;
 
-        emit updated(OperationAttached::Error);
+        emit updateFinished(OperationAttached::Error);
     }
 }

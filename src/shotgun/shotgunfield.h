@@ -90,9 +90,9 @@ signals:
     void localStorageChanged(const QVariant localStorage);
 
     void shotgunPullAtIndex(int index, const QVariant context, Shotgun *shotgun);
-    void shotgunPulledAtIndex(int index, int status);
+    void shotgunPullAtIndexFinished(int index, int status);
     void shotgunPushAtIndex(int index, const QVariant context, Shotgun *shotgun);
-    void shotgunPushedAtIndex(int index, int status);
+    void shotgunPushAtIndexFinished(int index, int status);
 
 protected:
     virtual void componentComplete();

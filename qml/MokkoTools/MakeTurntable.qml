@@ -23,7 +23,7 @@ Process {
         "--output", __outputPath
     ]
     
-    onCookedAtIndex: {
+    onCookAtIndexFinished: {
         debug("onCooked");
         var newElement = Util.element();
         newElement.pattern = __outputPath;

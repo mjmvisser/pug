@@ -85,7 +85,7 @@ PugTestCase {
                     inputs: Input { name: "input" }
 
                     signal updateAtIndex(int index, var context)
-                    signal updatedAtIndex(int index, int status)
+                    signal updateAtIndexFinished(int index, int status)
                     
                     onUpdateAtIndex: {
                         trace("onUpdateAtIndex(" + index + ", " + context);
@@ -105,11 +105,11 @@ PugTestCase {
                             }
                         }
                         
-                        updatedAtIndex(index, Operation.Finished);
+                        updateAtIndexFinished(index, Operation.Finished);
                     }
 
                     signal cookAtIndex(int index, var context)
-                    signal cookedAtIndex(int index, int status)
+                    signal cookAtIndexFinished(int index, int status)
                     
                     onCookAtIndex: {
                         trace("onCookAtIndex(" + index + ", " + context);
@@ -125,7 +125,7 @@ PugTestCase {
                             Util.mkpath(outputDir);
                         Util.copy(inputPath, outputPath);
                         
-                        cookedAtIndex(index, Operation.Finished);
+                        cookAtIndexFinished(index, Operation.Finished);
                     }
                 }
                 
@@ -145,13 +145,13 @@ PugTestCase {
             count: 5
             
             signal cookAtIndex(int index, var context)
-            signal cookedAtIndex(int index, int status)
+            signal cookAtIndexFinished(int index, int status)
     
             onCookAtIndex: {
                 details[index] = {"result": name + index,
                                   "context": context};
                 detailsChanged();
-                cookedAtIndex(index, Operation.Finished);                              
+                cookAtIndexFinished(index, Operation.Finished);                              
             }
         }   
         

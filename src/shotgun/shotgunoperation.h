@@ -35,17 +35,17 @@ protected:
     virtual const QMetaObject *operationMetaObject() const;
 
 private slots:
-    void onShotgunPulled(int);
-    void onShotgunPulledAtIndex(int, int);
-    void onShotgunPushed(int);
-    void onShotgunPushedAtIndex(int, int);
+    void onShotgunPullFinished(int);
+    void onShotgunPullAtIndexFinished(int, int);
+    void onShotgunPushFinished(int);
+    void onShotgunPushAtIndexFinished(int, int);
 
 private:
     Action m_action;
     int m_mode;
     OperationStatusList m_indexStatus;
-    int m_pushedAtIndexCount;
-    int m_pulledAtIndexCount;
+    int m_pushAtIndexFinishedCount;
+    int m_pullAtIndexFinishedCount;
 };
 
 class ShotgunOperation : public Operation

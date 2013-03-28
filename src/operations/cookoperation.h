@@ -21,8 +21,8 @@ protected:
     virtual const QMetaObject *operationMetaObject() const;
 
 private slots:
-    void onCooked(int);
-    void onCookedAtIndex(int, int);
+    void onCookFinished(int);
+    void onCookAtIndexFinished(int, int);
 
 private:
     enum Mode { Skip, Cook, CookAtIndex };
@@ -30,7 +30,7 @@ private:
 
     Mode m_mode;
     OperationStatusList m_indexStatus;
-    int m_cookedAtIndexCount;
+    int m_cookAtIndexFinishedCount;
 };
 
 inline QDebug operator<<(QDebug dbg, CookOperationAttached::Mode m)

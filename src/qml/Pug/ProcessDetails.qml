@@ -11,10 +11,10 @@ Node {
     
     signal update(var context)
     signal updateAtIndex(int index, var context)
-    signal updatedAtIndex(int index, int status)
+    signal updateAtIndexFinished(int index, int status)
     signal cook(var context)
     signal cookAtIndex(int index, var context)
-    signal cookedAtIndex(int index, int status)
+    signal cookAtIndexFinished(int index, int status)
     
     onUpdate: {
         trace("onUpdate(" + JSON.stringify(context) + ")");
@@ -24,8 +24,8 @@ Node {
     onUpdateAtIndex: {
         trace("onUpdateAtIndex(" + index + ", " + JSON.stringify(context) + ")");
         var status = __parseStdout(index, context);
-        info("done, sending updatedAtIndex");
-        updatedAtIndex(index, status);
+        info("done, sending updateAtIndexFinished");
+        updateAtIndexFinished(index, status);
     }
     
     onCook: {
@@ -36,8 +36,8 @@ Node {
     onCookAtIndex: {
         trace("onCookAtIndex(" + index + ", " + JSON.stringify(context) + ")");
         var status = __parseStdout(index, context);
-        info("done, sending cookedAtIndex");
-        cookedAtIndex(index, status);
+        info("done, sending cookAtIndexFinished");
+        cookAtIndexFinished(index, status);
     }
     
     function __parseStdout(index, context)

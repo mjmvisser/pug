@@ -116,10 +116,10 @@ void ShotgunEntity::onShotgunPull(const QVariant context, Shotgun *shotgun)
                 this, &ShotgunEntity::onShotgunReadError);
     } else if (branch()->count() > 0) {
         error() << "Shotgun pull does not support branches with multiple details (" << branch() << ")";
-        emit shotgunPulled(OperationAttached::Error);
+        emit shotgunPullFinished(OperationAttached::Error);
     } else {
         error() << "Folder" << branch() << "has no details";
-        emit shotgunPulled(OperationAttached::Error);
+        emit shotgunPullFinished(OperationAttached::Error);
     }
 }
 
@@ -156,7 +156,7 @@ void ShotgunEntity::onShotgunPush(const QVariant context, Shotgun *shotgun)
                 this, &ShotgunEntity::onShotgunCreateError);
     } else {
         error() << "Folder" << branch() << "has no details";
-        emit shotgunPushed(OperationAttached::Error);
+        emit shotgunPushFinished(OperationAttached::Error);
     }
 }
 
@@ -265,7 +265,7 @@ void ShotgunEntity::onReadFinished(const QVariant result)
 
     QObject::sender()->deleteLater();
 
-    emit shotgunPulled(OperationAttached::Finished);
+    emit shotgunPullFinished(OperationAttached::Finished);
 }
 
 void ShotgunEntity::onCreateFinished(const QVariant result)
@@ -277,7 +277,7 @@ void ShotgunEntity::onCreateFinished(const QVariant result)
 
     QObject::sender()->deleteLater();
 
-    emit shotgunPushed(OperationAttached::Finished);
+    emit shotgunPushFinished(OperationAttached::Finished);
 }
 
 void ShotgunEntity::onBatchCreateFinished(const QVariant result)
@@ -293,7 +293,7 @@ void ShotgunEntity::onBatchCreateFinished(const QVariant result)
 
     debug() << "received" << QJsonDocument::fromVariant(result);
 
-    emit shotgunPushed(OperationAttached::Finished);
+    emit shotgunPushFinished(OperationAttached::Finished);
 }
 
 void ShotgunEntity::onShotgunReadError()
@@ -307,7 +307,7 @@ void ShotgunEntity::onShotgunReadError()
 
     reply->deleteLater();
 
-    emit shotgunPulled(OperationAttached::Error);
+    emit shotgunPullFinished(OperationAttached::Error);
 }
 
 void ShotgunEntity::onShotgunCreateError()
@@ -321,7 +321,7 @@ void ShotgunEntity::onShotgunCreateError()
 
     reply->deleteLater();
 
-    emit shotgunPushed(OperationAttached::Error);
+    emit shotgunPushFinished(OperationAttached::Error);
 }
 
 void ShotgunEntity::updateCount()

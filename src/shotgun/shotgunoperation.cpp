@@ -15,68 +15,68 @@ ShotgunOperationAttached::ShotgunOperationAttached(QObject *object) :
 {
     setObjectName("shotgun");
     bool havePushAtIndexSignal = node()->hasSignal(SIGNAL(shotgunPushAtIndex(int, const QVariant, Shotgun *)));
-    bool havePushedAtIndexSignal = node()->hasSignal(SIGNAL(shotgunPushedAtIndex(int, int)));
+    bool havePushAtIndexFinishedSignal = node()->hasSignal(SIGNAL(shotgunPushAtIndexFinished(int, int)));
 
     bool havePushSignal = node()->hasSignal(SIGNAL(shotgunPush(const QVariant, Shotgun *)));
-    bool havePushedSignal = node()->hasSignal(SIGNAL(shotgunPushed(int)));
+    bool havePushFinishedSignal = node()->hasSignal(SIGNAL(shotgunPushFinished(int)));
 
     bool havePullAtIndexSignal = node()->hasSignal(SIGNAL(shotgunPullAtIndex(int, const QVariant, Shotgun *)));
-    bool havePulledAtIndexSignal = node()->hasSignal(SIGNAL(shotgunPulledAtIndex(int, int)));
+    bool havePullAtIndexFinishedSignal = node()->hasSignal(SIGNAL(shotgunPullAtIndexFinished(int, int)));
 
     bool havePullSignal = node()->hasSignal(SIGNAL(shotgunPull(const QVariant, Shotgun *)));
-    bool havePulledSignal = node()->hasSignal(SIGNAL(shotgunPulled(int)));
+    bool havePullFinishedSignal = node()->hasSignal(SIGNAL(shotgunPullFinished(int)));
 
 
-    if (havePushAtIndexSignal && havePushedAtIndexSignal) {
+    if (havePushAtIndexSignal && havePushAtIndexFinishedSignal) {
         connect(this, SIGNAL(shotgunPushAtIndex(int, const QVariant, Shotgun *)),
                 node(), SIGNAL(shotgunPushAtIndex(int, const QVariant, Shotgun *)));
-        connect(node(), SIGNAL(shotgunPushedAtIndex(int, int)),
-                this, SLOT(onShotgunPushedAtIndex(int, int)));
+        connect(node(), SIGNAL(shotgunPushAtIndexFinished(int, int)),
+                this, SLOT(onShotgunPushAtIndexFinished(int, int)));
         m_mode |= ShotgunOperationAttached::PushAtIndex;
         debug() << node() << "found .pushAtIndex";
-    } else if (!havePushAtIndexSignal && havePushedAtIndexSignal) {
+    } else if (!havePushAtIndexSignal && havePushAtIndexFinishedSignal) {
         error() << node() << "is missing the pushAtIndex signal";
-    } else if (havePushAtIndexSignal && !havePushedAtIndexSignal) {
-        error() << node() << "is missing the pushedAtIndex signal";
+    } else if (havePushAtIndexSignal && !havePushAtIndexFinishedSignal) {
+        error() << node() << "is missing the pushAtIndexFinished signal";
     }
 
-    if (havePushSignal && havePushedSignal) {
+    if (havePushSignal && havePushFinishedSignal) {
         connect(this, SIGNAL(shotgunPush(const QVariant, Shotgun *)),
                 node(), SIGNAL(shotgunPush(const QVariant, Shotgun *)));
-        connect(node(), SIGNAL(shotgunPushed(int)),
-                this, SLOT(onShotgunPushed(int)));
+        connect(node(), SIGNAL(shotgunPushFinished(int)),
+                this, SLOT(onShotgunPushFinished(int)));
         m_mode |= ShotgunOperationAttached::Push;
         debug() << node() << "found .push";
-    } else if (!havePushSignal && havePushedSignal) {
+    } else if (!havePushSignal && havePushFinishedSignal) {
         error() << node() << "is missing the push signal";
-    } else if (havePushSignal && !havePushedSignal) {
-        error() << node() << "is missing the pushed signal";
+    } else if (havePushSignal && !havePushFinishedSignal) {
+        error() << node() << "is missing the pushFinished signal";
     }
 
-    if (havePullAtIndexSignal && havePulledAtIndexSignal) {
+    if (havePullAtIndexSignal && havePullAtIndexFinishedSignal) {
         connect(this, SIGNAL(shotgunPullAtIndex(int, const QVariant, Shotgun *)),
                 node(), SIGNAL(shotgunPullAtIndex(int, const QVariant, Shotgun *)));
-        connect(node(), SIGNAL(shotgunPulledAtIndex(int, int)),
-                this, SLOT(onShotgunPulledAtIndex(int, int)));
+        connect(node(), SIGNAL(shotgunPullAtIndexFinished(int, int)),
+                this, SLOT(onShotgunPullAtIndexFinished(int, int)));
         m_mode |= ShotgunOperationAttached::PullAtIndex;
         debug() << node() << "found .pullAtIndex";
-    } else if (!havePullAtIndexSignal && havePulledAtIndexSignal) {
+    } else if (!havePullAtIndexSignal && havePullAtIndexFinishedSignal) {
         error() << node() << "is missing the pullAtIndex signal";
-    } else if (havePullAtIndexSignal && !havePulledAtIndexSignal) {
-        error() << node() << "is missing the pulledAtIndex signal";
+    } else if (havePullAtIndexSignal && !havePullAtIndexFinishedSignal) {
+        error() << node() << "is missing the pullAtIndexFinished signal";
     }
 
-    if (havePullSignal && havePulledSignal) {
+    if (havePullSignal && havePullFinishedSignal) {
         connect(this, SIGNAL(shotgunPull(const QVariant, Shotgun *)),
                 node(), SIGNAL(shotgunPull(const QVariant, Shotgun *)));
-        connect(node(), SIGNAL(shotgunPulled(int)),
-                this, SLOT(onShotgunPulled(int)));
+        connect(node(), SIGNAL(shotgunPullFinished(int)),
+                this, SLOT(onShotgunPullFinished(int)));
         m_mode |= ShotgunOperationAttached::Pull;
         debug() << node() << "found .pull";
-    } else if (!havePullSignal && havePulledSignal) {
+    } else if (!havePullSignal && havePullFinishedSignal) {
         error() << node() << "is missing the pull signal";
-    } else if (havePullSignal && !havePulledSignal) {
-        error() << node() << "is missing the pulled signal";
+    } else if (havePullSignal && !havePullFinishedSignal) {
+        error() << node() << "is missing the pullFinished signal";
     }
 }
 
@@ -108,8 +108,8 @@ void ShotgunOperationAttached::run()
     }
 
     m_indexStatus.clear();
-    m_pulledAtIndexCount = 0;
-    m_pushedAtIndexCount = 0;
+    m_pullAtIndexFinishedCount = 0;
+    m_pushAtIndexFinishedCount = 0;
 
     if (sgop->mode() == ShotgunOperation::Pull) {
         if (m_action == ShotgunOperationAttached::Find) {
@@ -179,58 +179,58 @@ void ShotgunOperationAttached::run()
     }
 }
 
-void ShotgunOperationAttached::onShotgunPulled(int s)
+void ShotgunOperationAttached::onShotgunPullFinished(int s)
 {
-    trace() << node() << ".onShotgunPulled(" << static_cast<OperationAttached::Status>(s) << ")";
+    trace() << node() << ".onShotgunPullFinished(" << static_cast<OperationAttached::Status>(s) << ")";
     setStatus(static_cast<OperationAttached::Status>(s));
 
-    info() << "Shotgun pulled" << node() << "with status" << status();
+    info() << "Shotgun pullFinished" << node() << "with status" << status();
     info() << "Result is" << node()->details().toVariant();
 
     continueRunning();
 }
 
-void ShotgunOperationAttached::onShotgunPulledAtIndex(int index, int s)
+void ShotgunOperationAttached::onShotgunPullAtIndexFinished(int index, int s)
 {
-    trace() << node() << ".onShotgunPulledAtIndex(" << index << "," << static_cast<OperationAttached::Status>(s) << ")";
+    trace() << node() << ".onShotgunPullAtIndexFinished(" << index << "," << static_cast<OperationAttached::Status>(s) << ")";
     Q_ASSERT(operation());
     m_indexStatus.append(static_cast<OperationAttached::Status>(s));
 
-    info() << "Shotgun pulled" << node() << "at index" << m_pulledAtIndexCount << "with status" << static_cast<OperationAttached::Status>(s);
+    info() << "Shotgun pullFinished" << node() << "at index" << m_pullAtIndexFinishedCount << "with status" << static_cast<OperationAttached::Status>(s);
     info() << "Result is" << node()->details().property(index).toVariant();
-    m_pulledAtIndexCount++;
+    m_pullAtIndexFinishedCount++;
 
-    if (m_pulledAtIndexCount == node()->count() * receivers(SIGNAL(shotgunPullAtIndex(int,QVariant,Shotgun*)))) {
-        info() << "Shotgun pulled" << node() << "with status" << status();
+    if (m_pullAtIndexFinishedCount == node()->count() * receivers(SIGNAL(shotgunPullAtIndex(int,QVariant,Shotgun*)))) {
+        info() << "Shotgun pullFinished" << node() << "with status" << status();
         info() << "Result is" << node()->details().toVariant();
         setStatus(m_indexStatus.status());
         continueRunning();
     }
 }
 
-void ShotgunOperationAttached::onShotgunPushed(int s)
+void ShotgunOperationAttached::onShotgunPushFinished(int s)
 {
-    trace() << node() << ".onShotgunPushed(" << static_cast<OperationAttached::Status>(s) << ")";
+    trace() << node() << ".onShotgunPushFinished(" << static_cast<OperationAttached::Status>(s) << ")";
     setStatus(static_cast<OperationAttached::Status>(s));
 
-    info() << "Shotgun pushed" << node() << "with status" << status();
+    info() << "Shotgun pushFinished" << node() << "with status" << status();
     info() << "Result is" << node()->details().toVariant();
 
     continueRunning();
 }
 
-void ShotgunOperationAttached::onShotgunPushedAtIndex(int index, int s)
+void ShotgunOperationAttached::onShotgunPushAtIndexFinished(int index, int s)
 {
-    trace() << node() << ".onShotgunPushedAtIndex(" << index << "," << static_cast<OperationAttached::Status>(s) << ")";
+    trace() << node() << ".onShotgunPushAtIndexFinished(" << index << "," << static_cast<OperationAttached::Status>(s) << ")";
     Q_ASSERT(operation());
     m_indexStatus.append(static_cast<OperationAttached::Status>(s));
 
-    info() << "Shotgun pushed" << node() << "at index" << m_pushedAtIndexCount << "with status" << static_cast<OperationAttached::Status>(s);
+    info() << "Shotgun pushFinished" << node() << "at index" << m_pushAtIndexFinishedCount << "with status" << static_cast<OperationAttached::Status>(s);
     info() << "Result is" << node()->details().property(index).toVariant();
-    m_pushedAtIndexCount++;
+    m_pushAtIndexFinishedCount++;
 
-    if (m_pushedAtIndexCount == node()->count() * receivers(SIGNAL(shotgunPushAtIndex(int,QVariant,Shotgun*)))) {
-        info() << "Shotgun pushed" << node() << "with status" << status();
+    if (m_pushAtIndexFinishedCount == node()->count() * receivers(SIGNAL(shotgunPushAtIndex(int,QVariant,Shotgun*)))) {
+        info() << "Shotgun pushFinished" << node() << "with status" << status();
         info() << "Result is" << node()->details().toVariant();
         setStatus(m_indexStatus.status());
         continueRunning();

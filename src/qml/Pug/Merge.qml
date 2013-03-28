@@ -13,7 +13,7 @@ Node {
     ]
     
     signal cook(var env);
-    signal cooked(int status);
+    signal cookFinished(int status);
     
     onCook: {
         // merge inputs
@@ -36,6 +36,6 @@ Node {
         }
         
         detailsChanged();
-        cooked(Operation.Finished);
+        cookFinished(Operation.Finished);
     } 
 }

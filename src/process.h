@@ -45,9 +45,9 @@ signals:
     void cookingChanged(bool cooking);
 
     void updateAtIndex(int index, const QVariant context);
-    void updatedAtIndex(int index, int status);
+    void updateAtIndexFinished(int index, int status);
     void cookAtIndex(int index, const QVariant context);
-    void cookedAtIndex(int index, int status);
+    void cookAtIndexFinished(int index, int status);
 
 protected slots:
     void onUpdateAtIndex(int index, const QVariant context);

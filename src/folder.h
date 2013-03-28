@@ -11,7 +11,7 @@ public:
 
 signals:
     void update(const QVariant context);
-    void updated(int status);
+    void updateFinished(int status);
 
 protected slots:
     void onUpdate(const QVariant env);

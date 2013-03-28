@@ -108,7 +108,7 @@ void Process::onUpdateAtIndex(int i, const QVariant context)
     if (m_argv.isEmpty()) {
         warning() << "no args, skipping update";
         setUpdating(false);
-        emit updatedAtIndex(i, OperationAttached::Finished);
+        emit updateAtIndexFinished(i, OperationAttached::Finished);
         return;
     }
 
@@ -124,7 +124,7 @@ void Process::onCookAtIndex(int i, const QVariant context)
     if (m_argv.isEmpty()) {
         warning() << "no args, skipping cook";
         setCooking(false);
-        emit cookedAtIndex(i, OperationAttached::Finished);
+        emit cookAtIndexFinished(i, OperationAttached::Finished);
         return;
     }
 
@@ -187,7 +187,7 @@ void Process::executeAtIndex(int i, const QVariant context)
         m_processes[i]->closeWriteChannel();
     } else {
         error() << "Process has no args";
-        emit cookedAtIndex(i, OperationAttached::Error);
+        emit cookAtIndexFinished(i, OperationAttached::Error);
     }
 }
 
@@ -219,13 +219,13 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
             // all done
             setUpdating(false);
         }
-        emit updatedAtIndex(i, status);
+        emit updateAtIndexFinished(i, status);
     } else if (m_cookingFlag) {
         if (finishedProcessCount == count()) {
             // all done
             setCooking(false);
         }
-        emit cookedAtIndex(i, status);
+        emit cookAtIndexFinished(i, status);
     }
 }
 
