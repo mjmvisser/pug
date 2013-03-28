@@ -159,6 +159,7 @@ public:
     void setStatus(OperationAttached::Status);
 
     void resetAll(Node *node, const QVariantMap context);
+
     Q_INVOKABLE virtual void run(Node *node, const QVariant context, bool reset=true);
 
     //static OperationAttached *qmlAttachedProperties(QObject *); // must be defined in subclasses
@@ -179,6 +180,8 @@ protected slots:
     void onFinished(OperationAttached *);
 
 protected:
+    void resetAllStatus(Node *node);
+
     void startRunning(Node *node);
     void continueRunning();
 

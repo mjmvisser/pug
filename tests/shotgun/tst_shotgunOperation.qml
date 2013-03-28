@@ -12,8 +12,8 @@ PugTestCase {
     property string testImage: Qt.resolvedUrl("SMPTE_Color_Bars_16x9.png").replace("file://", "")
 
     function init() {
-        Util.mkpath(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work/mvisser");
-        Util.touch(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work/mvisser/somefile.txt");
+        Util.mkpath(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/work/mvisser");
+        Util.touch(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/work/mvisser/somefile.txt");
         Util.mkpath(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images");
         for (var frame=1; frame <= 100; frame++) {
             var framePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images/somefile.%04d.jpg", frame);
@@ -22,16 +22,16 @@ PugTestCase {
     }
 
     function cleanup() {
-        Util.remove(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001/somefile.txt");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release");
-        Util.remove(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work/mvisser/somefile.txt");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work/mvisser");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer/from_client");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/transfer");
+        Util.remove(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/release/main/v001/somefile.txt");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/release/main/v001");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/release/main");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/release");
+        Util.remove(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/work/mvisser/somefile.txt");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/work/mvisser");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/work");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/delivery/from_client");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/delivery");
         for (var frame=1; frame <= 100; frame++) {
             var workFramePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images/somefile.%04d.jpg", frame);
             Util.remove(workFramePath);
@@ -132,77 +132,65 @@ PugTestCase {
                 id: sg_project
             }
         }
+
+        ShotgunStep {
+            id: sg_deliveryStep
+            step: "turnover" 
+        }
         
         Folder {
-            id: transfer
-            name: "transfer"
+            id: delivery
+            name: "delivery"
             root: project
-            pattern: "transfer/from_client/{TRANSFER}/"
+            pattern: "delivery/from_client/{TRANSFER}/"
 
             ShotgunDelivery {
-                id: sg_transfer
+                id: sg_delivery
                 project: sg_project
             }
 
             Folder {
-                id: transferRelease
-                name: "transferRelease"
+                id: deliveryRelease
+                name: "deliveryRelease"
                 pattern: "release/{VARIATION}/v{VERSION}/"
                 ReleaseOperation.versionField: "VERSION"
 
-                ShotgunPublishEvent {
-                    id: sg_transferRelease
+                ShotgunVersion {
+                    id: sg_deliveryVersion
                     project: sg_project
-                    entity: sg_transfer
+                    link: sg_delivery
+                    step: sg_deliveryStep
                     user: sg_user
                     code: "from_client_{TRANSFER}_v{VERSION}"
-                    ShotgunOperation.action: ShotgunOperation.Create
+                    thumbnail: workSeqThumbnail
+                    filmstrip: workSeqFilmstrip
                 }
                 
                 File {
                     id: releaseFile
                     name: "releaseFile"
                     pattern: "{FILENAME}.{EXT}"
+                    ReleaseOperation.source: workFile
 
-                    ShotgunFile {
+                    ShotgunPublishEvent {
                         id: sg_releaseFile
                         project: sg_project
-                        release: sg_transferRelease
+                        link: sg_delivery
+                        step: sg_deliveryStep
                         user: sg_user
-                        ShotgunOperation.action: ShotgunOperation.Create
-                    }
-
-                    ShotgunElement {
-                        id: sg_releaseElement
-                        project: sg_project
-                        delivery: sg_transfer
-                        release: sg_transferRelease
-                        user: sg_user
-                        code: "{FILENAME}.{EXT}"   
-                        //sourcePathLink: releaseFile   // TODO:           
-                    }
-                    
-                    ShotgunVersion {
-                        id: sg_releaseVersion
-                        project: sg_project
-                        entity: sg_transfer
-                        release: sg_transferRelease
-                        user: sg_user
-                        code: "from_client_{TRANSFER}_v{VERSION}"
                     }
                 }
             }
 
             Folder {
-                id: transferWork
-                name: "transferWork"
+                id: deliveryWork
+                name: "deliveryWork"
                 pattern: "work/{USER}/"
 
                 File {
                     id: workFile
                     name: "workFile"
                     pattern: "{FILENAME}.{EXT}"
-                    ReleaseOperation.target: node("../../transferRelease/releaseFile")
                 }
             }
         }
@@ -239,7 +227,8 @@ PugTestCase {
             root: shot
 
             ShotgunStep {
-                id: sg_step
+                id: sg_compStep
+                step: "comp"
             }
             
             Folder {
@@ -247,38 +236,31 @@ PugTestCase {
                 name: "compRelease"
                 pattern: "release/{VARIATION}/v{VERSION}/"
                 ReleaseOperation.versionField: "VERSION"
-                ShotgunOperation.action: ShotgunOperation.Create
+                ReleaseOperation.source: compWork
 
-                ShotgunPublishEvent {
+                ShotgunVersion {
                     id: sg_compRelease
                     project: sg_project
-                    entity: sg_shot
+                    link: sg_shot
                     user: sg_user
+                    step: sg_compStep
                     code: "{SEQUENCE}_{SHOT}_comp_v{VERSION}"
+                    thumbnail: workSeqThumbnail
+                    filmstrip: workSeqFilmstrip
                 }
                 
                 File {
                     id: releaseSeq
                     name: "releaseSeq"
                     pattern: "render/jpg/{SEQUENCE}_{SHOT}_{STEP}.{FRAME}.{EXT}"
-                    ShotgunOperation.action: ShotgunOperation.Create
+                    ReleaseOperation.source: workSeq
                 
-                    ShotgunVersion {
-                        id: sg_releaseSeqVersion
-                        project: sg_project
-                        entity: sg_shot
-                        release: sg_compRelease
-                        user: sg_user
-                        code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
-                        thumbnail: workSeqThumbnail
-                        filmstrip: workSeqFilmstrip
-                    }
-
-                    ShotgunFile {
+                    ShotgunPublishEvent {
                         id: sg_releaseSeqFile
                         project: sg_project
-                        release: sg_compRelease
                         user: sg_user
+                        link: sg_shot
+                        step: sg_compStep
                         thumbnail: workSeqThumbnail
                         filmstrip: workSeqFilmstrip
                     }
@@ -294,7 +276,6 @@ PugTestCase {
                     id: workSeq
                     name: "workSeq"
                     pattern: "images/{FILENAME}.{FRAME}.{EXT}"
-                    ReleaseOperation.target: node("../../transferRelease/releaseSeq")
                     active: true
                 }
                 
@@ -340,15 +321,15 @@ PugTestCase {
                    USER: "mvisser",
                    FILENAME: "somefile",
                    EXT: "txt"};
-        var workPath = tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/work/mvisser/somefile.txt";
-        var releasePath = tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001/somefile.txt";
+        var workPath = tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/work/mvisser/somefile.txt";
+        var releasePath = tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/release/main/v001/somefile.txt";
 
         var context2 = context;
         context2.VERSION = 1;
 
-        // compare(releaseFile.root, transferRelease);
-        // compare(transferRelease.map(context2), tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001/");
-        verify(transferRelease.parse(tmpDir + "shotguntests/projects/888_test/transfer/from_client/20121018/release/main/v001/"));
+        // compare(releaseFile.root, deliveryRelease);
+        // compare(deliveryRelease.map(context2), tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/release/main/v001/");
+        verify(deliveryRelease.parse(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/release/main/v001/"));
 
         return;
 
@@ -361,21 +342,20 @@ PugTestCase {
         verify(Util.exists(releasePath));
         
         compare(workFile.UpdateOperation.status, Operation.Finished);
-        compare(transfer.UpdateOperation.status, Operation.Finished);
+        compare(delivery.UpdateOperation.status, Operation.Finished);
         compare(project.UpdateOperation.status, Operation.Finished);
         compare(workFile.ShotgunOperation.status, Operation.Finished);
-        compare(transfer.ShotgunOperation.status, Operation.Finished);
+        compare(delivery.ShotgunOperation.status, Operation.Finished);
         compare(project.ShotgunOperation.status, Operation.Finished);
-        compare(transfer.ShotgunOperation.status, Operation.Finished);
+        compare(delivery.ShotgunOperation.status, Operation.Finished);
         compare(releaseFile.ShotgunOperation.status, Operation.Finished);
 
         compare(sg_project.details[0].entity.type, "Project");
-        compare(sg_transfer.details[0].entity.type, "Delivery");
-        compare(sg_transferRelease.details[0].entity.type, "PublishEvent");
+        compare(sg_delivery.details[0].entity.type, "Delivery");
+        compare(sg_deliveryVersion.details[0].entity.type, "PublishEvent");
         compare(sg_releaseElement.details[0].entity.type, "Element");
         compare(sg_releaseFile.details[0].entity.type, "Attachment");
-        compare(sg_releaseVersion.details[0].entity.type, "Version");
-        compare(sg_transferRelease.details[0].entity.type, "PublishEvent");
+        compare(sg_deliveryVersion.details[0].entity.type, "PublishEvent");
 
         compare(workFile.details.length, 1);
         compare(workFile.details[0].element.path, workPath);

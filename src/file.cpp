@@ -17,7 +17,8 @@
 File::File(QObject *parent) :
     Branch(parent),
     m_input(),
-    m_linkType(File::Hard)
+    m_linkType(File::Hard),
+    m_frames(0)
 {
     setExactMatch(true);
 
@@ -62,85 +63,141 @@ void File::setLinkType(File::LinkType lt)
     }
 }
 
+FrameList *File::frames()
+{
+    return m_frames;
+}
+
+void File::setFrames(FrameList *f)
+{
+    // forward framesChanged signal from FrameList to ourself
+    if (!m_frames || !f || m_frames->list() != f->list()) {
+        if (m_frames)
+            disconnect(m_frames, &FrameList::framesChanged, this, &File::framesChanged);
+
+        if (f)
+            connect(f, &FrameList::framesChanged, this, &File::framesChanged);
+
+        m_frames = f;
+
+        emit framesChanged(f);
+    }
+}
+
 void File::onUpdate(const QVariant context)
 {
     trace() << ".onUpdate(" << context << ")";
 
     QScopedPointer<ElementsView> elementsView(new ElementsView(this));
 
+    OperationAttached::Status status = OperationAttached::Finished;
+
+    QVariantMap localContext;
+    if (root())
+        localContext = mergeContexts(context.toMap(),
+            root()->details().property(0).property("context").toVariant().toMap());
+    else
+        localContext = context.toMap();
+
     if (m_input) {
         setCount(m_input->count());
 
-        debug() << "input count is" << m_input->count();
-        debug() << "element manager count is" << elementsView->elementCount();
+        if (count() == 0) {
+            error() << "no elements in input";
+            status = OperationAttached::Error;
+        } else {
+            debug() << "input count is" << m_input->count();
+            debug() << "element manager count is" << elementsView->elementCount();
 
-        for (int index = 0; index < elementsView->elementCount(); index++) {
-            QVariantMap inputContext = m_input->context(index);
-            // override with calling context
-            QMapIterator<QString, QVariant> i(context.toMap());
-            while (i.hasNext()) {
-                i.next();
-                inputContext.insert(i.key(), i.value());
-            }
+            for (int index = 0; index < elementsView->elementCount(); index++) {
+                QScopedPointer<ElementsView> inputElementsView(new ElementsView(m_input));
+                ElementView *inputElement = inputElementsView->elementAt(index);
+                Q_ASSERT(inputElement);
 
-            debug() << "inputContext is" << inputContext;
+                const QVariantMap inputContext = mergeContexts(localContext,
+                        m_input->details().property(index).property("context").toVariant().toMap());
 
-            if (fieldsComplete(pattern(), inputContext)) {
-                const FilePattern elementPattern(map(inputContext));
-                debug() << "elementPattern is" << elementPattern.pattern();
+                if (fieldsComplete(pattern(), inputContext)) {
+                    const FilePattern elementPattern(map(inputContext));
+                    debug() << "elementPattern is" << elementPattern.pattern();
 
-                QMap<QString, QFileInfoList> matches = listMatchingPatterns(inputContext);
-                debug() << "matched patterns" << matches.keys();
+                    QMap<QString, QFileInfoList> matches = listMatchingPatterns(inputContext);
+                    debug() << "matched patterns" << matches.keys();
 
-                Q_ASSERT(matches.count() == 1);
-                Q_ASSERT(matches.contains(elementPattern.pattern()));
+                    Q_ASSERT(matches.count() == 1);
+                    Q_ASSERT(matches.contains(elementPattern.pattern()));
 
-                ElementView *element = elementsView->elementAt(index);
+                    ElementView *element = elementsView->elementAt(index);
 
-                element->setPattern(elementPattern.pattern());
-                element->scan(matches[elementPattern.pattern()]);
+                    element->setPattern(elementPattern.pattern());
+
+                    if (m_frames) {
+                        if (m_frames->list() != inputElement->frameList()) {
+                            error() << "frames [" << m_frames->pattern() << "] don't match input frames [" << inputElement->framePattern() << "]";
+                            status = OperationAttached::Error;
+                        } else {
+                            FramePattern fp(m_frames->list());
+                            element->scan(matches[elementPattern.pattern()], fp);
+                        }
+                    } else {
+                        element->scan(matches[elementPattern.pattern()]);
+                    }
+                }
             }
         }
     } else {
-        QMap<QString, QFileInfoList> matches = listMatchingPatterns(context.toMap());
+        QMap<QString, QFileInfoList> matches = listMatchingPatterns(localContext);
         debug() << "matched patterns" << matches.keys();
 
         setCount(matches.size());
 
-        int index = 0;
-        QMapIterator<QString, QFileInfoList> i(matches);
-        while (i.hasNext()) {
-            i.next();
-            ElementView *element = elementsView->elementAt(index);
-            element->setPattern(i.key());
-            element->scan(i.value());
-
-            QStringList files;
-            foreach (const QFileInfo info, i.value()) {
-                files << info.filePath();
-            }
-
-            debug() << "matched files" << files;
-
-            QVariantMap elementContext = parse(i.key()).toMap();
-            // override with calling context
-            QMapIterator<QString, QVariant> i(context.toMap());
+        if (matches.size() > 0) {
+            int index = 0;
+            QMapIterator<QString, QFileInfoList> i(matches);
             while (i.hasNext()) {
                 i.next();
-                elementContext.insert(i.key(), i.value());
-            }
-            setContext(index, elementContext);
+                ElementView *element = elementsView->elementAt(index);
+                element->setPattern(i.key());
 
-            index++;
+                if (m_frames) {
+                    FramePattern fp(m_frames->list());
+                    element->scan(i.value(), fp);
+                } else {
+                    element->scan(i.value());
+                }
+
+                QStringList files;
+                foreach (const QFileInfo info, i.value()) {
+                    files << info.filePath();
+                }
+
+                debug() << "matched files" << files;
+
+                const QVariantMap elementContext = parse(i.key()).toMap();
+
+                setContext(index, mergeContexts(localContext, elementContext));
+
+                index++;
+            }
+        } else {
+            error() << "Nothing matched in" << this << "by pattern" << pattern() << "with" << localContext;
+            status = OperationAttached::Error;
         }
     }
 
-    emit updated(OperationAttached::Finished);
+    emit updated(status);
 }
 
 void File::onCookAtIndex(int index, const QVariant context)
 {
     trace() << ".onCookAtIndex(" << index << "," << context << ")";
+
+    QVariantMap localContext;
+    if (root())
+        localContext = mergeContexts(context.toMap(),
+            root()->details().property(0).property("context").toVariant().toMap());
+    else
+        localContext = context.toMap();
 
     if (m_input) {
         QScopedPointer<ElementsView> inputElementsView(new ElementsView(m_input));
@@ -153,15 +210,8 @@ void File::onCookAtIndex(int index, const QVariant context)
         ElementView *element = elementsView->elementAt(index);
         Q_ASSERT(element);
 
-        QVariantMap inputContext = m_input->context(index);
-        // override with calling context
-        QMapIterator<QString, QVariant> i(context.toMap());
-        while (i.hasNext()) {
-            i.next();
-            inputContext.insert(i.key(), i.value());
-        }
-
-        debug() << "inputContext is" << inputContext;
+        const QVariantMap inputContext = mergeContexts(localContext,
+                m_input->details().property(index).property("context").toVariant().toMap());
 
         if (fieldsComplete(pattern(), inputContext)) {
             const FilePattern destPattern(map(inputContext));
@@ -169,19 +219,26 @@ void File::onCookAtIndex(int index, const QVariant context)
             if (inputPattern.isSequence()) {
                 if (destPattern.isSequence()) {
                     // input and this are both sequences
-                    for (int frameIndex = 0; frameIndex < inputElement->frameCount(); frameIndex++) {
-                        debug() << "cooking frameIndex" << frameIndex;
-                        FrameView *inputFrame = inputElement->frameAt(frameIndex);
-                        Q_ASSERT(inputFrame);
+                    if (!m_frames || inputElement->frameList() == m_frames->list()) {
+                        // frames match
+                        for (int frameIndex = 0; frameIndex < inputElement->frameCount(); frameIndex++) {
+                            debug() << "cooking frameIndex" << frameIndex;
+                            FrameView *inputFrame = inputElement->frameAt(frameIndex);
+                            Q_ASSERT(inputFrame);
 
-                        const QString srcPath = inputPattern.path(inputFrame->frame());
-                        const QString destPath = destPattern.path(inputFrame->frame());
+                            const QString srcPath = inputPattern.path(inputFrame->frame());
+                            const QString destPath = destPattern.path(inputFrame->frame());
 
-                        // TODO: dependency check
-                        if (!makeLink(srcPath, destPath)) {
-                            emit cookedAtIndex(index, OperationAttached::Error);
-                            return;
+                            // TODO: dependency check
+                            if (!makeLink(srcPath, destPath)) {
+                                emit cookedAtIndex(index, OperationAttached::Error);
+                                return;
+                            }
                         }
+                    } else {
+                        error() << "frames [" << m_frames->pattern() << "] do not match input element frames [" << inputElement->framePattern() << "]";
+                        emit cookedAtIndex(index, OperationAttached::Error);
+                        return;
                     }
                 } else {
                     error() << "input is a sequence, but this node is not";

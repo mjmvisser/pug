@@ -9,6 +9,12 @@ Folder {
         Field { name: "LOD"; values: "master"; defaultValue: "master" }
     ]
     
+    ShotgunStep {
+        id: sg_step
+        name: "sg_step"
+        step: "modeling"
+    }
+    
     Folder {
         id: release
         name: "release"
@@ -16,11 +22,11 @@ Folder {
         ReleaseOperation.versionField: "VERSION"
         ShotgunOperation.action: ShotgunOperation.Create
         
-        ShotgunPublishEvent {
+        ShotgunVersion {
             id: sg_releasePublishEvent
             name: "sg_releasePublishEvent"
             project: node("/project/sg_project")
-            entity: node("/asset/sg_asset")
+            link: node("/asset/sg_asset")
             user: node("/sg_user")
             code: "{ASSET_TYPE}_{ASSET}_model_v{VERSION}"
         }
@@ -29,13 +35,15 @@ Folder {
             id: releaseMayaMaster
             name: "releaseMayaMaster"
             pattern: "maya/master/bin/{ASSET}_{DEPARTMENT}_v{VERSION}.mb"
+            ReleaseOperation.source: workMayaMaster 
             ShotgunOperation.action: ShotgunOperation.Create
             
-            ShotgunFile {
+            ShotgunPublishEvent {
                 id: sg_releaseMayaMasterFile
                 name: "sg_releaseMayaMasterFile"
                 project: node("/project/sg_project")
-                release: sg_releasePublishEvent
+                link: node("/shot/sg_asset")
+                step: sg_step
                 user: node("/sg_user")
             }
             
@@ -45,13 +53,15 @@ Folder {
             id: releaseMayaLod
             name: "releaseMayaLod"
             pattern: "maya/{LOD}/bin/{ASSET}_{DEPARTMENT}_{LOD}_v{VERSION}.mb"
+            ReleaseOperation.source: workMayaLod 
             ShotgunOperation.action: ShotgunOperation.Create
             
-            ShotgunFile {
+            ShotgunPublishEvent {
                 id: sg_releaseMayaLod
                 name: "sg_releaseMayaLod"
                 project: node("/project/sg_project")
-                release: sg_releasePublishEvent
+                link: node("/shot/sg_asset")
+                step: sg_step
                 user: node("/sg_user")
             }
             
@@ -93,7 +103,6 @@ Folder {
             name: "workScene"
             id: workMayaMaster
             pattern: "scenes/{FILENAME}.mb"
-            ReleaseOperation.target: releaseMayaMaster 
             active: true
         }
 
@@ -101,7 +110,6 @@ Folder {
             name: "workLodScene"
             id: workMayaLod
             input: workMayaMaster
-            ReleaseOperation.target: releaseMayaLod 
             active: true
         }
         

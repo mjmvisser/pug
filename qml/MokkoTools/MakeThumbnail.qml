@@ -5,7 +5,7 @@ Process {
     id: self
     property Node input
     property bool filmstrip: false 
-
+    
     count: input ? input.count : 0
 
     inputs: Input { name: "input" }
@@ -35,12 +35,14 @@ Process {
 
     onUpdateAtIndex: {
         var elementsView = Util.elementsView(self);
-        elementsView.elements[index].pattern = __outputPath(index, context); 
+        elementsView.elements[index].pattern = __outputPath(index, context);
+        updatedAtIndex(index, Operation.Finished);
     }
     
     onCookAtIndex: {
         var elementsView = Util.elementsView(self);
         elementsView.elements[index].pattern = __outputPath(index, context); 
+        cookedAtIndex(index, Operation.Finished);
     }
     
 }

@@ -42,13 +42,12 @@ public:
 
     bool fieldsComplete(const QString pattern, const QVariantMap fields) const;
 
-    Q_INVOKABLE const QVariant match(const QString pattern, const QString path, bool exact) const;
-    Q_INVOKABLE const QVariant match(const QString pattern, const QString path) const;
+    Q_INVOKABLE const QVariant match(const QString pattern, const QString path, bool exact, bool partial) const;
     Q_INVOKABLE const QStringList fieldNames(const QString pattern) const;
     Q_INVOKABLE const QString formatFields(const QString pattern, const QVariant data) const;
 
     // TODO: rename these
-    Q_INVOKABLE const QVariant parse(const QString path) const;
+    Q_INVOKABLE const QVariant parse(const QString path, bool partial=false) const;
     Q_INVOKABLE const QString map(const QVariant fields) const;
 
     Q_INVOKABLE const QMap<QString, QFileInfoList> listMatchingPatterns(const QVariantMap context) const;
@@ -71,5 +70,19 @@ private:
     QString m_pattern;
     bool m_exactMatchFlag;
 };
+//
+//inline QDebug operator<<(QDebug dbg, const Branch *branch)
+//{
+//    if (!branch)
+//        return dbg << "Branch(0x0) ";
+//    dbg.nospace() << "Branch(" << (void*)branch;
+//    if (!branch->objectName().isEmpty())
+//        dbg << ", name = " << branch->objectName();
+//    if (!branch->pattern().isEmpty())
+//        dbg << ", pattern = " << branch->pattern();
+//    dbg << ')';
+//    return dbg.space();
+//}
+
 
 #endif // BRANCHBASE_H

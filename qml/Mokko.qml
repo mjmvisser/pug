@@ -3,8 +3,7 @@ import MokkoDepts 1.0
 import ShotgunEntities 1.0
 
 Root {
-    logLevel: Log.Info
-    
+    logLevel: Log.Info 
     Shotgun {
         id: shotgun
         baseUrl: "https://mokko.shotgunstudio.com"
@@ -95,11 +94,11 @@ Root {
         }
     }
     
-    Transfer {
-        id: transfer
-        name: "transfer"
-        root: project
-    }
+    // Transfer {
+        // id: transfer
+        // name: "transfer"
+        // root: project
+    // }
     
     Folder {
         id: scene
@@ -140,19 +139,19 @@ Root {
         root: shot
     }
     
-    // Tracking {
-        // id: tracking
-        // name: "tracking"
-        // root: shot
-    // }
+    Tracking {
+        id: tracking
+        name: "tracking"
+        root: shot
+    }
     
-    // Folder {
-        // id: asset
-        // name: "asset"
-        // pattern: "assets/{ASSET_TYPE}/{ASSET}/"
-        // root: project
-    // }
-//     
+    Folder {
+        id: asset
+        name: "asset"
+        pattern: "assets/{ASSET_TYPE}/{ASSET}/"
+        root: project
+    }
+    
     // Modeling {
         // id: model
         // name: "model"

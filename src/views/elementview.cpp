@@ -2,9 +2,11 @@
 #include <QString>
 #include <QStringList>
 #include <QDir>
+#include <QRegularExpression>
 
 #include "elementview.h"
 #include "elementsview.h"
+#include "framepattern.h"
 
 /*!
     \class ElementView
@@ -218,13 +220,40 @@ void ElementView::scan(const QFileInfoList &entries)
     FilePattern fp(pattern());
 
     foreach (QFileInfo info, entries) {
-        if (!info.isHidden() && fp.match(info.filePath()).hasMatch()) {
+        if (fp.match(info.filePath()).hasMatch()) {
             append(info);
         }
     }
 }
 
-const QList<int> ElementView::framesList() const
+void ElementView::scan(const QFileInfoList &entries, const FramePattern &framePattern)
+{
+    trace() << ".scan(" << ")";
+
+    FilePattern filePattern(pattern());
+
+    QMap<int, QFileInfo> entriesByFrame;
+    foreach (QFileInfo info, entries) {
+        QRegularExpressionMatch match = filePattern.match(info.filePath());
+        if (match.hasMatch()) {
+            QString frameStr = match.captured("frame");
+            if (!frameStr.isNull()) {
+                entriesByFrame.insert(frameStr.toInt(), info);
+            }
+        }
+    }
+
+    const QList<int> frames = framePattern.list();
+    foreach (int frame, frames) {
+        if (entriesByFrame.contains(frame)) {
+            append(entriesByFrame[frame]);
+        } else {
+            append(QFileInfo());
+        }
+    }
+}
+
+const QList<int> ElementView::frameList() const
 {
     QList<int> result;
     for (int i = 0; i < m_frames.length(); i++)
@@ -233,21 +262,34 @@ const QList<int> ElementView::framesList() const
     return result;
 }
 
-int ElementView::firstFrame() const
+const QString ElementView::framePattern() const
 {
-    const QList<int> frames = framesList();
-    return !frames.empty() ? frames.first() : -1;
+    FramePattern fp(frameList());
+    return fp.pattern();
 }
 
-int ElementView::lastFrame() const
+QVariant ElementView::frameStart() const
 {
-    const QList<int> frames = framesList();
-    return !frames.empty() > 0 ? frames.last() : -1;
+    FramePattern fp(frameList());
+    if (fp.by() != 0)
+        return fp.start();
+    else
+        return QVariant();
 }
 
-const QString ElementView::framesPattern() const
+QVariant ElementView::frameEnd() const
 {
-    Q_ASSERT(false); // not implemented
+    FramePattern fp(frameList());
+    if (fp.by() != 0)
+        return fp.end();
+    else
+        return QVariant();
+}
+
+QVariant ElementView::frameBy() const
+{
+    FramePattern fp(frameList());
+    return fp.by();
 }
 
 Node::Status ElementView::status() const

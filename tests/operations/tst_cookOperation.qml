@@ -32,6 +32,7 @@ PugTestCase {
     }
 
     Root {
+        logLevel: Log.Info
         id: root
 
         operations: [

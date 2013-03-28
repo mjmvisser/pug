@@ -7,12 +7,20 @@ Process {
 
     inputs: Input { name: "input" }
 
-    count: input.count
+    count: input ? input.count : 0
 
-    argv: [
-        "mayapy",
-        Qt.resolvedUrl("scripts/splitMayaModel.py").replace("file://", ""),
-        input.detail(index, "element", "path"),
-        tempFile(input.details[index].element.baseName + "_{lod}" + "." + input.details[index].element.extension)   
-    ]
+    function __outputPath(index, context) {
+        var inputElementsView = Util.elementsView(input);
+        return context["PUGWORK"] + (self.name ? self.name + "/" : "") + "_{lod}_" + index + "." + inputElementsView.elements[index].extension();
+    }
+
+    argv: {
+        if (cooking) {
+            return ["mayapy",
+                    Qt.resolvedUrl("scripts/splitMayaModel.py").replace("file://", ""),
+                    input.detail(index, "element", "path"),
+                    __outputPath(index, CookOperation.context)]
+        } else {
+            return [];
+    }
 }        

@@ -13,6 +13,7 @@ ShotgunOperationAttached::ShotgunOperationAttached(QObject *object) :
     m_action(ShotgunOperationAttached::Find),
     m_mode(ShotgunOperationAttached::Skip)
 {
+    setObjectName("shotgun");
     bool havePushAtIndexSignal = node()->hasSignal(SIGNAL(shotgunPushAtIndex(int, const QVariant, Shotgun *)));
     bool havePushedAtIndexSignal = node()->hasSignal(SIGNAL(shotgunPushedAtIndex(int, int)));
 
@@ -97,7 +98,6 @@ void ShotgunOperationAttached::run()
     ShotgunOperation *sgop = operation<ShotgunOperation>();
     Q_ASSERT(sgop);
 
-    info() << "Shotgun" << sgop->mode() << "on" << node();
     trace() << node() << operation() << ".run [mode is" << sgop->node() << "]";
 
     if (!sgop->shotgun()) {
@@ -108,6 +108,8 @@ void ShotgunOperationAttached::run()
     }
 
     m_indexStatus.clear();
+    m_pulledAtIndexCount = 0;
+    m_pushedAtIndexCount = 0;
 
     if (sgop->mode() == ShotgunOperation::Pull) {
         if (m_action == ShotgunOperationAttached::Find) {
@@ -119,6 +121,7 @@ void ShotgunOperationAttached::run()
                 if (node()->count() > 0) {
                     debug() << "Shotgun pulling" << node()->count() << "details";
                     for (int i = 0; i < node()->count(); i++) {
+                        info() << "Shotgun pulling" << node() << "at index" << i << "with" << context();
                         emit shotgunPullAtIndex(i, context(), sgop->shotgun());
                     }
                 } else {
@@ -149,6 +152,7 @@ void ShotgunOperationAttached::run()
                 if (node()->count() > 0) {
                     debug() << "Shotgun pushing" << node()->count() << "details";
                     for (int i = 0; i < node()->count(); i++) {
+                        info() << "Shotgun pushing" << node() << "at index" << i << "with" << context();
                         emit shotgunPushAtIndex(i, context(), sgop->shotgun());
                     }
                 } else {
@@ -179,16 +183,28 @@ void ShotgunOperationAttached::onShotgunPulled(int s)
 {
     trace() << node() << ".onShotgunPulled(" << static_cast<OperationAttached::Status>(s) << ")";
     setStatus(static_cast<OperationAttached::Status>(s));
+
+    info() << "Shotgun pulled" << node() << "with status" << status();
+    info() << "Result is" << node()->details().toVariant();
+
     continueRunning();
 }
 
 void ShotgunOperationAttached::onShotgunPulledAtIndex(int index, int s)
 {
     trace() << node() << ".onShotgunPulledAtIndex(" << index << "," << static_cast<OperationAttached::Status>(s) << ")";
+    Q_ASSERT(operation());
     m_indexStatus.append(static_cast<OperationAttached::Status>(s));
 
-    if (m_indexStatus.length() == node()->count()) {
-        onShotgunPulled(m_indexStatus.status());
+    info() << "Shotgun pulled" << node() << "at index" << m_pulledAtIndexCount << "with status" << static_cast<OperationAttached::Status>(s);
+    info() << "Result is" << node()->details().property(index).toVariant();
+    m_pulledAtIndexCount++;
+
+    if (m_pulledAtIndexCount == node()->count() * receivers(SIGNAL(shotgunPullAtIndex(int,QVariant,Shotgun*)))) {
+        info() << "Shotgun pulled" << node() << "with status" << status();
+        info() << "Result is" << node()->details().toVariant();
+        setStatus(m_indexStatus.status());
+        continueRunning();
     }
 }
 
@@ -196,16 +212,28 @@ void ShotgunOperationAttached::onShotgunPushed(int s)
 {
     trace() << node() << ".onShotgunPushed(" << static_cast<OperationAttached::Status>(s) << ")";
     setStatus(static_cast<OperationAttached::Status>(s));
+
+    info() << "Shotgun pushed" << node() << "with status" << status();
+    info() << "Result is" << node()->details().toVariant();
+
     continueRunning();
 }
 
 void ShotgunOperationAttached::onShotgunPushedAtIndex(int index, int s)
 {
     trace() << node() << ".onShotgunPushedAtIndex(" << index << "," << static_cast<OperationAttached::Status>(s) << ")";
+    Q_ASSERT(operation());
     m_indexStatus.append(static_cast<OperationAttached::Status>(s));
 
-    if (m_indexStatus.length() == node()->count()) {
-        onShotgunPushed(m_indexStatus.status());
+    info() << "Shotgun pushed" << node() << "at index" << m_pushedAtIndexCount << "with status" << static_cast<OperationAttached::Status>(s);
+    info() << "Result is" << node()->details().property(index).toVariant();
+    m_pushedAtIndexCount++;
+
+    if (m_pushedAtIndexCount == node()->count() * receivers(SIGNAL(shotgunPushAtIndex(int,QVariant,Shotgun*)))) {
+        info() << "Shotgun pushed" << node() << "with status" << status();
+        info() << "Result is" << node()->details().toVariant();
+        setStatus(m_indexStatus.status());
+        continueRunning();
     }
 }
 

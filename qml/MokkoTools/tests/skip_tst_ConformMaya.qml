@@ -7,10 +7,10 @@ TestCase {
     id: self
     name: "ConformMayaTests"
 
-    property string testScenePath: Qt.resolvedUrl("data/scene.mb").replace("file://", "")
-    property string releaseScenePath: Qt.resolvedUrl("data/release_scene.mb").replace("file://", "")
-    property string testImagePath: Qt.resolvedUrl("data/test.png").replace("file://", "")
-    property string releaseImagePath: Qt.resolvedUrl("data/release_test.png").replace("file://", "")
+    property string testScenePath: relativePath("data/scene.mb")
+    property string releaseScenePath: relativePath("data/release_scene.mb")
+    property string testImagePath: relativePath("data/test.png")
+    property string releaseImagePath: relativePath("data/release_test.png")
         
     Root {
         operations: [
@@ -21,10 +21,6 @@ TestCase {
                 id: cook
                 dependencies: update
             },
-            ReleaseOperation {
-                id: release
-                dependencies: update
-            }
         ]
 
         File {

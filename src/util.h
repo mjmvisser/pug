@@ -20,6 +20,7 @@ public:
     Q_INVOKABLE bool remove(const QString path);
     Q_INVOKABLE bool copy(const QString src, const QString dest);
     Q_INVOKABLE ElementsView *elementsView(Node *node);
+    Q_INVOKABLE const QVariantMap mergeContexts(const QVariantMap first, const QVariantMap second) const;
 };
 
 #endif

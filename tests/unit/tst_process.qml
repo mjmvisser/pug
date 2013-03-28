@@ -6,6 +6,10 @@ TestCase {
     id: self
     name: "ProcessTests"
 
+    UpdateOperation {
+        id: update
+    }
+    
     CookOperation {
         id: cook
     }
@@ -22,30 +26,56 @@ TestCase {
             count: 1
             argv: ["false"]
         }
+        
+        Process {
+            logLevel: Log.Trace
+            id: cookOnlyProcess
+            count: 1
+            argv: {
+                if (cooking) {
+                    return ["true"];
+                } else {
+                    return [];
+                }
+            }
+        }
+    }
+
+    SignalSpy {
+        id: updateSpy
+        target: update
+        signalName: "finished"
     }
     
     SignalSpy {
-        id: spy
+        id: cookSpy
         target: cook
         signalName: "finished"
     }
 
     function test_processSuccess() {
-        spy.clear();
+        cookSpy.clear();
         cook.run(trueProcess, {});
-        spy.wait(500);
+        cookSpy.wait(500);
         compare(trueProcess.CookOperation.status, Operation.Finished);
         verify(trueProcess.details);
         compare(trueProcess.details[0].process.exitCode, 0);
     }
 
     function test_processFailure() {
-        spy.clear();
+        cookSpy.clear();
         console.log("Intentionally triggering process failure...");
         cook.run(falseProcess, {});
-        spy.wait(500);
+        cookSpy.wait(500);
         compare(falseProcess.CookOperation.status, Operation.Error);
         verify(falseProcess.details);
         compare(falseProcess.details[0].process.exitCode, 1);
+    }
+    
+    function test_cookOnlyProcess() {
+        updateSpy.clear();
+        update.run(cookOnlyProcess, {});
+        updateSpy.wait(500);
+        compare(cookOnlyProcess.UpdateOperation.status, Operation.Finished);
     }
 }

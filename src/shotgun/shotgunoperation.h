@@ -44,6 +44,8 @@ private:
     Action m_action;
     int m_mode;
     OperationStatusList m_indexStatus;
+    int m_pushedAtIndexCount;
+    int m_pulledAtIndexCount;
 };
 
 class ShotgunOperation : public Operation

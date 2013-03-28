@@ -89,26 +89,66 @@ void ShotgunField::setType(ShotgunField::Type t)
 
 ShotgunEntity *ShotgunField::link()
 {
-    return m_links.length() == 1 ? m_links.at(0) : 0;
+    return m_links.length() == 1 ? m_links[0] : 0;
 }
 
 const ShotgunEntity *ShotgunField::link() const
 {
-    return m_links.length() == 1 ? m_links.at(0) : 0;
+    return m_links.length() == 1 ? m_links[0] : 0;
 }
 
-void ShotgunField::setLink(ShotgunEntity *e)
+void ShotgunField::setLink(ShotgunEntity *l)
 {
-    if (m_links.length() != 1 || m_links.at(0) != e) {
+    if (m_links.length() != 1 || m_links[0] != l) {
         m_links.clear();
-        m_links << e;
+        m_links << l;
         emit linksChanged();
     }
 }
 
 QQmlListProperty<ShotgunEntity> ShotgunField::links_()
 {
-    return QQmlListProperty<ShotgunEntity>(this, m_links);
+    return QQmlListProperty<ShotgunEntity>(this, 0,
+            ShotgunField::links_append,
+            ShotgunField::links_count,
+            ShotgunField::link_at,
+            ShotgunField::links_clear);
+}
+
+
+// links property
+void ShotgunField::links_append(QQmlListProperty<ShotgunEntity> *prop, ShotgunEntity *e)
+{
+    ShotgunField *that = static_cast<ShotgunField *>(prop->object);
+
+    e->setParent(that);
+    that->m_links.append(e);
+    emit that->linksChanged();
+}
+
+int ShotgunField::links_count(QQmlListProperty<ShotgunEntity> *prop)
+{
+    ShotgunField *that = static_cast<ShotgunField *>(prop->object);
+    return that->m_links.count();
+}
+
+ShotgunEntity *ShotgunField::link_at(QQmlListProperty<ShotgunEntity> *prop, int i)
+{
+    ShotgunField *that = static_cast<ShotgunField *>(prop->object);
+    if (i < that->m_links.count()) {
+        return that->m_links[i];
+    } else {
+        return 0;
+    }
+}
+
+void ShotgunField::links_clear(QQmlListProperty<ShotgunEntity> *prop)
+{
+    ShotgunField *that = static_cast<ShotgunField *>(prop->object);
+    foreach (ShotgunEntity *e, that->m_links) {
+        e->setParent(0);
+    }
+    emit that->linksChanged();
 }
 
 const QString ShotgunField::pattern() const
@@ -378,12 +418,8 @@ const QVariant ShotgunField::buildPatternValue(int index, const QVariantMap cont
 
     QVariant result;
     if (index < branch->count()) {
-        QVariantMap branchContext = branch->context(index);
-        QMapIterator<QString, QVariant> i(context);
-        while (i.hasNext()) {
-            i.next();
-            branchContext.insert(i.key(), i.value());
-        }
+        const QVariantMap branchContext = mergeContexts(context,
+                branch->details().property(index).property("context").toVariant().toMap());
 
         if (branch->fieldsComplete(m_pattern, context)) {
             QString value = branch->formatFields(m_pattern, context);

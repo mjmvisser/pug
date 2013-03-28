@@ -78,6 +78,15 @@ void Root::operations_clear(QQmlListProperty<Operation> *prop)
     emit that->operationsChanged();
 }
 
+const QList<const Operation *> Root::operation() const
+{
+    return constList(m_operations);
+}
+
+const QList<Operation *> Root::operations()
+{
+    return m_operations;
+}
 
 Branch *Root::findBranch(const QString path)
 {

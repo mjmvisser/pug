@@ -8,8 +8,9 @@
 
 #include "detailsview.h"
 #include "node.h"
-#include "filepattern.h"
 #include "frameview.h"
+#include "filepattern.h"
+#include "framepattern.h"
 
 class ElementView : public DetailsView
 {
@@ -40,15 +41,17 @@ public:
     const FrameView *frameAt(int index) const;
     FrameView *frameAt(int index);
 
-    Q_INVOKABLE const QList<int> framesList() const;
-    Q_INVOKABLE int firstFrame() const;
-    Q_INVOKABLE int lastFrame() const;
-    Q_INVOKABLE const QString framesPattern() const;
+    Q_INVOKABLE const QList<int> frameList() const;
+    Q_INVOKABLE const QString framePattern() const;
+    Q_INVOKABLE QVariant frameStart() const;
+    Q_INVOKABLE QVariant frameEnd() const;
+    Q_INVOKABLE QVariant frameBy() const;
 
     int frameCount() const;
     void setFrameCount(int);
 
-    Q_INVOKABLE void scan(const QFileInfoList &entries);
+    void scan(const QFileInfoList &);
+    void scan(const QFileInfoList &, const FramePattern &);
 
     Node::Status status() const;
 

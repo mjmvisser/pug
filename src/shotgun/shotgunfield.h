@@ -105,6 +105,12 @@ private slots:
     void updateCount();
 
 private:
+    // links property
+    static void links_append(QQmlListProperty<ShotgunEntity> *, ShotgunEntity *);
+    static int links_count(QQmlListProperty<ShotgunEntity> *);
+    static ShotgunEntity *link_at(QQmlListProperty<ShotgunEntity> *, int);
+    static void links_clear(QQmlListProperty<ShotgunEntity> *);
+
     const QVariant buildStringValue(const QVariantMap) const;
     const QVariant buildNumberValue(const QVariantMap) const;
     const QVariant buildPathValue(int) const;

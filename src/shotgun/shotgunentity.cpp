@@ -8,7 +8,7 @@ ShotgunEntity::ShotgunEntity(QObject *parent) :
 {
     setActive(true);
 
-    addInput(this, "branch");
+    //addInput(this, "branch");
     addInput(this, "shotgunFields");
 
     connect(this, &ShotgunEntity::shotgunPull, this, &ShotgunEntity::onShotgunPull);

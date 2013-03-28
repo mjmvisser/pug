@@ -5,6 +5,7 @@
 #include <QQmlListProperty>
 #include <QStringList>
 #include <QJSValue>
+#include <QList>
 
 #include "pugitem.h"
 #include "param.h"
@@ -84,12 +85,13 @@ public:
     Q_INVOKABLE void setDetail(int, const QString, const QString, quint32, QJSValue, bool=true);
     Q_INVOKABLE void setDetail(int, const QString, const QString, quint32, const QString, QJSValue, bool=true);
 
-    Q_INVOKABLE const QVariantMap context(int index) const;
     Q_INVOKABLE void setContext(int index, const QVariantMap context, bool emitChanged=true);
 
     Q_INVOKABLE int childIndex() const;
     Node *child(int index);
     int childCount() const;
+
+    static const QVariantMap mergeContexts(const QVariantMap first, const QVariantMap second);
 
     qreal x() const;
     void setX(qreal);
@@ -99,6 +101,12 @@ public:
     Param *addParam(QObject *parent, const QString name);
     Input *addInput(QObject *parent, const QString name);
     Output *addOutput(const QString name);
+
+    int receivers(const char *signal) const;
+
+    void printStatus(const QString indent = "") const;
+
+    bool cycleCheck(const QList<const Node *>& visited = QList<const Node *>()) const;
 
 signals:
     void paramsChanged();
@@ -150,13 +158,8 @@ protected:
 
 private:
     const Node *nodeInChildren(const QString n) const;
-    Node *nodeInChildren(const QString n);
-
-    Node *firstNamedParent();
     const Node *firstNamedParent() const;
-
     const Node *nodeInFirstNamedParent(const QString n) const;
-    Node *nodeInFirstNamedParent(const QString n);
 
     // children property
     static void nodes_append(QQmlListProperty<Node> *, Node *);

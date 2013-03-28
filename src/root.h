@@ -13,6 +13,8 @@ public:
     explicit Root(QObject *parent = 0);
 
     QQmlListProperty<Operation> operations_();
+    const QList<Operation *> operations();
+    const QList<const Operation *> operation() const;
 
     Q_INVOKABLE const QVariant parse(const QString nodeName, const QString path);
     Q_INVOKABLE const QString map(const QString nodeName, const QVariant fields);

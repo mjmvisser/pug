@@ -2,6 +2,9 @@
 #include <QDir>
 #include <QTextStream>
 #include <QRegularExpression>
+#include <QMap>
+#include <QVariant>
+#include <QMapIterator>
 
 #include "util.h"
 
@@ -61,4 +64,9 @@ ElementsView *Util::elementsView(Node *node)
     // no parent means V8 takes ownership
     ElementsView *obj = new ElementsView(node);
     return obj;
+}
+
+const QVariantMap Util::mergeContexts(const QVariantMap first, const QVariantMap second) const
+{
+    return Node::mergeContexts(first, second);
 }

@@ -1,3 +1,7 @@
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <signal.h>
+
 #include <QDebug>
 #include <QUrl>
 
@@ -21,6 +25,8 @@
     Main entry point for access to the Pug graph.
 */
 
+int Pug::s_sigIntFd[2] = {0,0};
+
 Pug::Pug(QQmlEngine* engine, QObject *parent) :
         PugItem(parent),
         m_engine(engine),
@@ -32,6 +38,44 @@ Pug::Pug(QQmlEngine* engine, QObject *parent) :
     foreach (QString importPath, importPathList) {
         m_engine->addImportPath(importPath);
     }
+
+    if (::socketpair(AF_UNIX, SOCK_STREAM, 0, s_sigIntFd))
+        qFatal("Couldn't create INT socketpair");
+
+    m_sigIntSocketNotifier = new QSocketNotifier(s_sigIntFd[1], QSocketNotifier::Read, this);
+    connect(m_sigIntSocketNotifier, &QSocketNotifier::activated, this, &Pug::handleSigInt);
+
+    struct sigaction sigInt;
+
+    sigInt.sa_handler = Pug::intSignalHandler;
+    sigemptyset(&sigInt.sa_mask);
+    sigInt.sa_flags = 0;
+    sigInt.sa_flags |= SA_RESTART;
+
+    if (sigaction(SIGINT, &sigInt, 0) == -1)
+       qFatal("Couldn't hook SIGINT");
+}
+
+void Pug::intSignalHandler(int unused)
+{
+    Q_UNUSED(unused);
+    char a = 1;
+    ::write(s_sigIntFd[0], &a, sizeof(a));
+}
+
+void Pug::handleSigInt(int unused)
+{
+    Q_UNUSED(unused);
+
+    m_sigIntSocketNotifier->setEnabled(false);
+    char tmp;
+    ::read(s_sigIntFd[1], &tmp, sizeof(tmp));
+
+    qDebug() << "Interrupted";
+
+    QCoreApplication::exit(1);
+
+    m_sigIntSocketNotifier->setEnabled(true);
 }
 
 const QVariantMap Pug::parse(const QString node, const QString path) const {

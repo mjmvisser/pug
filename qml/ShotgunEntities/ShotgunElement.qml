@@ -5,20 +5,22 @@ import "js/shotgunutils.js" as ShotgunUtils
 ShotgunEntity {
     shotgunEntity: "Element"
 
+    ShotgunOperation.action: ShotgunOperation.Create
+
     property ShotgunEntity project
     property ShotgunEntity delivery
     property ShotgunEntity release
     property ShotgunEntity user
 
-    property string code
-    //property var sourcePathLink
-    
     inputs: [
         Input { name: "project" },
         Input { name: "delivery" },
         Input { name: "release" },
         Input { name: "user" }
     ]
+    
+    property string code
+    //property var sourcePathLink
     
     params: Param { name: "code" }
     

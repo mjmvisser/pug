@@ -30,6 +30,7 @@ private:
 
     Mode m_mode;
     OperationStatusList m_indexStatus;
+    int m_cookedAtIndexCount;
 };
 
 inline QDebug operator<<(QDebug dbg, CookOperationAttached::Mode m)

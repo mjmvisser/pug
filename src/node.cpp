@@ -276,16 +276,6 @@ int Node::childCount() const
     return count;
 }
 
-Node *Node::firstNamedParent()
-{
-    Node *p = parent<Node>();
-    while (p && p->name().isEmpty() && !p->isRoot()) {
-        p = p->parent<Node>();
-    }
-
-    return p;
-}
-
 const Node *Node::firstNamedParent() const
 {
     const Node *p = parent<Node>();
@@ -294,45 +284,6 @@ const Node *Node::firstNamedParent() const
     }
 
     return p;
-}
-
-Node *Node::node(const QString n)
-{
-    if (n.isNull())
-        return 0;
-
-    if (n.isEmpty())
-        return this;
-
-    if (name() == n || n == ".") {
-        // found it!
-        return this;
-    } else if (n == "..") {
-        // found it!
-        return firstNamedParent();
-    } else if (n.at(0) == '/') {
-        Node *r = rootBranch();
-        return r ? r->nodeInChildren(n.mid(1)) : 0;
-    } else {
-        QStringList parts = n.split('/', QString::SkipEmptyParts);
-        QString root = parts.takeFirst();
-        QString remainder = parts.join('/');
-
-        if (name() == root || root == ".") {
-            if (remainder.isEmpty())
-                return this;
-            else
-                return nodeInChildren(remainder);
-        } else if (root == "..") {
-            return nodeInFirstNamedParent(remainder);
-        } else if (remainder.isEmpty()) {
-            return nodeInChildren(root);
-        } else {
-            return nodeInChildren(remainder);
-        }
-    }
-
-    return 0;
 }
 
 const Node *Node::node(const QString n) const
@@ -349,7 +300,7 @@ const Node *Node::node(const QString n) const
     } else if (n == "..") {
         // found it!
         return firstNamedParent();
-    } else if (n.at(0) == '/') {
+    } else if (n[0] == '/') {
         const Node *r = rootBranch();
         return r ? r->nodeInChildren(n.mid(1)) : 0;
     } else {
@@ -374,6 +325,12 @@ const Node *Node::node(const QString n) const
     return 0;
 }
 
+Node *Node::node(const QString n)
+{
+    Node *result = const_cast<Node *>(static_cast<const Node &>( *this ).node(n));
+    return result;
+}
+
 const QString Node::path() const
 {
     QString path = objectName();
@@ -387,36 +344,15 @@ const QString Node::path() const
     return path;
 }
 
-Node *Node::nodeInFirstNamedParent(const QString n)
-{
-    Node *p = firstNamedParent();
-    if (p)
-        return p->node(n);
-    else
-        return 0;
-}
-
 const Node *Node::nodeInFirstNamedParent(const QString n) const
 {
     const Node *p = firstNamedParent();
-    if (p)
-        return p->node(n);
-    else
+    if (p) {
+        const Node *result = p->node(n);
+        return result;
+    } else {
         return 0;
-}
-
-Node *Node::nodeInChildren(const QString n)
-{
-    foreach (QObject *o, children()) {
-        Node* node = qobject_cast<Node *>(o);
-        if (node) {
-            Node *found = node->node(n);
-            if (found)
-                return found;
-        }
     }
-
-    return 0;
 }
 
 const Node *Node::nodeInChildren(const QString n) const
@@ -425,8 +361,9 @@ const Node *Node::nodeInChildren(const QString n) const
         const Node* node = qobject_cast<const Node *>(o);
         if (node) {
             const Node *found = node->node(n);
-            if (found)
+            if (found) {
                 return found;
+            }
         }
     }
 
@@ -440,11 +377,10 @@ const QList<const Node *> Node::upstream() const
     // loop through inputs and find upstream nodes
     foreach (const Input *in, m_inputs) {
         const QVariant v = QQmlProperty::read(in->QObject::parent(), in->name());
-        debug() << "input property" << in->name() << "is" << v;
         if (v.canConvert<Node *>()) {
             // single input
             const Node *input = v.value<Node*>();
-            if (input) {
+            if (input && !result.contains(input)) {
                 result.append(input);
             }
         } else if (v.canConvert<QQmlListReference>()) {
@@ -452,7 +388,7 @@ const QList<const Node *> Node::upstream() const
             QQmlListReference l = v.value<QQmlListReference>();
             for (int i = 0; i < l.count(); i++) {
                 const Node *input = qobject_cast<const Node *>(l.at(i));
-                if (input) {
+                if (input && !result.contains(input)) {
                     result.append(input);
                 }
             }
@@ -726,16 +662,9 @@ void Node::clearDetails()
     setDetails(newArray());
 }
 
-const QVariantMap Node::context(int index) const
-{
-    return details()
-            .property(index)
-            .property("context").toVariant().toMap();
-}
-
 void Node::setContext(int index, const QVariantMap v, bool emitChanged)
 {
-    if (context(index) != v) {
+    if (details().property(index).property("context").toVariant().toMap() != v) {
         setDetail(index, "context", toScriptValue(v), emitChanged);
     }
 }
@@ -765,6 +694,17 @@ Output *Node::addOutput(const QString name)
     m_outputs.append(output);
     emit outputsChanged();
     return output;
+}
+
+const QVariantMap Node::mergeContexts(const QVariantMap first, const QVariantMap second)
+{
+    QVariantMap result = first;
+    QMapIterator<QString, QVariant> i(second);
+    while (i.hasNext()) {
+        i.next();
+        result.insert(i.key(), i.value());
+    }
+    return result;
 }
 
 void Node::classBegin()
@@ -797,4 +737,46 @@ void Node::setY(qreal y)
         m_y = y;
         emit yChanged(y);
     }
+}
+
+int Node::receivers(const char *signal) const
+{
+    return QObject::receivers(signal);
+}
+
+#include "operation.h"
+void Node::printStatus(const QString indent) const
+{
+    qDebug() << indent.toUtf8().constData() << this;
+    foreach (QObject *obj, QObject::children()) {
+        OperationAttached *attached = qobject_cast<OperationAttached *>(obj);
+        if (attached && attached->status() > 0) {
+            qDebug() << (indent + "  ").toUtf8().constData() << attached->objectName() << "->" << attached->status();
+        }
+    }
+
+    foreach (QObject *obj, QObject::children()) {
+        Node *node = qobject_cast<Node *>(obj);
+        if (node) {
+            node->printStatus(indent + "    ");
+        }
+    }
+}
+
+bool Node::cycleCheck(const QList<const Node *>& visited) const
+{
+    QList<const Node *> myVisited = visited;
+    myVisited.append(this);
+
+    if (visited.contains(this)) {
+        error() << "found cycle at" << this << "in" << myVisited;
+        return true;
+    }
+
+    foreach (const Node *node, upstream()) {
+        if (node->cycleCheck(myVisited))
+            return true;
+    }
+
+    return false;
 }

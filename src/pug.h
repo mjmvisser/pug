@@ -5,6 +5,7 @@
 #include <QQmlEngine>
 #include <QQmlComponent>
 #include <QUrl>
+#include <QSocketNotifier>
 
 #include "root.h"
 
@@ -28,6 +29,9 @@ public:
             const QString path,
             const QVariantMap data);
 
+
+    static void intSignalHandler(int);
+
 signals:
     void rootPathChanged();
     void rootChanged();
@@ -35,12 +39,15 @@ signals:
     void error();
 
 private slots:
+    void handleSigInt(int);
     void continueLoading();
 
 private:
     QQmlEngine* m_engine;
     QQmlComponent* m_rootComponent;
     Root *m_root;
+    QSocketNotifier *m_sigIntSocketNotifier;
+    static int s_sigIntFd[2];
 };
 
 #endif // PUG_H

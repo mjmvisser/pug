@@ -282,9 +282,9 @@ static const QString escapeSpecialCharacters(const QString r)
     return result;
 }
 
-const QVariant Branch::match(const QString pattern, const QString path, bool exact) const
+const QVariant Branch::match(const QString pattern, const QString path, bool exact, bool partial) const
 {
-    trace() << ".match(" << pattern << "," << path << "," << exact << ")";
+    //trace() << ".match(" << pattern << "," << path << "," << exact << ")";
     static const QRegularExpression replaceFieldsRegexp("\\{(\\w+)\\}");
 
     const QString escapedPattern = escapeSpecialCharacters(pattern);
@@ -295,6 +295,7 @@ const QVariant Branch::match(const QString pattern, const QString path, bool exa
     int lastEnd = 0;
     // assemble a regular expression string
     QString matchRegexpStr = "^";
+    QSet<const QString> usedFieldNames;
     while (it.hasNext()) {
         QRegularExpressionMatch match = it.next();
         // add the part before the match
@@ -307,11 +308,19 @@ const QVariant Branch::match(const QString pattern, const QString path, bool exa
         QString fieldName = match.captured(1);
         const Field *f = findField(fieldName);
         if (f) {
-            matchRegexpStr += "(?<";
-            matchRegexpStr += fieldName;
-            matchRegexpStr += ">";
-            matchRegexpStr += f->regexp();
-            matchRegexpStr += ")";
+            if (!usedFieldNames.contains(fieldName)) {
+                matchRegexpStr += "(?<";
+                matchRegexpStr += fieldName;
+                matchRegexpStr += ">";
+                matchRegexpStr += f->regexp();
+                matchRegexpStr += ")";
+                usedFieldNames.insert(fieldName);
+            } else {
+                // already used, so just reference the previous match
+                matchRegexpStr += "(?P=";
+                matchRegexpStr += fieldName;
+                matchRegexpStr += ")";
+            }
         } else {
             warning() << ".match couldn't find field " << fieldName;
         }
@@ -327,23 +336,24 @@ const QVariant Branch::match(const QString pattern, const QString path, bool exa
     if (exact)
         matchRegexpStr += "$";
 
-    debug() << ".match" << path << "with" << matchRegexpStr;
+    //info() << ".match" << path << "with" << matchRegexpStr;
 
     QRegularExpression matchRegexp(matchRegexpStr);
 
-    QRegularExpressionMatch match = matchRegexp.match(path);
+    Q_ASSERT_X(matchRegexp.isValid(), QString("regular expression: " + matchRegexpStr).toUtf8(), matchRegexp.errorString().toUtf8());
 
-    debug() << ".match got" << match;
+    QRegularExpressionMatch match = matchRegexp.match(path, 0,
+            partial ? QRegularExpression::PartialPreferCompleteMatch : QRegularExpression::NormalMatch);
 
-    if (match.hasMatch()) {
+    //info() << "result:" << match;
+
+    if (match.hasMatch() || match.hasPartialMatch()) {
         QVariantMap context;
 
         foreach (QString fieldName, fieldNames(pattern)) {
             const Field *f = findField(fieldName);
-            if (f) {
+            if (f && !match.captured(fieldName).isNull()) {
                 context[fieldName] = f->parse(match.captured(fieldName));
-            } else {
-                context[fieldName] = QVariant();
             }
         }
 
@@ -362,20 +372,17 @@ const QVariant Branch::match(const QString pattern, const QString path, bool exa
                 return QVariant();
         }
 
+        //debug() << "result:" << context;
+
         return context;
     }
 
     return QVariant();
 }
 
-const QVariant Branch::match(const QString pattern, const QString path) const
-{
-    return match(pattern, path, exactMatch());
-}
-
 const QString Branch::formatFields(const QString pattern, const QVariant data) const
 {
-    trace() << ".formatFields(" << pattern << ", " << data << ")";
+    //trace() << ".formatFields(" << pattern << ", " << data << ")";
     QVariantMap fields;
     if (data.isValid() && data.type() == QVariant::Map)
         fields = data.toMap();
@@ -421,9 +428,9 @@ const QString Branch::formatFields(const QString pattern, const QVariant data) c
     return result;
 }
 
-const QVariant Branch::parse(const QString path) const
+const QVariant Branch::parse(const QString path, bool partial) const
 {
-    trace() << ".parse(" << path << ")";
+    //trace() << ".parse(" << path << ")";
     const Branch *rootBranch = 0;
     if (m_pattern.length() == 0 || m_pattern[0] != '/') {
         // not absolute;
@@ -432,19 +439,19 @@ const QVariant Branch::parse(const QString path) const
 
     if (rootBranch) {
         // recurse
-        QVariant data = rootBranch->parse(path);
+        QVariant data = rootBranch->parse(path, false);
 
         if (data.isValid()) {
             QVariantMap fields = data.toMap();
             if (fields.contains("_")) {
                 QString remainder = fields.take("_").toString();
 
-                debug() << ".parse got" << fields << remainder;
+                //debug() << ".parse got" << fields << remainder;
 
                 // match the remainder
-                const QVariant ourData = match(m_pattern, remainder);
+                const QVariant ourData = match(m_pattern, remainder, m_exactMatchFlag, partial);
 
-                debug() << ".parse matched" << ourData;
+                //debug() << ".parse matched" << ourData;
 
                 if (ourData.isValid()) {
                     const QVariantMap ourFields = ourData.toMap();
@@ -460,7 +467,7 @@ const QVariant Branch::parse(const QString path) const
         }
     } else {
         // base case
-        return match(m_pattern, path);
+        return match(m_pattern, path, m_exactMatchFlag, partial);
     }
     return QVariant();
 }
@@ -486,8 +493,8 @@ bool Branch::fieldsComplete(const QString pattern, const QVariantMap fields) con
 
 const QString Branch::map(const QVariant fields) const
 {
-    debug() << "mapping" << m_pattern << "with" << fields;
-    trace() << ".map(" << fields << ")";
+    //debug() << "mapping" << m_pattern << "with" << fields;
+    //trace() << ".map(" << fields << ")";
 
     if (!fields.isValid()) {
         error() << "Can't map" << m_pattern << "with invalid fields";
@@ -504,7 +511,7 @@ const QString Branch::map(const QVariant fields) const
     if (m_pattern.length() == 0 || m_pattern[0] != '/') {
         // not absolute
         const Branch *rootBranch = qobject_cast<const Branch *>(root());
-        debug() << "root" << rootBranch;
+        //debug() << "root" << rootBranch;
         // recurse
         if (rootBranch)
             mappedParent = rootBranch->map(fields);
@@ -536,10 +543,18 @@ const QMap<QString, QFileInfoList> Branch::listMatchingPatterns(const QVariantMa
 
     // now scan for files
     QString parentPath;
-    if (QFileInfo(pattern()).isAbsolute())
-        parentPath = QFileInfo(pattern()).dir().path();
-    else
+    if (QFileInfo(pattern()).isAbsolute()) {
+        // TODO: nastiness here because QFileInfo("foo/").dir() == QDir("foo")
+        if (pattern().endsWith('/')) {
+            QDir parentDir = QFileInfo(pattern()).dir();
+            parentDir.cdUp();
+            parentPath = parentDir.path();
+        } else {
+            parentPath = QFileInfo(pattern()).dir().path();
+        }
+    } else if (root()) {
         parentPath = root()->map(context);
+    }
 
     if (!parentPath.isEmpty()) {
         QDir parentDir(parentPath);
@@ -570,10 +585,10 @@ bool Branch::containsFields(const QVariantMap& needle, const QVariantMap& haysta
 
 const QMap<QString, QFileInfoList> Branch::listMatchingPatternsHelper(const QDir parentDir, const QVariantMap context, const QMap<QString, QFileInfoList> matches) const
 {
-    trace() << ".listMatchingPatternsHelper(" << parentDir << "," << context << ")";
+    trace() << ".listMatchingPatternsHelper(" << parentDir.absolutePath() << "," << context << ")";
     Q_ASSERT(!parentDir.isRoot());
 
-    debug() << "matching patterns in" << parentDir << "from" << context;
+    debug() << "matching patterns in" << parentDir << "from" << context << "with" << m_pattern;
 
     QMap<QString, QFileInfoList> result = matches;
 
@@ -582,20 +597,30 @@ const QMap<QString, QFileInfoList> Branch::listMatchingPatternsHelper(const QDir
         if (!entry.isHidden()) {
             debug() << "checking" << entry.absoluteFilePath();
             if (entry.isDir()) {
+                QVariant entryFields = parse(entry.absoluteFilePath() + "/");
+                // if we've got an exact match, the "_" entry will be invalid
                 if (!m_exactMatchFlag) {
-                    // not looking for exact match, and we found a directory
                     QVariant entryFields = parse(entry.absoluteFilePath() + "/");
 
-                    // if we've got an exact match, the "_" entry will be invalid
+                    debug() << "parse(" << entry.absoluteFilePath() << "/) returned" << entryFields;
+
                     if (entryFields.isValid() && containsFields(context, entryFields.toMap()) && !entryFields.toMap()["_"].isValid()) {
                         const QString path = entry.absoluteFilePath() + "/";
                         FilePattern fp(path);
                         result[fp.pattern()].append(entry);
                         debug() << "adding match" << fp.pattern() << "[file" << entry.filePath() << "]";
+                        continue;
                     }
                 }
-                // recurse
-                result = listMatchingPatternsHelper(entry.absoluteFilePath(), context, result);
+
+                // check for a partial match
+                QVariant m = parse(entry.absoluteFilePath() + "/", true);
+                debug() << "containsFields(" << m.toMap() << "," << context << ") returns" << containsFields(m.toMap(), context);
+                if (m.isValid() && containsFields(m.toMap(), context)) {
+                    debug() << "got partial match of" << entry.absoluteFilePath() << "against" << pattern() << "with" << m.toMap();
+                    // recurse
+                    result = listMatchingPatternsHelper(entry.absoluteFilePath() + "/", context, result);
+                }
             } else if (m_exactMatchFlag) {
                 // found a file and we're looking for an exact match
                 QVariant entryFields = parse(entry.absoluteFilePath());

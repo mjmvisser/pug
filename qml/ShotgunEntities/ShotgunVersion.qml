@@ -1,26 +1,31 @@
+import QtQuick 2.0
 import Pug 1.0
 
 import "js/shotgunutils.js" as ShotgunUtils
 
 ShotgunEntity {
+    id: self
     shotgunEntity: "Version"
 
-    property ShotgunEntity project
-    property ShotgunEntity entity
-    property ShotgunEntity release
-    property string code
-    property Node thumbnail
-    property Node filmstrip 
-    property ShotgunEntity user
+    ShotgunOperation.action: ShotgunOperation.Create
+
+    property ShotgunEntity project: null
+    property ShotgunEntity link: null
+    property ShotgunEntity step: null
+    property Node thumbnail: null
+    property Node filmstrip: null
+    property ShotgunEntity user: null
 
     inputs: [
         Input { name: "project" },
-        Input { name: "entity" },
-        Input { name: "release" },
+        Input { name: "link" },
+        Input { name: "step" },
         Input { name: "thumbnail" },
         Input { name: "filmstrip" },
         Input { name: "user" }
     ]
+
+    property string code
 
     params: [
         Param { name: "code" }
@@ -45,7 +50,15 @@ ShotgunEntity {
         name: "entity"
         shotgunField: "entity"
         type: ShotgunField.Link
-        link: entity
+        link: self.link
+    }
+
+    ShotgunField {
+        id: stepField
+        name: "sg_step"
+        shotgunField: "sg_step"
+        type: ShotgunField.Link
+        link: step
     }
 
     ShotgunField {
@@ -89,7 +102,6 @@ ShotgunEntity {
         shotgunField: "sg_first_frame"
         type: ShotgunField.Number
         value: _firstFrame(index)                         
-
     }
 
     ShotgunField {
@@ -99,13 +111,6 @@ ShotgunEntity {
         value: _lastFrame(index)                         
     }
     
-    ShotgunField {
-        name: "sg_release"
-        shotgunField: "sg_release"
-        type: ShotgunField.Link
-        link: release
-    }
-
     ShotgunField {
         name: "image"
         shotgunField: "image"

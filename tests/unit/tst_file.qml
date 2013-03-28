@@ -63,6 +63,7 @@ PugTestCase {
         
         Folder {
             id: branch
+            name: "filetests"
             pattern: tmpDir + "filetests/"
         
             File {
@@ -107,6 +108,7 @@ PugTestCase {
         compare(branch.details.length, 1);
         compare(branchElementsView.elements[0].path(), tmpDir + "filetests/");
         compare(fileElementsView.elements[0].pattern, tmpDir + "filetests/abc/foo.%04d.baz");
+        verify(fileElementsView.elements[0].frames[0]);
         compare(fileElementsView.elements[0].frames[0].frame, 1);
         compare(fileElementsView.elements[0].frames[0].path(), tmpDir + "filetests/abc/foo.0001.baz");
     }

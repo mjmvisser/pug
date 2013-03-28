@@ -24,7 +24,7 @@ Process {
         Param { name: "mode" }
     ]
 
-    count: input.count
+    count: input ? input.count : 0
 
     function __outputPath(index, context) {
         var inputElementsView = Util.elementsView(input);

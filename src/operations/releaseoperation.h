@@ -6,7 +6,7 @@
 #include <QJSValue>
 
 #include "operation.h"
-#include "branch.h"
+#include "node.h"
 #include "field.h"
 #include "fileopqueue.h"
 
@@ -14,7 +14,7 @@ class ReleaseOperationAttached : public OperationAttached
 {
     Q_OBJECT
     Q_ENUMS(Mode)
-    Q_PROPERTY(Branch *source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(Node *source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QString versionField READ versionFieldName WRITE setVersionFieldName NOTIFY versionFieldChanged)
     Q_PROPERTY(Mode mode READ mode WRITE setMode NOTIFY modeChanged)
 public:
@@ -22,9 +22,9 @@ public:
 
     explicit ReleaseOperationAttached(QObject *parent = 0);
 
-    Branch *source();
-    const Branch *source() const;
-    void setSource(Branch *);
+    Node *source();
+    const Node *source() const;
+    void setSource(Node *);
 
     const QString versionFieldName() const;
     void setVersionFieldName(const QString);
@@ -39,7 +39,7 @@ public:
     Q_INVOKABLE int findLastVersion(const QVariantMap) const;
 
 signals:
-    void sourceChanged(Branch *source);
+    void sourceChanged(Node *source);
     void versionFieldChanged(const QString versionField);
     void modeChanged(Mode mode);
 
@@ -55,7 +55,7 @@ private slots:
     void onFileOpQueueError();
 
 private:
-    Branch *m_source;
+    Node *m_source;
     QString m_versionFieldName;
     int m_version;
     Mode m_mode;

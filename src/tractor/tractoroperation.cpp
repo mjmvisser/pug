@@ -21,6 +21,7 @@ TractorOperationAttached::TractorOperationAttached(QObject *parent) :
         m_serialSubtasksFlag(false),
         m_tractorTask()
 {
+    setObjectName("tractor");
 }
 
 TractorOperationAttached *TractorOperationAttached::parentAttached()

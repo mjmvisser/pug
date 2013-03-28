@@ -45,7 +45,7 @@ PugTestCase {
         Folder {
             id: project
             name: "project"
-            pattern: "/prod/projects/{PROJECT}"
+            pattern: "/prod/projects/{PROJECT}/"
             
             ShotgunEntity {
                 id: sg_project
@@ -103,6 +103,21 @@ PugTestCase {
         id: pushSpy
         target: shotgunPush
         signalName: "finished"
+    }
+    
+    SignalSpy {
+        id: updateSpy
+        target: update
+        signalName: "finished"
+    }
+    
+    function test_update() {
+        var context = {PROJECT: "888_test",
+                       FILENAME: testImage};
+        update.run(project, context);
+        updateSpy.wait(500);
+
+        compare(update.status, Operation.Finished);
     }
     
     function test_pullFields() {

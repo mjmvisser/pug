@@ -106,7 +106,7 @@ void Process::onUpdateAtIndex(int i, const QVariant context)
     setUpdating(true);
     setIndex(i);
     if (m_argv.isEmpty()) {
-        debug() << "no args, skipping update";
+        warning() << "no args, skipping update";
         setUpdating(false);
         emit updatedAtIndex(i, OperationAttached::Finished);
         return;
@@ -122,7 +122,7 @@ void Process::onCookAtIndex(int i, const QVariant context)
     setCooking(true);
     setIndex(i);
     if (m_argv.isEmpty()) {
-        debug() << "no args, skipping cook";
+        warning() << "no args, skipping cook";
         setCooking(false);
         emit cookedAtIndex(i, OperationAttached::Finished);
         return;

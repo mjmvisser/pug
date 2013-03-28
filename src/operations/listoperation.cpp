@@ -7,6 +7,7 @@
 ListOperationAttached::ListOperationAttached(QObject *parent) :
     OperationAttached(parent)
 {
+    setObjectName("list");
 }
 
 void ListOperationAttached::run()

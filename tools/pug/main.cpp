@@ -29,6 +29,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     QString currentDirPath = qgetenv("PWD");
     currentDirPath += "/";
 
+    bool printStatus = false;
+
     if (app.arguments().length() > 1) {
         QStringList args = app.arguments().mid(1);
         QString opName = args.takeFirst();
@@ -39,7 +41,9 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
         while (args.length() > 0) {
             QString arg = args.takeFirst();
 
-            if (arg == "-properties") {
+            if (arg == "-status") {
+                printStatus = true;
+            } else if (arg == "-properties") {
                 while (args.length() > 0 && !args.first().startsWith('-')) {
                     QString prop = args.takeFirst();
                     QStringList propParts = prop.split('=');
@@ -71,6 +75,10 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
         }
 
         OperationAttached::Status status = pug->runOperation(opName, properties, branch, extraData);
+
+        if (printStatus) {
+            pug->root()->printStatus();
+        }
 
         qDebug() << status;
     } else {

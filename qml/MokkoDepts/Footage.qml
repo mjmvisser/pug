@@ -5,6 +5,12 @@ import MokkoTools 1.0
 Folder {
     name: "footage"
     pattern: "2d/assets/footage"
+
+    ShotgunStep {
+        id: sg_step
+        name: "sg_step"
+        step: "footage"
+    }
     
     Folder {
         id: release
@@ -13,13 +19,16 @@ Folder {
         ReleaseOperation.versionField: "VERSION"
         ShotgunOperation.action: ShotgunOperation.Create
 
-        ShotgunPublishEvent {
-            id: sg_releasePublishEvent
-            name: "sg_releasePublishEvent"
+        ShotgunVersion {
+            id: sg_releaseVersion
+            name: "sg_releaseVersion"
             project: node("/project/sg_project")
-            entity: node("/shot/sg_shot")
+            entity: null //node("/shot/sg_shot")
+            step: sg_step
             user: node("/sg_user")
-            code: "{SEQUENCE}_{SHOT}_footage_v{VERSION}"
+            code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
+            thumbnailPath: workSeq.thumbnail
+            filmstripPath: workSeq.filmstrip
         }
 
         File {
@@ -28,22 +37,13 @@ Folder {
             pattern: "{FORMAT}/{EXT}/{SEQUENCE}_{SHOT}_footage_{VARIATION}_v{VERSION}_{FORMAT}.{FRAME}.{EXT}"
             ShotgunOperation.action: ShotgunOperation.Create
 
-            ShotgunVersion {
+            ShotgunPublishEvent {
                 project: node("/project/sg_project")
-                entity: node("/shot/sg_shot")
-                release: sg_releasePublishEvent
+                entity: null //node("/shot/sg_shot")
+                step: sg_step
                 user: node("/sg_user")
-                code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
                 thumbnailPath: workSeq.thumbnail
                 filmstripPath: workSeq.filmstrip
-            }
-
-            ShotgunFile {
-                project: node("/project/sg_project")
-                release: sg_releasePublishEvent
-                user: node("/sg_user")
-                thumbnail: workSeq.thumbnail
-                filmstrip: workSeq.filmstrip
             }
         }
     }

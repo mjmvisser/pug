@@ -31,7 +31,8 @@ Folder {
 
         ShotgunPublishEvent {
             id: sg_release
-            entity: sg_delivery
+            name: "sg_release"
+            link: sg_delivery
             project: node("/project/sg_project")
             user: node("/sg_user")
             code: "from_client_{TRANSFER}_v{VERSION}"

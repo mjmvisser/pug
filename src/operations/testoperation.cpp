@@ -1,10 +1,13 @@
 #include "testoperation.h"
 
 TestOperationAttached::TestOperationAttached(QObject *parent) :
-        OperationAttached(parent) {
+    OperationAttached(parent)
+{
+    setObjectName("test");
 }
 
-void TestOperationAttached::run() {
+void TestOperationAttached::run()
+{
     info() << "Testing" << node();
     trace() << node() << operation() << ".run()";
     if (context().value("error").toBool()) {

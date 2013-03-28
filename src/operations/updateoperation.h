@@ -29,6 +29,7 @@ private:
 
     Mode m_mode;
     OperationStatusList m_indexStatus;
+    int m_updatedAtIndexCount;
 };
 
 inline QDebug operator<<(QDebug dbg, UpdateOperationAttached::Mode m)
