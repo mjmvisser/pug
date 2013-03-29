@@ -219,10 +219,20 @@ void ElementView::scan(const QFileInfoList &entries)
 
     FilePattern fp(pattern());
 
+    QMap<int, QFileInfo> entriesByFrame;
     foreach (QFileInfo info, entries) {
-        if (fp.match(info.filePath()).hasMatch()) {
-            append(info);
+        QRegularExpressionMatch match = fp.match(info.filePath());
+        if (match.hasMatch()) {
+            QString frameStr = match.captured("frame");
+            if (!frameStr.isNull()) {
+                entriesByFrame.insert(frameStr.toInt(), info);
+            }
         }
+    }
+
+    // QMap keeps its keys in sorted order
+    foreach (int frame, entriesByFrame.keys()) {
+        append(entriesByFrame[frame]);
     }
 }
 

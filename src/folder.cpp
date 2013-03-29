@@ -28,7 +28,7 @@ void Folder::onUpdate(const QVariant context)
     else
         localContext = context.toMap();
 
-    QMap<QString, QFileInfoList> matches = listMatchingPatterns(localContext);
+    QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(localContext);
 
     info() << "Update matched" << matches.keys() << "from" << pattern();
 
@@ -36,12 +36,12 @@ void Folder::onUpdate(const QVariant context)
 
     if (matches.size() > 0) {
         int index = 0;
-        QMapIterator<QString, QFileInfoList> i(matches);
+        QMapIterator<QString, QSet<QFileInfo> > i(matches);
         while (i.hasNext()) {
             i.next();
             ElementView *element = elementsView->elementAt(index);
             element->setPattern(i.key());
-            element->scan(i.value());
+            element->scan(i.value().toList());
 
             QVariantMap elementContext = parse(i.key()).toMap();
 
@@ -50,10 +50,11 @@ void Folder::onUpdate(const QVariant context)
             index++;
         }
 
-        emit updateFinished(OperationAttached::Finished);
-    } else {
-        error() << "no match found for" << pattern() << "with" << localContext;
-
-        emit updateFinished(OperationAttached::Error);
     }
+//    else {
+//        error() << "no match found for" << pattern() << "with" << localContext;
+//
+//        emit updateFinished(OperationAttached::Error);
+//    }
+    emit updateFinished(OperationAttached::Finished);
 }

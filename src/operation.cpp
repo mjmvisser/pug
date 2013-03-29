@@ -7,6 +7,7 @@ OperationAttached::OperationAttached(QObject *parent) :
     m_status(OperationAttached::Invalid),
     m_operation()
 {
+    connect(this, &OperationAttached::finished, this, &OperationAttached::onFinished);
 }
 
 const QVariantMap OperationAttached::context() const
@@ -201,6 +202,15 @@ void OperationAttached::continueRunning()
     trace() << node() << ".continueRunning()";
     Q_ASSERT(m_operation);
 
+    // lock inputs with lockInput flag == true
+    foreach (const Input *in, node()->inputs()) {
+        if (in->lockInput()) {
+            foreach (Node *input, node()->upstream(in)) {
+                input->setLocked(true);
+            }
+        }
+    }
+
     OperationAttached::Status inStatus = inputsStatus();
     OperationAttached::Status childStatus = childrenStatus();
     debug() << node() << "-- inStatus" << inStatus << "status" << status()
@@ -285,6 +295,21 @@ void OperationAttached::continueRunning()
             break;
         }
         break;
+    }
+}
+
+void OperationAttached::onFinished(OperationAttached *attached)
+{
+    Q_UNUSED(attached);
+    Q_ASSERT(attached == this);
+
+    // unlock inputs with lockInput flag == true
+    foreach (const Input *in, node()->inputs()) {
+        if (in->lockInput()) {
+            foreach (Node *input, node()->upstream(in)) {
+                input->setLocked(false);
+            }
+        }
     }
 }
 

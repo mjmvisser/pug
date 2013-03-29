@@ -61,6 +61,7 @@ signals:
 protected slots:
     void onInputFinished(OperationAttached *);
     void onChildFinished(OperationAttached *);
+    void onFinished(OperationAttached *);
 
 protected:
     Status inputsStatus() const;

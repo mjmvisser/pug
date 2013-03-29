@@ -108,7 +108,7 @@ int ReleaseOperationAttached::findLastVersion(const QVariantMap context) const
     const Field *versionField = branch->findField(m_versionFieldName);
 
     if (versionField) {
-        QMap<QString, QFileInfoList> released = branch->listMatchingPatterns(context);
+        QMap<QString, QSet<QFileInfo> > released = branch->listMatchingPatterns(context);
         int lastVersion = 0;
 
         foreach (QString path, released.keys()) {
@@ -171,8 +171,11 @@ void ReleaseOperationAttached::run()
             QScopedPointer<ElementsView> elementsView(new ElementsView(file));
             QScopedPointer<ElementsView> sourceElementsView(new ElementsView(m_source));
 
-            for (int index = 0; index < sourceElementsView->elementCount(); index++) {
-                ElementView *sourceElement = sourceElementsView->elementAt(index);
+            int index = elementsView->elementCount();
+            file->setCount(index + sourceElementsView->elementCount());
+
+            for (int sourceIndex = 0; sourceIndex < sourceElementsView->elementCount(); sourceIndex++) {
+                ElementView *sourceElement = sourceElementsView->elementAt(sourceIndex);
                 ElementView *element = elementsView->elementAt(index);
 
                 QVariantMap destContext = Node::mergeContexts(context(),
@@ -222,6 +225,8 @@ void ReleaseOperationAttached::run()
                         releaseFile(srcPath, destPath);
                     }
                 }
+
+                index++;
             }
         } else {
             error() << file << "Can't release, no versionField found";

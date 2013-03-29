@@ -41,6 +41,7 @@ public:
     const QList<const Field *> fields(const QStringList fieldNameList = QStringList()) const;
 
     bool fieldsComplete(const QString pattern, const QVariantMap fields) const;
+    bool fieldsComplete(const QVariantMap context) const;
 
     Q_INVOKABLE const QVariant match(const QString pattern, const QString path, bool exact, bool partial) const;
     Q_INVOKABLE const QStringList fieldNames(const QString pattern) const;
@@ -50,7 +51,7 @@ public:
     Q_INVOKABLE const QVariant parse(const QString path, bool partial=false) const;
     Q_INVOKABLE const QString map(const QVariant fields) const;
 
-    Q_INVOKABLE const QMap<QString, QFileInfoList> listMatchingPatterns(const QVariantMap context) const;
+    Q_INVOKABLE const QMap<QString, QSet<QFileInfo> > listMatchingPatterns(const QVariantMap context) const;
     //Q_INVOKABLE void setPaths(const QStringList paths, const QVariantMap context);
 
 signals:
@@ -62,7 +63,7 @@ protected:
     void setExactMatch(bool f);
 
 private:
-    const QMap<QString, QFileInfoList> listMatchingPatternsHelper(const QDir, const QVariantMap, const QMap<QString, QFileInfoList>) const;
+    const QMap<QString, QSet<QFileInfo> > listMatchingPatternsHelper(const QDir, const QVariantMap, const QMap<QString, QSet<QFileInfo> >) const;
     bool containsFields(const QVariantMap& needle, const QVariantMap& haystack) const;
 
     Branch *m_root;

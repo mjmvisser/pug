@@ -92,40 +92,36 @@ void File::onUpdate(const QVariant context)
 
     OperationAttached::Status status = OperationAttached::Finished;
 
-    QVariantMap localContext;
-    if (root())
-        localContext = mergeContexts(context.toMap(),
-            root()->details().property(0).property("context").toVariant().toMap());
-    else
-        localContext = context.toMap();
-
-    if (m_input) {
+    if (m_input && !isLocked()) {
         setCount(m_input->count());
 
-        if (count() == 0) {
-            error() << "no elements in input";
-            status = OperationAttached::Error;
-        } else {
-            debug() << "input count is" << m_input->count();
-            debug() << "element manager count is" << elementsView->elementCount();
+        debug() << "input count is" << m_input->count();
+        debug() << "element manager count is" << elementsView->elementCount();
 
-            for (int index = 0; index < elementsView->elementCount(); index++) {
-                QScopedPointer<ElementsView> inputElementsView(new ElementsView(m_input));
-                ElementView *inputElement = inputElementsView->elementAt(index);
-                Q_ASSERT(inputElement);
+        for (int index = 0; index < elementsView->elementCount(); index++) {
+            QScopedPointer<ElementsView> inputElementsView(new ElementsView(m_input));
+            ElementView *inputElement = inputElementsView->elementAt(index);
+            Q_ASSERT(inputElement);
 
-                const QVariantMap inputContext = mergeContexts(localContext,
-                        m_input->details().property(index).property("context").toVariant().toMap());
+            const QVariantMap elementContext = mergeContexts(context.toMap(),
+                    m_input->details().property(index).property("context").toVariant().toMap());
 
-                if (fieldsComplete(pattern(), inputContext)) {
-                    const FilePattern elementPattern(map(inputContext));
-                    debug() << "elementPattern is" << elementPattern.pattern();
+            setContext(index, elementContext);
 
-                    QMap<QString, QFileInfoList> matches = listMatchingPatterns(inputContext);
-                    debug() << "matched patterns" << matches.keys();
+            if (fieldsComplete(elementContext)) {
+                const FilePattern elementPattern(map(elementContext));
+                debug() << "elementPattern is" << elementPattern.pattern();
 
-                    Q_ASSERT(matches.count() == 1);
+                QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(elementContext);
+                debug() << "matched patterns" << matches.keys();
+
+                // TODO: handle possibility where matches.count() > 1
+                Q_ASSERT(matches.count() <= 1);
+
+                if (matches.count() == 1) {
                     Q_ASSERT(matches.contains(elementPattern.pattern()));
+
+                    QFileInfoList framesInfoList = matches[elementPattern.pattern()].toList();
 
                     ElementView *element = elementsView->elementAt(index);
 
@@ -137,23 +133,25 @@ void File::onUpdate(const QVariant context)
                             status = OperationAttached::Error;
                         } else {
                             FramePattern fp(m_frames->list());
-                            element->scan(matches[elementPattern.pattern()], fp);
+                            element->scan(framesInfoList, fp);
                         }
                     } else {
-                        element->scan(matches[elementPattern.pattern()]);
+                        element->scan(framesInfoList);
                     }
                 }
             }
         }
     } else {
-        QMap<QString, QFileInfoList> matches = listMatchingPatterns(localContext);
+        QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(context.toMap());
         debug() << "matched patterns" << matches.keys();
 
         setCount(matches.size());
 
+        debug() << "matched" << matches.count() << "patterns";
+
         if (matches.size() > 0) {
             int index = 0;
-            QMapIterator<QString, QFileInfoList> i(matches);
+            QMapIterator<QString, QSet<QFileInfo> > i(matches);
             while (i.hasNext()) {
                 i.next();
                 ElementView *element = elementsView->elementAt(index);
@@ -161,9 +159,9 @@ void File::onUpdate(const QVariant context)
 
                 if (m_frames) {
                     FramePattern fp(m_frames->list());
-                    element->scan(i.value(), fp);
+                    element->scan(i.value().toList(), fp);
                 } else {
-                    element->scan(i.value());
+                    element->scan(i.value().toList());
                 }
 
                 QStringList files;
@@ -175,13 +173,10 @@ void File::onUpdate(const QVariant context)
 
                 const QVariantMap elementContext = parse(i.key()).toMap();
 
-                setContext(index, mergeContexts(localContext, elementContext));
+                setContext(index, mergeContexts(context.toMap(), elementContext));
 
                 index++;
             }
-        } else {
-            error() << "Nothing matched in" << this << "by pattern" << pattern() << "with" << localContext;
-            status = OperationAttached::Error;
         }
     }
 
@@ -192,14 +187,9 @@ void File::onCookAtIndex(int index, const QVariant context)
 {
     trace() << ".onCookAtIndex(" << index << "," << context << ")";
 
-    QVariantMap localContext;
-    if (root())
-        localContext = mergeContexts(context.toMap(),
-            root()->details().property(0).property("context").toVariant().toMap());
-    else
-        localContext = context.toMap();
+    if (m_input && !isLocked()) {
+        setCount(m_input->count());
 
-    if (m_input) {
         QScopedPointer<ElementsView> inputElementsView(new ElementsView(m_input));
         ElementView *inputElement = inputElementsView->elementAt(index);
         Q_ASSERT(inputElement);
@@ -210,21 +200,30 @@ void File::onCookAtIndex(int index, const QVariant context)
         ElementView *element = elementsView->elementAt(index);
         Q_ASSERT(element);
 
-        const QVariantMap inputContext = mergeContexts(localContext,
+        const QVariantMap inputContext = mergeContexts(context.toMap(),
                 m_input->details().property(index).property("context").toVariant().toMap());
 
-        if (fieldsComplete(pattern(), inputContext)) {
+        setContext(index, inputContext);
+
+        if (fieldsComplete(inputContext)) {
             const FilePattern destPattern(map(inputContext));
+
+            element->setPattern(destPattern.pattern());
 
             if (inputPattern.isSequence()) {
                 if (destPattern.isSequence()) {
                     // input and this are both sequences
                     if (!m_frames || inputElement->frameList() == m_frames->list()) {
                         // frames match
+                        element->setFrameCount(inputElement->frameCount());
                         for (int frameIndex = 0; frameIndex < inputElement->frameCount(); frameIndex++) {
                             debug() << "cooking frameIndex" << frameIndex;
+                            FrameView *frame = element->frameAt(frameIndex);
                             FrameView *inputFrame = inputElement->frameAt(frameIndex);
+                            Q_ASSERT(frame);
                             Q_ASSERT(inputFrame);
+
+                            frame->setFrame(inputFrame->frame());
 
                             const QString srcPath = inputPattern.path(inputFrame->frame());
                             const QString destPath = destPattern.path(inputFrame->frame());
@@ -284,6 +283,14 @@ bool File::makeLink(const QString &src, const QString &dest) const
     // make sure the destination directory exists
     QFileInfo destInfo(dest);
     QDir().mkpath(destInfo.dir().absolutePath());
+
+    if (QFileInfo(dest).exists()) {
+        debug() << "removing existing file" << dest;
+        if (!QFile(dest).remove()) {
+            error() << "couldn't remove existing file" << dest;
+            return false;
+        }
+    }
 
     switch (m_linkType) {
     case File::Hard:

@@ -24,6 +24,7 @@ class Node : public PugItem
     Q_PROPERTY(QJSValue details READ details WRITE setDetails NOTIFY detailsChanged)
     Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(int index READ index WRITE setIndex NOTIFY indexChanged)
+    Q_PROPERTY(bool locked READ isLocked WRITE setLocked NOTIFY lockedChanged)
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
     Q_ENUMS(Status)
@@ -91,6 +92,9 @@ public:
     Node *child(int index);
     int childCount() const;
 
+    bool isLocked() const;
+    void setLocked(bool);
+
     static const QVariantMap mergeContexts(const QVariantMap first, const QVariantMap second);
 
     qreal x() const;
@@ -117,6 +121,7 @@ signals:
     void detailsChanged();
     void countChanged(int count);
     void indexChanged(int index);
+    void lockedChanged(int locked);
     void xChanged(qreal x);
     void yChanged(qreal y);
 
@@ -192,6 +197,7 @@ private:
     QJSValue m_details;
     int m_count;
     int m_index;
+    bool m_lockedFlag;
     QJSValue m_frames;
     qreal m_x, m_y; // should this be QVector2D? does it matter?
 //    QList<Node *> m_extraDependencies;

@@ -421,7 +421,7 @@ const QVariant ShotgunField::buildPatternValue(int index, const QVariantMap cont
         const QVariantMap branchContext = mergeContexts(context,
                 branch->details().property(index).property("context").toVariant().toMap());
 
-        if (branch->fieldsComplete(m_pattern, context)) {
+        if (branch->fieldsComplete(context)) {
             QString value = branch->formatFields(m_pattern, context);
             if (!value.isEmpty())
                 result = value;

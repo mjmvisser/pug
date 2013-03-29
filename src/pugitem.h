@@ -152,6 +152,8 @@ inline const QList<const T *>& constList(const QList<T*>& list)
     return reinterpret_cast<const QList<const T*>&>(const_cast<const QList<T*>&>(list));
 }
 
+uint qHash(const QFileInfo &fileInfo);
+
 Q_DECLARE_METATYPE(PugItem*) // makes available to QVariant
 
 #endif

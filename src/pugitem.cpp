@@ -216,3 +216,8 @@ QObject *PugItem::sender()
 {
     return QObject::sender();
 }
+
+uint qHash(const QFileInfo &fileInfo)
+{
+    return qHash(fileInfo.absoluteFilePath());
+}

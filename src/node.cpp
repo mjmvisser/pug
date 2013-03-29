@@ -11,6 +11,7 @@ Node::Node(QObject *parent) :
     m_activeFlag(false),
     m_count(0),
     m_index(-1),
+    m_lockedFlag(false),
     m_x(0),
     m_y(0)
 {
@@ -372,33 +373,15 @@ const Node *Node::nodeInChildren(const QString n) const
 
 const QList<const Node *> Node::upstream() const
 {
-    trace() << ".upstream()";
+    //trace() << ".upstream()";
     QList<const Node *> result;
     // loop through inputs and find upstream nodes
     foreach (const Input *in, m_inputs) {
-        const QVariant v = QQmlProperty::read(in->QObject::parent(), in->name());
-        if (v.canConvert<Node *>()) {
-            // single input
-            const Node *input = v.value<Node*>();
-            if (input && !result.contains(input)) {
-                result.append(input);
-            }
-        } else if (v.canConvert<QQmlListReference>()) {
-            // multi-input
-            QQmlListReference l = v.value<QQmlListReference>();
-            for (int i = 0; i < l.count(); i++) {
-                const Node *input = qobject_cast<const Node *>(l.at(i));
-                if (input && !result.contains(input)) {
-                    result.append(input);
-                }
-            }
-        } else if (v.isNull()) {
-            // skip
-        } else {
-            error() << "can't interpret input" << in->name() << v;
+        if (!isLocked() || in->ignoreLocked()) {
+            result << upstream(in);
         }
     }
-    trace() << "    ->" << result;
+    //trace() << "    ->" << result;
     return result;
 }
 
@@ -421,13 +404,13 @@ const QVariantList Node::upstreamNodes()
 
 const QList<const Node *> Node::upstream(const Input *in) const
 {
-    trace() << ".upstream(" << in << ")";
+    //trace() << ".upstream(" << in << ")";
     QList<const Node *> result;
     const QVariant v = QQmlProperty::read(in->QObject::parent(), in->name());
     if (v.canConvert<Node *>()) {
         // single input
         const Node *input = v.value<Node *>();
-        if (input) {
+        if (input && !result.contains(input)) {
             result.append(input);
         }
     } else if (v.canConvert<QQmlListReference>()) {
@@ -435,7 +418,7 @@ const QList<const Node *> Node::upstream(const Input *in) const
         QQmlListReference l = v.value<QQmlListReference>();
         for (int i = 0; i < l.count(); i++) {
             const Node *input = qobject_cast<const Node *>(l.at(i));
-            if (input) {
+            if (input && !result.contains(input)) {
                 result.append(input);
             }
         }
@@ -444,7 +427,7 @@ const QList<const Node *> Node::upstream(const Input *in) const
     } else {
         error() << "can't interpret input" << in->name() << v;
     }
-    trace() << "    ->" << result;
+    //trace() << "    ->" << result;
     return result;
 }
 
@@ -551,6 +534,16 @@ void Node::setIndex(int index)
             emit indexChanged(index);
         }
     }
+}
+
+bool Node::isLocked() const
+{
+    return m_lockedFlag;
+}
+
+void Node::setLocked(bool flag)
+{
+    m_lockedFlag = flag;
 }
 
 const Node *Node::rootBranch() const
