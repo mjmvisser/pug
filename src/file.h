@@ -4,6 +4,8 @@
 #include "branch.h"
 #include "node.h"
 #include "framelist.h"
+#include "sudo.h"
+#include "fileopqueue.h"
 
 class File : public Branch
 {
@@ -38,16 +40,25 @@ signals:
     void cookAtIndex(int index, const QVariant context);
     void cookAtIndexFinished(int index, int status);
 
-protected slots:
+    void release(const QVariant context);
+    void releaseFinished(int status);
+
+private slots:
     void onUpdate(const QVariant context);
     void onCookAtIndex(int index, const QVariant context);
+    void onRelease(const QVariant context);
+
+    void onFileOpQueueFinished();
+    void onFileOpQueueError();
 
 private:
     bool makeLink(const QString &src, const QString &dest) const;
+    void releaseFile(const QString srcPath, const QString destPath, int mode) const;
 
     Node *m_input;
     LinkType m_linkType;
     FrameList *m_frames;
+    FileOpQueue* m_queue;
 };
 Q_DECLARE_METATYPE(File*) // makes available to QVariant
 

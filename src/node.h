@@ -10,54 +10,55 @@
 #include "pugitem.h"
 #include "param.h"
 #include "input.h"
-#include "output.h"
 #include "operation.h"
 
 class Node : public PugItem
 {
     Q_OBJECT
+    Q_PROPERTY(DependencyOrder dependencyOrder READ dependencyOrder WRITE setDependencyOrder NOTIFY dependencyOrderChanged)
     Q_PROPERTY(QQmlListProperty<Param> params READ params_ NOTIFY paramsChanged)
     Q_PROPERTY(QQmlListProperty<Input> inputs READ inputs_ NOTIFY inputsChanged)
-    Q_PROPERTY(QQmlListProperty<Output> outputs READ outputs_ NOTIFY outputsChanged)
     Q_PROPERTY(QQmlListProperty<Node> children READ nodes_ NOTIFY nodesChanged)
-    Q_PROPERTY(bool active READ isActive WRITE setActive NOTIFY activeChanged)
+    Q_PROPERTY(bool output READ isOutput WRITE setOutput NOTIFY outputChanged)
     Q_PROPERTY(QJSValue details READ details WRITE setDetails NOTIFY detailsChanged)
     Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(int index READ index WRITE setIndex NOTIFY indexChanged)
-    Q_PROPERTY(bool locked READ isLocked WRITE setLocked NOTIFY lockedChanged)
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
-    Q_ENUMS(Status)
+    Q_ENUMS(Status DependencyOrder)
 public:
+    enum DependencyOrder { InputsChildrenSelf, InputsSelfChildren };
     enum Status { Invalid, UpToDate, OutOfDate, Missing };
 
     explicit Node(QObject *parent = 0);
 
+    DependencyOrder dependencyOrder() const;
+    void setDependencyOrder(DependencyOrder);
+
     QQmlListProperty<Input> inputs_();
-    QQmlListProperty<Output> outputs_();
     QQmlListProperty<Param> params_();
     QQmlListProperty<Node> nodes_();
 
     const QList<const Input*> inputs() const;
 
-    bool isActive() const;
-    void setActive(bool o);
+    bool isOutput() const;
+    void setOutput(bool f);
 
     Q_INVOKABLE Node* node(const QString node);
     const Node* node(const QString node) const;
 
     Q_INVOKABLE const QString path() const;
 
+    const QList<const Node *> upstream() const;
     const QList<Node *> upstream();
     Q_INVOKABLE const QVariantList upstreamNodes();
-    const QList<const Node *> upstream() const;
 
-    const QList<Node *> upstream(const Input *);
     const QList<const Node *> upstream(const Input *) const;
+    const QList<Node *> upstream(const Input *);
 
+    const QList<const Node *> downstream() const;
     const QList<Node *> downstream();
     Q_INVOKABLE const QVariantList downstreamNodes();
-    const QList<const Node *> downstream() const;
 
     Q_INVOKABLE bool isUpstream(const Node *other);
     Q_INVOKABLE bool isDownstream(const Node *other);
@@ -92,9 +93,6 @@ public:
     Node *child(int index);
     int childCount() const;
 
-    bool isLocked() const;
-    void setLocked(bool);
-
     static const QVariantMap mergeContexts(const QVariantMap first, const QVariantMap second);
 
     qreal x() const;
@@ -104,7 +102,6 @@ public:
 
     Param *addParam(QObject *parent, const QString name);
     Input *addInput(QObject *parent, const QString name);
-    Output *addOutput(const QString name);
 
     int receivers(const char *signal) const;
 
@@ -113,15 +110,14 @@ public:
     bool cycleCheck(const QList<const Node *>& visited = QList<const Node *>()) const;
 
 signals:
+    void dependencyOrderChanged(DependencyOrder dependencyOrder);
     void paramsChanged();
     void nodesChanged();
     void inputsChanged();
-    void outputsChanged();
-    void activeChanged(bool active);
+    void outputChanged(bool output);
     void detailsChanged();
     void countChanged(int count);
     void indexChanged(int index);
-    void lockedChanged(int locked);
     void xChanged(qreal x);
     void yChanged(qreal y);
 
@@ -184,20 +180,13 @@ private:
     static Input *input_at(QQmlListProperty<Input> *, int);
     static void inputs_clear(QQmlListProperty<Input> *);
 
-    // outputs property
-    static void outputs_append(QQmlListProperty<Output> *, Output *);
-    static int outputs_count(QQmlListProperty<Output> *);
-    static Output *output_at(QQmlListProperty<Output> *, int);
-    static void outputs_clear(QQmlListProperty<Output> *);
-
+    DependencyOrder m_dependencyOrder;
     QList<Param *> m_params;
     QList<Input *> m_inputs;
-    QList<Output *> m_outputs;
-    bool m_activeFlag;
+    bool m_outputFlag;
     QJSValue m_details;
     int m_count;
     int m_index;
-    bool m_lockedFlag;
     QJSValue m_frames;
     qreal m_x, m_y; // should this be QVector2D? does it matter?
 //    QList<Node *> m_extraDependencies;

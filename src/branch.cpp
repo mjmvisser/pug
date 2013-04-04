@@ -70,10 +70,11 @@ Branch::Branch(QObject *parent) :
     Node(parent),
     m_root()
 {
-    Input *rootInput = addInput(this, "root");
-    rootInput->setIgnoreLocked(true);       // ignore the lock flag for this input
+    addInput(this, "root");
 
     addParam(this, "pattern");
+
+    setDependencyOrder(Node::InputsSelfChildren);
 }
 
 const QList<const Field *> Branch::fields(const QStringList fieldNameList) const
@@ -386,10 +387,12 @@ const QString Branch::formatFields(const QString pattern, const QVariant data) c
 {
     //trace() << ".formatFields(" << pattern << ", " << data << ")";
     QVariantMap fields;
-    if (data.isValid() && data.type() == QVariant::Map)
+    if (data.isValid() && data.type() == QVariant::Map) {
         fields = data.toMap();
-    else
+    } else {
+        error() << "invalid context data" << data;
         return QString();
+    }
 
     static QRegularExpression re("\\{(\\w+)\\}");
 
@@ -544,7 +547,7 @@ const QMap<QString, QSet<QFileInfo> > Branch::listMatchingPatterns(const QVarian
 
         FilePattern fp(path);
         //debug() << "========================================adding empty match" << fp.pattern();
-        //result.insert(fp.pattern(), QSet<FileInfo>());
+        result.insert(fp.pattern(), QSet<QFileInfo>());
 
         QDir parentDir = QDir(fp.directory());
         if (!m_exactMatchFlag)

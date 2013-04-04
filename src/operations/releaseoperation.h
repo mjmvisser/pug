@@ -32,6 +32,8 @@ public:
     Mode mode() const;
     void setMode(Mode);
 
+    Sudo *sudo();
+
     Q_INVOKABLE virtual void reset();
     Q_INVOKABLE virtual void run();
 
@@ -43,23 +45,22 @@ signals:
     void versionFieldChanged(const QString versionField);
     void modeChanged(Mode mode);
 
-protected:
-    void releaseFile(const QString srcPath, const QString destPath);
+    void release(const QVariant env);
 
+protected:
     virtual const QMetaObject *operationMetaObject() const;
 
     void resetVersion();
 
 private slots:
-    void onFileOpQueueFinished();
-    void onFileOpQueueError();
+    void onReleaseFinished(int);
 
 private:
+    bool m_releasable;
     Node *m_source;
     QString m_versionFieldName;
     int m_version;
     Mode m_mode;
-    FileOpQueue* m_queue;
 };
 
 class ReleaseOperation : public Operation

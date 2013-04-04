@@ -8,18 +8,35 @@
 
 ReleaseOperationAttached::ReleaseOperationAttached(QObject *parent) :
     OperationAttached(parent),
+    m_releasable(false),
     m_source(),
     m_version(-1),
-    m_mode(ReleaseOperationAttached::Copy),
-    m_queue(new FileOpQueue(this))
+    m_mode(ReleaseOperationAttached::Copy)
 {
     setObjectName("release");
-    connect(m_queue, &FileOpQueue::finished, this, &ReleaseOperationAttached::onFileOpQueueFinished);
-    connect(m_queue, &FileOpQueue::error, this, &ReleaseOperationAttached::onFileOpQueueError);
 
     File *file = qobject_cast<File *>(node());
     if (file) {
         file->addInput(this, "source");
+    }
+
+    bool haveReleaseSignal = node()->hasSignal(SIGNAL(release(const QVariant)));
+    bool haveReleaseFinishedSignal = node()->hasSignal(SIGNAL(releaseFinished(int)));
+
+    if (haveReleaseSignal && haveReleaseFinishedSignal) {
+        m_releasable = true;
+        debug() << node() << "found release and releaseFinished signals";
+
+        connect(this, SIGNAL(release(const QVariant)),
+                node(), SIGNAL(release(const QVariant)));
+        connect(node(), SIGNAL(releaseFinished(int)),
+                this, SLOT(onReleaseFinished(int)));
+    } else if (!haveReleaseSignal && haveReleaseFinishedSignal) {
+        error() << node() << "is missing the release signal";
+    } else if (haveReleaseSignal && !haveReleaseFinishedSignal) {
+        error() << node() << "is missing the releaseFinished signal";
+    } else {
+        debug() << node() << "is not releasable";
     }
 }
 
@@ -67,14 +84,19 @@ void ReleaseOperationAttached::setMode(ReleaseOperationAttached::Mode m)
     }
 }
 
+Sudo *ReleaseOperationAttached::sudo()
+{
+    return operation<ReleaseOperation>()->sudo();
+}
+
 void ReleaseOperationAttached::reset()
 {
     OperationAttached::reset();
     m_version = -1;
-    if (m_source) {
+    //if (m_source) {
         // we hook here to calculate the current version
         resetVersion();
-    }
+    //}
 }
 
 void ReleaseOperationAttached::resetVersion()
@@ -85,14 +107,19 @@ void ReleaseOperationAttached::resetVersion()
     if (branch && !m_versionFieldName.isEmpty()) {
         // we're attached to a file with a version field name specified
         m_version = findLastVersion(context()) + 1;
+        debug() << branch << "next version is" << m_version;
     } else if (branch && branch->root()) {
         // recurse
         ReleaseOperationAttached *rootAttached = branch->root()->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
         Q_ASSERT(rootAttached);
-        rootAttached->resetVersion();
+        //rootAttached->resetVersion();
         m_version = rootAttached->m_version;
-    } else {
-        m_version = -1;
+        debug() << branch << "next version is" << m_version;
+    } else if (node()->parent<Node>()) {
+        ReleaseOperationAttached *parentAttached = node()->parent<Node>()->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
+        //parentAttached->resetVersion();
+        m_version = parentAttached->m_version;
+        debug() << branch << "next version is" << m_version;
     }
 }
 
@@ -136,15 +163,18 @@ int ReleaseOperationAttached::findLastVersion(const QVariantMap context) const
 const QString ReleaseOperationAttached::findVersionFieldName() const
 {
     const Branch *branch = qobject_cast<const Branch *>(node());
-    Q_ASSERT(branch);
-    if (!m_versionFieldName.isEmpty()) {
-        // we're attached to a branch with a version field name specified
-        return m_versionFieldName;
-    } else if (branch->root()) {
-        // recurse
-        const ReleaseOperationAttached *rootAttached = branch->root()->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
-        Q_ASSERT(rootAttached);
-        return rootAttached->findVersionFieldName();
+    if (branch) {
+        if (!m_versionFieldName.isEmpty()) {
+            // we're attached to a branch with a version field name specified
+            return m_versionFieldName;
+        } else if (branch->root()) {
+            // recurse
+            const ReleaseOperationAttached *rootAttached = branch->root()->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
+            Q_ASSERT(rootAttached);
+            return rootAttached->findVersionFieldName();
+        } else {
+            return QString();
+        }
     } else {
         return QString();
     }
@@ -152,134 +182,42 @@ const QString ReleaseOperationAttached::findVersionFieldName() const
 
 void ReleaseOperationAttached::run()
 {
-    trace() << node() << ".run() [update mode is" << m_mode << "]";
-    Q_ASSERT(operation());
-    Q_ASSERT(node());
+    trace() << node() << ".run()";
 
-    File *file = qobject_cast<File *>(node());
-
-    if (m_source && file) {
-        info() << "Releasing" << m_source << "to" << file << "with" << context();
+    if (m_releasable) {
+        Q_ASSERT(operation());
+        Q_ASSERT(node());
 
         QString versionFieldName = findVersionFieldName();
 
-        if (!versionFieldName.isEmpty()) {
-            m_queue->setSudo(operation<ReleaseOperation>()->sudo());
+        QVariantMap releaseContext = context();
 
-            info() << "Releasing" << file << "to" << m_source;
-
-            QScopedPointer<ElementsView> elementsView(new ElementsView(file));
-            QScopedPointer<ElementsView> sourceElementsView(new ElementsView(m_source));
-
-            int index = elementsView->elementCount();
-            file->setCount(index + sourceElementsView->elementCount());
-
-            for (int sourceIndex = 0; sourceIndex < sourceElementsView->elementCount(); sourceIndex++) {
-                ElementView *sourceElement = sourceElementsView->elementAt(sourceIndex);
-                ElementView *element = elementsView->elementAt(index);
-
-                QVariantMap destContext = Node::mergeContexts(context(),
-                        m_source->details().property(index).property("context").toVariant().toMap());
-
-                // set version
-                destContext.insert(versionFieldName, m_version);
-
-                FilePattern srcPattern = FilePattern(sourceElement->pattern());
-                FilePattern destPattern = FilePattern(file->map(destContext));
-
-                element->setPattern(destPattern.pattern());
-                file->setContext(index, destContext);
-
-                if (srcPattern.isSequence()) {
-                    if (destPattern.isSequence()) {
-                        // source and destination are both sequences
-                        if (!file->frames() || sourceElement->frameList() == file->frames()->list()) {
-                            element->setFrameCount(element->frameCount());
-
-                            for (int frameIndex = 0; frameIndex < sourceElement->frameCount(); frameIndex++) {
-                                int frame = sourceElement->frameAt(frameIndex)->frame();
-
-                                const QString srcPath = srcPattern.path(frame);
-                                const QString destPath = destPattern.path(frame);
-
-                                releaseFile(srcPath, destPath);
-                            }
-                        } else {
-                            error() << "dest frames [" << file->frames()->list() << "] doesn't match source element [" << sourceElement->frameList() << "]";
-                            setStatus(OperationAttached::Error);
-                        }
-                    } else {
-                        error() << "source is a sequence, but dest is not";
-                        setStatus(OperationAttached::Error);
-                        break;
-                    }
-                } else {
-                    if (destPattern.isSequence()) {
-                        error() << "dest is a sequence, but source is not";
-                        setStatus(OperationAttached::Error);
-                        break;
-                    } else {
-                        const QString srcPath = srcPattern.path();
-                        const QString destPath = destPattern.path();
-
-                        releaseFile(srcPath, destPath);
-                    }
-                }
-
-                index++;
-            }
+        if (!versionFieldName.isEmpty() && m_version >= 0) {
+            debug() << node() << "setting" << versionFieldName << "to" << m_version;
+            releaseContext.insert(versionFieldName, m_version);
         } else {
-            error() << file << "Can't release, no versionField found";
-            setStatus(OperationAttached::Error);
+            debug() << node() << "can't set version: field name is" << versionFieldName << ", version is" << m_version;
         }
 
-        if (status() != OperationAttached::Error)
-            m_queue->run();
-        else
-            continueRunning();
-
+        Q_ASSERT(receivers(SIGNAL(release(QVariant))) > 0);
+        Q_ASSERT(node()->receivers(SIGNAL(releaseFinished(int))) > 0);
+        emit release(releaseContext);
     } else {
+        debug() << node() << "skipping";
         setStatus(OperationAttached::Finished);
         continueRunning();
     }
 }
 
-void ReleaseOperationAttached::releaseFile(const QString srcPath, const QString destPath)
+void ReleaseOperationAttached::onReleaseFinished(int s)
 {
-    trace() << node() << ".releaseFile(" << srcPath << "," << destPath << ")";
-    if (!destPath.isEmpty()) {
-        QFileInfo destInfo(destPath);
-        if (!destInfo.absoluteDir().exists())
-            m_queue->mkdir(destInfo.absoluteDir().absolutePath());
+    trace() << node() << ".onReleaseFinished(" << static_cast<OperationAttached::Status>(s) << ")";
+    Q_ASSERT(operation());
+    setStatus(static_cast<OperationAttached::Status>(s));
 
-        switch (m_mode) {
-        case ReleaseOperationAttached::Copy:
-            m_queue->copy(srcPath, destPath);
-            break;
+    info() << "ReleaseFinished" << node() << "with status" << status();
+    info() << "Result is" << node()->details().toVariant();
 
-        case ReleaseOperationAttached::Move:
-            m_queue->move(srcPath, destPath);
-            break;
-
-        default:
-            error() << this << "unknown file mode " << m_mode;
-            break;
-        }
-    }
-}
-
-void ReleaseOperationAttached::onFileOpQueueFinished()
-{
-    trace() << node() << ".onFileOpQueueFinished()";
-
-    setStatus(OperationAttached::Finished);
-    continueRunning();
-}
-
-void ReleaseOperationAttached::onFileOpQueueError()
-{
-    trace() << node() << ".onFileOpQueueError()";
-    setStatus(OperationAttached::Error);
     continueRunning();
 }
 

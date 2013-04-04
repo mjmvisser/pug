@@ -2,19 +2,32 @@ import QtQuick 2.0
 import Pug 1.0
 
 import "js/shotgunutils.js" as ShotgunUtils
-
+    
 ShotgunEntity {
-    id: self
+    id: versionEntity
+    name: "versionEntity"
     shotgunEntity: "Version"
-
-    ShotgunOperation.action: ShotgunOperation.Create
-
-    property ShotgunEntity project: null
-    property ShotgunEntity link: null
-    property ShotgunEntity step: null
+    shotgunFields: [
+        codeField,
+        projectField,
+        entityField,
+        stepField,
+        descriptionField,
+        pathField,
+        firstFrameField,
+        lastFrameField,
+        imageField,
+        filmstripField,
+        createdByField,
+        updatedByField         
+    ]
+    
+    property Node project: null
+    property Node link: null
+    property Node step: null
     property Node thumbnail: null
     property Node filmstrip: null
-    property ShotgunEntity user: null
+    property Node user: null
 
     inputs: [
         Input { name: "project" },
@@ -25,62 +38,70 @@ ShotgunEntity {
         Input { name: "user" }
     ]
 
+    output: true
+
     property string code
 
     params: [
-        Param { name: "code" }
+        Param { name: "code" },
     ]
     
     ShotgunField {
-        name: "code"
+        id: codeField
+        name: "codeField"
         shotgunField: "code"
-        type: ShotgunField.Pattern
+        required: true
+        type: ShotgunField.String
         pattern: code
+        source: versionEntity.parent
     }
 
     ShotgunField {
-        name: "project"
+        id: projectField
+        name: "projectField"
         shotgunField: "project"
+        required: true
         type: ShotgunField.Link
         link: project
     }
     
     ShotgunField {
         id: entityField
-        name: "entity"
+        name: "entityField"
         shotgunField: "entity"
         type: ShotgunField.Link
-        link: self.link
+        link: versionEntity.link
     }
 
     ShotgunField {
         id: stepField
-        name: "sg_step"
+        name: "stepField"
         shotgunField: "sg_step"
         type: ShotgunField.Link
         link: step
     }
 
     ShotgunField {
-        name: "description"
+        id: descriptionField
+        name: "descriptionField"
         shotgunField: "description"
     }
     
     ShotgunField {
-        name: "sg_path_to_frames"
+        id: pathField
+        name: "pathField"
         shotgunField: "sg_path_to_frames"
         type: ShotgunField.Path
+        source: versionEntity.parent
     }
 
     function _firstFrame(index) {
         var elementsView = Util.elementsView(parent);
 
         try {        
-            return elementsView.elements[index].frames[0].frame;
+            return elementsView.elements[index].frameStart();
         } catch (e) {
             return null;
-        } finally {
-            elementsView.destroy();
         }
     }
 
@@ -88,50 +109,57 @@ ShotgunEntity {
         var elementsView = Util.elementsView(parent);
         
         try {        
-            var numFrames = elementsView.elements[index].frames.length;
-            return elementsView.elements[index].frames[numFrames-1].frame;
+            return elementsView.elements[index].frameEnd();
         } catch (e) {
             return null;
-        } finally {
-            elementsView.destroy();
         }
     }
 
     ShotgunField {
-        name: "sg_first_frame"
+        id: firstFrameField
+        name: "firstFrameField"
         shotgunField: "sg_first_frame"
         type: ShotgunField.Number
         value: _firstFrame(index)                         
+        source: versionEntity.parent
     }
 
     ShotgunField {
-        name: "sg_last_frame"
+        id: lastFrameField
+        name: "lastFrameField"
         shotgunField: "sg_last_frame"
         type: ShotgunField.Number
         value: _lastFrame(index)                         
+        source: versionEntity.parent
     }
     
     ShotgunField {
-        name: "image"
+        id: imageField
+        name: "imageField"
         shotgunField: "image"
-        value: ShotgunUtils.safeElementAttribute(thumbnail, "path")
+        type: ShotgunField.Path
+        source: thumbnail
     }
 
     ShotgunField {
-        name: "filmstrip_image"
+        id: filmstripField
+        name: "filmstripField"
         shotgunField: "filmstrip_image"
-        value: ShotgunUtils.safeElementAttribute(filmstrip, "path")
+        type: ShotgunField.Path
+        source: filmstrip
     }
 
     ShotgunField {
-        name: "created_by"
+        id: createdByField
+        name: "createdByField"
         shotgunField: "created_by"
         type: ShotgunField.Link
         link: user
     }
 
     ShotgunField {
-        name: "updated_by"
+        id: updatedByField
+        name: "updatedByField"
         shotgunField: "updated_by"
         type: ShotgunField.Link
         link: user

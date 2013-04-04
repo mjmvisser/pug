@@ -24,15 +24,15 @@ private slots:
     void onUpdateAtIndexFinished(int, int);
 
 private:
-    enum Mode { Skip, Update, UpdateAtIndex };
-    friend QDebug operator<<(QDebug dbg, Mode m);
+    enum SignalMode { Skip, Update, UpdateAtIndex };
+    friend QDebug operator<<(QDebug dbg, SignalMode m);
 
-    Mode m_mode;
+    SignalMode m_mode;
     OperationStatusList m_indexStatus;
     int m_updateAtIndexFinishedCount;
 };
 
-inline QDebug operator<<(QDebug dbg, UpdateOperationAttached::Mode m)
+inline QDebug operator<<(QDebug dbg, UpdateOperationAttached::SignalMode m)
 {
     switch (m) {
     case UpdateOperationAttached::Skip:

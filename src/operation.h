@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QString>
 #include <QVariant>
+#include <QSet>
 
 #include "pugitem.h"
 
@@ -51,17 +52,17 @@ public:
     void run(Operation *);
 
     void resetAllStatus();
-    void resetAll(const QVariantMap);
+    void resetAll(const QVariantMap, QSet<const OperationAttached *>&);
 
 signals:
     void statusChanged(Status status);
     void contextChanged(QVariant context);
-    void finished(OperationAttached *operation);
+    void finished(OperationAttached *);
 
 protected slots:
     void onInputFinished(OperationAttached *);
     void onChildFinished(OperationAttached *);
-    void onFinished(OperationAttached *);
+    void onSelfFinished(OperationAttached *);
 
 protected:
     Status inputsStatus() const;
@@ -70,7 +71,8 @@ protected:
     void resetInputsStatus();
     void resetChildrenStatus();
 
-    void resetChildren();
+    void resetInputs(QSet<const OperationAttached *>&);
+    void resetChildren(QSet<const OperationAttached *>&);
 
     void runInputs();
     void runChildren();
@@ -114,6 +116,9 @@ protected:
 
 private:
     void setContext(const QVariantMap);
+    void dispatchChildren();
+    void dispatchInputs();
+    void dispatch();
 
     Status m_status;
     QVariantMap m_context;

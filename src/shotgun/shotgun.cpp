@@ -13,7 +13,7 @@ static const QRegularExpression DATE_PATTERN("^(\\d{4})\\D?(0[1-9]|1[0-2])\\D?([
 static const QRegularExpression DATE_TIME_PATTERN("^(\\d{4})\\D?(0[1-9]|1[0-2])\\D?([12]\\d|0[1-9]|3[01])"
         "(\\D?([01]\\d|2[0-3])\\D?([0-5]\\d)\\D?([0-5]\\d)?\\D?(\\d{3})?)?$");
 
-#define CALL_METHOD_PTR(object,ptrToMember)  ((object).*(ptrToMember))
+Shotgun *Shotgun::s_instance = 0;
 
 ShotgunUploadRequest::ShotgunUploadRequest(QObject *parent) :
     QObject(parent),
@@ -250,7 +250,8 @@ ShotgunReply *Shotgun::find(const QString entityType,
     ShotgunReply *reply = callRpc("read", params);
 
     // stash the limit; we'll need it later
-    reply->setLimit(limit);
+    if (reply)
+        reply->setLimit(limit);
 
     return reply;
 }
@@ -330,24 +331,26 @@ Q_INVOKABLE ShotgunReply *Shotgun::create(const QString entityType,
 
     ShotgunReply *reply = callRpc("create", params);
 
-    reply->setFirst(true);
+    if (reply) {
+        reply->setFirst(true);
 
-    if (!uploadImage.isEmpty()) {
-        debug() << "requesting upload of" << uploadImage;
-        ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
-        upload->setFieldName("thumb_image");
-        upload->setPath(uploadImage);
+        if (!uploadImage.isEmpty()) {
+            debug() << "requesting upload of" << uploadImage;
+            ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
+            upload->setFieldName("thumb_image");
+            upload->setPath(uploadImage);
 
-        reply->uploadLater(upload);
-    }
+            reply->uploadLater(upload);
+        }
 
-    if (!uploadFilmStripImage.isEmpty()) {
-        debug() << "requesting upload of" << uploadFilmStripImage;
-        ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
-        upload->setFieldName("filmstrip_thumb_image");
-        upload->setPath(uploadFilmStripImage);
+        if (!uploadFilmStripImage.isEmpty()) {
+            debug() << "requesting upload of" << uploadFilmStripImage;
+            ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
+            upload->setFieldName("filmstrip_thumb_image");
+            upload->setPath(uploadFilmStripImage);
 
-        reply->uploadLater(upload);
+            reply->uploadLater(upload);
+        }
     }
 
     return reply;
@@ -373,8 +376,6 @@ ShotgunReply *Shotgun::batch(const QVariantList requests)
         requestParams["type"] = req["entity_type"];
 
         if (req["request_type"] == "create") {
-            requestParams["fields"] = mapToList(req["data"].toMap());
-
             QStringList returnFields;
             if (req.contains("return_fields") && req["return_fields"].toList().length() > 0)
                 returnFields = req["return_fields"].toStringList();
@@ -392,6 +393,8 @@ ShotgunReply *Shotgun::batch(const QVariantList requests)
                 uploadFilmstripImages.append(requestData.take("filmstrip_image").toString());
             else
                 uploadFilmstripImages.append(QString());
+
+            requestParams["fields"] = mapToList(requestData);
         } else {
             error() << "skipping unsupported batch request_type" << req["request_type"];
         }
@@ -401,28 +404,30 @@ ShotgunReply *Shotgun::batch(const QVariantList requests)
 
     ShotgunReply *reply = callRpc("batch", calls);
 
-    Q_ASSERT(uploadImages.count() == uploadFilmstripImages.count());
+    if (reply) {
+        Q_ASSERT(uploadImages.count() == uploadFilmstripImages.count());
 
-    // handle image uploads
-    for (int i = 0; i < uploadImages.count(); i++) {
-        if (!uploadImages.at(i).isEmpty()) {
-            ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
-            upload->setFieldName("thumb_image");
-            upload->setPath(uploadImages.at(i));
-            upload->setIndex(i);
+        // handle image uploads
+        for (int i = 0; i < uploadImages.count(); i++) {
+            if (!uploadImages.at(i).isEmpty()) {
+                ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
+                upload->setFieldName("thumb_image");
+                upload->setPath(uploadImages.at(i));
+                upload->setIndex(i);
 
-            reply->uploadLater(upload);
+                reply->uploadLater(upload);
+            }
+
+            if (!uploadFilmstripImages.at(i).isEmpty()) {
+                ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
+                upload->setFieldName("filmstrip_thumb_image");
+                upload->setPath(uploadFilmstripImages.at(i));
+                upload->setIndex(i);
+
+                reply->uploadLater(upload);
+            }
+
         }
-
-        if (!uploadFilmstripImages.at(i).isEmpty()) {
-            ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
-            upload->setFieldName("filmstrip_thumb_image");
-            upload->setPath(uploadFilmstripImages.at(i));
-            upload->setIndex(i);
-
-            reply->uploadLater(upload);
-        }
-
     }
 
     return reply;
@@ -536,6 +541,14 @@ ShotgunReply *Shotgun::uploadFilmstripThumbnail(const QString entityType, int en
     return upload(entityType, entityId, path, "filmstrip_thumb_image", displayName, tagList);
 }
 
+Shotgun *Shotgun::staticInstance()
+{
+    if (s_instance == 0)
+        s_instance = new Shotgun();
+
+    return s_instance;
+}
+
 ShotgunReply *Shotgun::callRpc(const QString method, const QVariant params, bool includeScriptName, ShotgunReply *reply)
 {
     trace() << ".callRpc(" << method << "," << params << "," << includeScriptName << "," << reply << ")";
@@ -545,8 +558,10 @@ ShotgunReply *Shotgun::callRpc(const QString method, const QVariant params, bool
 
     debug() << "transformed params" << newParams;
 
-    if (!buildPayload(payload, method, QJsonDocument::fromVariant(newParams), includeScriptName))
-        return false;
+    if (!buildPayload(payload, method, QJsonDocument::fromVariant(newParams), includeScriptName)) {
+        error() << "failed to build payload";
+        return 0;
+    }
 
     QByteArray encodedPayload = QJsonDocument(payload).toJson();
 
@@ -563,8 +578,12 @@ ShotgunReply *Shotgun::callRpc(const QString method, const QVariant params, bool
 
     QNetworkReply *networkReply = m_nas.post(req, encodedPayload);
 
+    Q_ASSERT(networkReply);
+
     if (!reply)
         reply = new ShotgunReply(this);
+
+    Q_ASSERT(reply);
 
     reply->setNetworkReply(networkReply);
     reply->setMethod(method);
@@ -784,7 +803,7 @@ void ShotgunReply::onNetworkReplyFinished()
     {
         setErrorCode(QNetworkReply::ProtocolFailure);
         setErrorString(response.toMap().value("message", "Unknown Error").toString());
-        PugItem::error() << "onNetworkReplyFinished" << errorString();
+        PugItem::error() << "onNetworkReplyFinished" << errorString() << "from request" << m_method << "with params" << QJsonDocument::fromVariant(m_params).toJson();
         emit error();
         return;
     }

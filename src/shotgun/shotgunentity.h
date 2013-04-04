@@ -6,7 +6,6 @@
 
 #include "node.h"
 #include "branch.h"
-#include "shotgunoperation.h"
 #include "shotgunfield.h"
 
 class ShotgunEntity : public Node
@@ -15,7 +14,11 @@ class ShotgunEntity : public Node
     Q_PROPERTY(QString shotgunEntity READ shotgunEntityName WRITE setShotgunEntityName NOTIFY shotgunEntityNameChanged)
     Q_PROPERTY(Branch *branch READ branch NOTIFY branchChanged);
     Q_PROPERTY(QQmlListProperty<ShotgunField> shotgunFields READ shotgunFields_ NOTIFY shotgunFieldsChanged)
+    Q_PROPERTY(Action action READ action WRITE setAction NOTIFY actionChanged)
+    Q_ENUMS(Action)
 public:
+    enum Action { Invalid, None, Find, Create };
+
     explicit ShotgunEntity(QObject *parent = 0);
 
     const QString shotgunEntityName() const;
@@ -25,49 +28,53 @@ public:
     Branch *branch();
 
     QQmlListProperty<ShotgunField> shotgunFields_();
+    const QList<const ShotgunField *> shotgunFields() const;
+
+    Action action() const;
+    void setAction(Action);
 
 signals:
     void shotgunEntityNameChanged(const QString shotgunEntity);
     void branchChanged(const Branch *branch);
     void shotgunFieldsChanged();
+    void actionChanged(Action action);
 
-    void shotgunPull(const QVariant context, Shotgun *shotgun);
-    void shotgunPullFinished(int status);
-    void shotgunPush(const QVariant context, Shotgun *shotgun);
-    void shotgunPushFinished(int status);
-
-protected:
-    virtual void componentComplete();
+    void update(const QVariant context);
+    void updateFinished(int status);
+    void release(const QVariant context);
+    void releaseFinished(int status);
 
 protected slots:
-    void onShotgunPull(const QVariant context, Shotgun *shotgun);
-    void onShotgunPush(const QVariant context, Shotgun *shotgun);
+    void onUpdate(const QVariant context);
+    void onRelease(const QVariant context);
 
 private slots:
-    void onReadFinished(const QVariant);
+    void onFindFinished(const QVariant);
     void onCreateFinished(const QVariant);
     void onBatchCreateFinished(const QVariant);
     void onShotgunReadError();
     void onShotgunCreateError();
-    void updateCount();
 
 private:
     void readEntity(Shotgun *);
     void createEntity(Shotgun *);
     void batchCreateEntities(Shotgun *);
 
-    const QVariantList data() const;
+    const QVariant data() const;
     const QStringList fields() const;
-    const QVariantList filters() const;
+    const QVariant filters();
+
+    static const QVariant jsValueToVariant(const QJSValue &jsValue);
 
     // shotgunFields property
     static void shotgunFields_append(QQmlListProperty<ShotgunField> *, ShotgunField *);
     static int shotgunFields_count(QQmlListProperty<ShotgunField> *);
-    static ShotgunField *shotgunFields_at(QQmlListProperty<ShotgunField> *, int);
+    static ShotgunField *shotgunField_at(QQmlListProperty<ShotgunField> *, int);
     static void shotgunFields_clear(QQmlListProperty<ShotgunField> *);
 
+    QList<ShotgunField *> m_shotgunFields;
     QString m_shotgunEntityName;
-    OperationAttached::Status m_status;
+    Action m_action;
 };
 
 

@@ -125,7 +125,7 @@ void ShotgunOperationAttached::run()
                         emit shotgunPullAtIndex(i, context(), sgop->shotgun());
                     }
                 } else {
-                    warning() << node() << "has nothing to pull";
+                    debug() << node() << "(parent" << node()->QObject::parent() << ") has nothing to pull";
                     setStatus(OperationAttached::Finished);
                     continueRunning();
                 }
@@ -156,8 +156,8 @@ void ShotgunOperationAttached::run()
                         emit shotgunPushAtIndex(i, context(), sgop->shotgun());
                     }
                 } else {
-                    warning() << node() << "has nothing to push";
-                    setStatus(OperationAttached::Finished);
+                    error() << node() << "(parent" << node()->QObject::parent() << ") has nothing to push";
+                    setStatus(OperationAttached::Error);
                     continueRunning();
                 }
             } else if (m_mode & ShotgunOperationAttached::Push) {

@@ -4,17 +4,29 @@
 #include "node.h"
 #include "param.h"
 #include "input.h"
-#include "output.h"
 
 Node::Node(QObject *parent) :
     PugItem(parent),
-    m_activeFlag(false),
+    m_dependencyOrder(Node::InputsChildrenSelf),
+    m_outputFlag(false),
     m_count(0),
     m_index(-1),
-    m_lockedFlag(false),
     m_x(0),
     m_y(0)
 {
+}
+
+Node::DependencyOrder Node::dependencyOrder() const
+{
+    return m_dependencyOrder;
+}
+
+void Node::setDependencyOrder(Node::DependencyOrder depOrder)
+{
+    if (m_dependencyOrder != depOrder) {
+        m_dependencyOrder = depOrder;
+        emit dependencyOrderChanged(depOrder);
+    }
 }
 
 QQmlListProperty<Node> Node::nodes_()
@@ -39,14 +51,6 @@ QQmlListProperty<Input> Node::inputs_()
                                         Node::inputs_count,
                                         Node::input_at,
                                         Node::inputs_clear);
-}
-
-QQmlListProperty<Output> Node::outputs_()
-{
-    return QQmlListProperty<Output>(this, 0, Node::outputs_append,
-                                        Node::outputs_count,
-                                        Node::output_at,
-                                        Node::outputs_clear);
 }
 
 // nodes property
@@ -163,55 +167,21 @@ void Node::inputs_clear(QQmlListProperty<Input> *prop)
     emit that->inputsChanged();
 }
 
-// outputs property
-void Node::outputs_append(QQmlListProperty<Output> *prop, Output *in)
-{
-    Node *that = static_cast<Node *>(prop->object);
-
-    in->setParent(that);
-    that->m_outputs.append(in);
-    emit that->outputsChanged();
-}
-
-int Node::outputs_count(QQmlListProperty<Output> *prop)
-{
-    Node *that = static_cast<Node *>(prop->object);
-    return that->m_outputs.count();
-}
-
-Output *Node::output_at(QQmlListProperty<Output> *prop, int i)
-{
-    Node *that = static_cast<Node *>(prop->object);
-    if (i < that->m_outputs.count())
-        return that->m_outputs[i];
-    else
-        return 0;
-}
-
-void Node::outputs_clear(QQmlListProperty<Output> *prop)
-{
-    Node *that = static_cast<Node *>(prop->object);
-    foreach (Output *in, that->m_outputs) {
-        in->setParent(0);
-    }
-    emit that->outputsChanged();
-}
-
 const QList<const Input*> Node::inputs() const
 {
     return constList(m_inputs);
 }
 
-bool Node::isActive() const
+bool Node::isOutput() const
 {
-    return m_activeFlag;
+    return m_outputFlag;
 }
 
-void Node::setActive(bool flag)
+void Node::setOutput(bool f)
 {
-    if (m_activeFlag != flag) {
-        m_activeFlag = flag;
-        emit activeChanged(flag);
+    if (m_outputFlag != f) {
+        m_outputFlag = f;
+        emit outputChanged(f);
     }
 }
 
@@ -377,9 +347,7 @@ const QList<const Node *> Node::upstream() const
     QList<const Node *> result;
     // loop through inputs and find upstream nodes
     foreach (const Input *in, m_inputs) {
-        if (!isLocked() || in->ignoreLocked()) {
-            result << upstream(in);
-        }
+        result << upstream(in);
     }
     //trace() << "    ->" << result;
     return result;
@@ -465,8 +433,8 @@ const QVariantList Node::downstreamNodes()
 {
     trace() << ".downstreamNodes()";
     QVariantList result;
-    foreach (Node *output, downstream()) {
-        result.append(QVariant::fromValue(output));
+    foreach (Node *n, downstream()) {
+        result.append(QVariant::fromValue(n));
     }
 
     trace() << "    ->" << result;
@@ -534,16 +502,6 @@ void Node::setIndex(int index)
             emit indexChanged(index);
         }
     }
-}
-
-bool Node::isLocked() const
-{
-    return m_lockedFlag;
-}
-
-void Node::setLocked(bool flag)
-{
-    m_lockedFlag = flag;
 }
 
 const Node *Node::rootBranch() const
@@ -678,15 +636,6 @@ Input *Node::addInput(QObject *parent, const QString name)
     m_inputs.append(input);
     emit inputsChanged();
     return input;
-}
-
-Output *Node::addOutput(const QString name)
-{
-    Output *output = new Output(this);
-    output->setName(name);
-    m_outputs.append(output);
-    emit outputsChanged();
-    return output;
 }
 
 const QVariantMap Node::mergeContexts(const QVariantMap first, const QVariantMap second)

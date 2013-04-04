@@ -3,106 +3,152 @@ import QtTest 1.0
 import Pug 1.0
 
 PugTestCase {
-    name: "ShotgunOperationTests"
+    name: "ShotgunFieldTests"
     
     property string testImage: Qt.resolvedUrl("SMPTE_Color_Bars_16x9.png").replace("file://", "")
+
+    function init() {
+        Shotgun.baseUrl = "https://mokko.shotgunstudio.com";
+        Shotgun.apiKey = "ef0623879e54c9f4f2d80f9502a7adea09bfcf8f";
+        Shotgun.scriptName = "test";
+        
+        Util.mkpath(tmpDir + "shotgunfieldtests/projects/888_test");
+        Util.copy(testImage, tmpDir + "shotgunfieldtests/projects/888_test/string_999.png");
+    }
+    
+    function cleanup() {
+        Util.remove(tmpDir + "shotgunfieldtests/projects/888_test/string_999.png");
+        Util.rmdir(tmpDir + "shotgunfieldtests/projects/888_test");
+        Util.rmdir(tmpDir + "shotgunfieldtests/projects");
+        Util.rmdir(tmpDir + "shotgunfieldtests");
+        updateSpy.clear();
+        releaseSpy.clear();
+    }
     
     Root {
         id: root
 
-        Shotgun {
-            id: shotgun
-            baseUrl: "https://mokko.shotgunstudio.com"
-            apiKey: "ef0623879e54c9f4f2d80f9502a7adea09bfcf8f"
-            scriptName: "test"
-        }
-        
         operations: [
             UpdateOperation {
                 id: update
             },
-            ShotgunOperation {
-                id: shotgunPull
-                name: "shotgunPull"
-                mode: ShotgunOperation.Pull
-                shotgun: shotgun
+            ReleaseOperation {
+                id: release
                 dependencies: update
-            },
-            ShotgunOperation {
-                id: shotgunPush
-                name: "shotgunPush"
-                mode: ShotgunOperation.Push
-                shotgun: shotgun
-                dependencies: shotgunPull
             }
         ]
     
         fields: [
-            Field { name: "FILENAME" },
+            Field { name: "STRING" },
+            Field { name: "NUMBER"; type: Field.Integer },
             Field { name: "PROJECT" }
         ]
 
         Folder {
             id: project
             name: "project"
-            pattern: "/prod/projects/{PROJECT}/"
+            pattern: tmpDir + "shotgunfieldtests/projects/{PROJECT}/"
+
+            ShotgunField {
+                id: sg_projectName
+                name: "sg_projectName"
+                shotgunField: "name"
+                required: true
+                field: "PROJECT"
+                source: project
+            }
             
             ShotgunEntity {
                 id: sg_project
                 name: "sg_project"
                 shotgunEntity: "Project"
-                
-                ShotgunField {
-                    id: sg_projectName
-                    name: "sg_projectName"
-                    shotgunField: "name"
-                    field: "PROJECT"
-                }
+                shotgunFields: sg_projectName
             }
         }
-
+            
         File {
             id: file
             name: "file"
-            pattern: "{FILENAME}"
-            
+            root: project
+            pattern: "{STRING}_{NUMBER}.png"
+
             ShotgunEntity {
+                id: sg_testEntity
+                name: "sg_testEntity"
                 shotgunEntity: "PublishEvent"
-                ShotgunOperation.action: ShotgunOperation.Create
-                id: sg_release
+                action: ShotgunEntity.None
+                shotgunFields: [
+                    sg_patternField, 
+                    sg_imageField, 
+                    sg_linkField, 
+                    sg_pathField, 
+                    sg_numberField, 
+                    sg_stringField, 
+                    sg_stringValueField
+                ]
                 
                 ShotgunField {
+                    id: sg_patternField
+                    name: "sg_patternField"
                     shotgunField: "code"
-                    type: ShotgunField.Pattern
-                    file: file
-                    pattern: "{FILENAME}_upload"
+                    required: true
+                    type: ShotgunField.String
+                    source: file
+                    pattern: "{STRING}_{NUMBER}"
                 }
                 
                 ShotgunField {
+                    id: sg_imageField
+                    name: "sg_imageField"
                     shotgunField: "image"
                     type: ShotgunField.Path
-                    file: file
+                    source: file
                 }
                 
                 ShotgunField {
+                    id: sg_linkField
+                    name: "sg_linkField"
                     shotgunField: "project"
                     type: ShotgunField.Link
                     link: sg_project
                 }
+            
+            ShotgunField {
+                id: sg_pathField
+                name: "sg_pathField"
+                shotgunField: "sg_path"
+                type: ShotgunField.Path
+                source: file
+            }
+            
+            ShotgunField {
+                id: sg_numberField
+                name: "sg_numberField"
+                shotgunField: "sg_version"
+                type: ShotgunField.Number
+                field: "NUMBER"
+                source: file
+            }
+            
+            ShotgunField {
+                id: sg_stringField
+                name: "sg_stringField"
+                shotgunField: "sg_variation"
+                type: ShotgunField.String
+                field: "STRING"
+                source: file
+            }
+            
+            ShotgunField {
+                id: sg_stringValueField
+                name: "sg_stringValueField"
+                shotgunField: "sg_layer"
+                type: ShotgunField.String
+                value: "foo"
+            }
+                
             }
         }
-    }
-    
-    SignalSpy {
-        id: pullSpy
-        target: shotgunPull
-        signalName: "finished"
-    }
-
-    SignalSpy {
-        id: pushSpy
-        target: shotgunPush
-        signalName: "finished"
     }
     
     SignalSpy {
@@ -110,49 +156,57 @@ PugTestCase {
         target: update
         signalName: "finished"
     }
-    
-    function test_update() {
-        var context = {PROJECT: "888_test",
-                       FILENAME: testImage};
-        update.run(project, context);
-        updateSpy.wait(500);
 
-        compare(update.status, Operation.Finished);
+    SignalSpy {
+        id: releaseSpy
+        target: release
+        signalName: "finished"
     }
     
-    function test_pullFields() {
-        var context = {PROJECT: "888_test",
-                       FILENAME: testImage};
-        shotgunPull.run(project, context);
-        pullSpy.wait(5000);
-
-        compare(shotgunPull.status, Operation.Finished);
-        
-        compare(project.count, 1);
-        compare(sg_project.count, 1);
-        compare(sg_projectName.count, 1);
-        compare(sg_project.details[0].entity.type, "Project");
-        compare(sg_project.details[0].entity.id, 104);
-        compare(sg_project.details[0].entity.name, "888_test");
+    function test_updateField_data() {
+        return [
+            {tag: "patternField", sg_field: sg_patternField, values: ["string_999"], dependencies: [file]},
+            {tag: "linkField", sg_field: sg_linkField, values: [{type: "Project", id: 104}], dependencies: [sg_project, project]},
+            {tag: "pathField", sg_field: sg_pathField, values: [tmpDir + "shotgunfieldtests/projects/888_test/string_999.png"], dependencies: [file, project]},
+            {tag: "numberWang", sg_field: sg_numberField, values: [999], dependencies: [file]},
+            {tag: "stringField", sg_field: sg_stringField, values: ["string"], dependencies: [file]},
+            {tag: "stringValueField", sg_field: sg_stringValueField, values: ["foo"], dependencies: [file]}
+        ];
     }
     
-    function test_pushFields() {
-        var context = {PROJECT: "888_test",
-                       FILENAME: testImage};
-        shotgunPush.run(file, context);
-        pushSpy.wait(5000);
+    function test_releaseField_data() {
+        return test_updateField_data();
+    }
+    
+    function test_updateField(data) {
+        sg_testEntity.action = ShotgunEntity.Find;
         
-        compare(shotgunPush.status, Operation.Finished);
+        update.run(data.sg_field, {});
+        updateSpy.wait(5000);
+
+        compare(data.sg_field.UpdateOperation.status, Operation.Finished);
+        for (var i = 0; i < data.dependencies.length; i++) {
+            compare(data.dependencies[i].UpdateOperation.status, Operation.Finished);
+        }
+
+        for (var i = 0; i < data.sg_field.details.length; i++) {
+            compare(data.sg_field.details[i].value, data.values[i]);
+        }
+    }
+    
+    function test_releaseField(data) {
+        sg_testEntity.action = ShotgunEntity.Create;
         
-        compare(project.count, 1);
-        compare(sg_project.count, 1);
-        compare(sg_projectName.count, 1);
-        compare(sg_project.details[0].entity.type, "Project");
-        compare(sg_project.details[0].entity.id, 104);
-        compare(sg_project.details[0].entity.name, "888_test");
-        
-        compare(file.count, 1);
-        compare(sg_release.count, 1);
-        compare(sg_release.details[0].entity.type, "PublishEvent");
+        release.run(data.sg_field, {});
+        releaseSpy.wait(5000);
+
+        compare(data.sg_field.ReleaseOperation.status, Operation.Finished);
+        for (var i = 0; i < data.dependencies.length; i++) {
+            compare(data.dependencies[i].ReleaseOperation.status, Operation.Finished);
+        }
+
+        for (var i = 0; i < data.sg_field.details.length; i++) {
+            compare(data.sg_field.details[i].value, data.values[i]);
+        }
     }
 }

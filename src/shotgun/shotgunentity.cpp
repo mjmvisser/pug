@@ -1,28 +1,17 @@
 #include "shotgunentity.h"
 #include "shotgunfield.h"
 #include "branch.h"
-#include "shotgunoperation.h"
+#include "shotgun.h"
 
 ShotgunEntity::ShotgunEntity(QObject *parent) :
-    Node(parent)
+    Node(parent),
+    m_action(ShotgunEntity::Find)
 {
-    setActive(true);
-
-    //addInput(this, "branch");
+    addInput(this, "branch");
     addInput(this, "shotgunFields");
 
-    connect(this, &ShotgunEntity::shotgunPull, this, &ShotgunEntity::onShotgunPull);
-    connect(this, &ShotgunEntity::shotgunPush, this, &ShotgunEntity::onShotgunPush);
-    connect(this, &ShotgunEntity::branchChanged, this, &ShotgunEntity::updateCount);
-}
-
-void ShotgunEntity::componentComplete()
-{
-    Node::componentComplete();
-    if (branch())
-        connect(branch(), &Node::countChanged, this, &Node::setCount);
-
-    updateCount();
+    connect(this, &ShotgunEntity::update, this, &ShotgunEntity::onUpdate);
+    connect(this, &ShotgunEntity::release, this, &ShotgunEntity::onRelease);
 }
 
 const QString ShotgunEntity::shotgunEntityName() const
@@ -40,193 +29,280 @@ void ShotgunEntity::setShotgunEntityName(const QString sen)
 
 const Branch *ShotgunEntity::branch() const
 {
-    // TODO: how do we emit branchChanged() when the parent changes?
-    return parent<Branch>();
+    // TODO: how do we emit branchChanged() when this changes?
+    return firstParent<Branch>();
 }
 
 Branch *ShotgunEntity::branch()
 {
-    return parent<Branch>();
+    return firstParent<Branch>();
 }
 
 QQmlListProperty<ShotgunField> ShotgunEntity::shotgunFields_()
 {
     return QQmlListProperty<ShotgunField>(this, 0, ShotgunEntity::shotgunFields_append,
                                         ShotgunEntity::shotgunFields_count,
-                                        ShotgunEntity::shotgunFields_at,
+                                        ShotgunEntity::shotgunField_at,
                                         ShotgunEntity::shotgunFields_clear);
 }
 
-// fields property
-void ShotgunEntity::shotgunFields_append(QQmlListProperty<ShotgunField> *prop, ShotgunField *p)
+// shotgunFields property
+void ShotgunEntity::shotgunFields_append(QQmlListProperty<ShotgunField> *prop, ShotgunField *in)
 {
     ShotgunEntity *that = static_cast<ShotgunEntity *>(prop->object);
 
-    p->setParent(that);
+    in->setParent(that);
+    that->m_shotgunFields.append(in);
     emit that->shotgunFieldsChanged();
 }
 
 int ShotgunEntity::shotgunFields_count(QQmlListProperty<ShotgunField> *prop)
 {
-    int count = 0;
-    foreach (QObject *o, prop->object->children()) {
-        if (qobject_cast<ShotgunField *>(o))
-            count++;
-    }
-    return count;
+    ShotgunEntity *that = static_cast<ShotgunEntity *>(prop->object);
+    return that->m_shotgunFields.count();
 }
 
-ShotgunField *ShotgunEntity::shotgunFields_at(QQmlListProperty<ShotgunField> *prop, int i)
+ShotgunField *ShotgunEntity::shotgunField_at(QQmlListProperty<ShotgunField> *prop, int i)
 {
-    int index = 0;
-    foreach (QObject *o, prop->object->children()) {
-        ShotgunField *p = qobject_cast<ShotgunField *>(o);
-        if (p) {
-            if (index == i)
-                return p;
-            index++;
-        }
-    }
-    return 0;
+    ShotgunEntity *that = static_cast<ShotgunEntity *>(prop->object);
+    if (i < that->m_shotgunFields.count())
+        return that->m_shotgunFields[i];
+    else
+        return 0;
 }
 
 void ShotgunEntity::shotgunFields_clear(QQmlListProperty<ShotgunField> *prop)
 {
     ShotgunEntity *that = static_cast<ShotgunEntity *>(prop->object);
-    const QObjectList fields = prop->object->children();
-    foreach (QObject *o, fields) {
-        ShotgunField *p = qobject_cast<ShotgunField *>(o);
-        if (p)
-            p->setParent(0);
+    foreach (ShotgunField *in, that->m_shotgunFields) {
+        in->setParent(0);
     }
     emit that->shotgunFieldsChanged();
 }
 
-
-void ShotgunEntity::onShotgunPull(const QVariant context, Shotgun *shotgun)
+const QList<const ShotgunField *> ShotgunEntity::shotgunFields() const
 {
-    trace() << ".onShotgunPull(" << context << "," << shotgun << ")";
-    Q_ASSERT(shotgun);
+    return constList(m_shotgunFields);
+}
 
-    if (branch()->count() == 1) {
-        ShotgunReply *reply = shotgun->findOne(shotgunEntityName(), filters(), fields());
-        debug() << "filters are" << filters();
-        connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onReadFinished);
-        connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
-                this, &ShotgunEntity::onShotgunReadError);
-    } else if (branch()->count() > 0) {
-        error() << "Shotgun pull does not support branches with multiple details (" << branch() << ")";
-        emit shotgunPullFinished(OperationAttached::Error);
-    } else {
-        error() << "Folder" << branch() << "has no details";
-        emit shotgunPullFinished(OperationAttached::Error);
+ShotgunEntity::Action ShotgunEntity::action() const
+{
+    return m_action;
+}
+
+void ShotgunEntity::setAction(ShotgunEntity::Action a)
+{
+    if (m_action != a) {
+        m_action = a;
+        emit actionChanged(m_action);
     }
 }
 
-void ShotgunEntity::onShotgunPush(const QVariant context, Shotgun *shotgun)
+void ShotgunEntity::onUpdate(const QVariant context)
 {
-    trace() << ".onShotgunPush(" << context << "," << shotgun << ")";
-    Q_ASSERT(shotgun);
+    if (branch() && m_action == ShotgunEntity::Find) {
+        trace() << ".onUpdate(" << context << "," << ")";
 
-    if (branch()->count() == 1) {
-        ShotgunReply *reply = shotgun->create(shotgunEntityName(), data()[0].toMap(), fields());
-        connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onCreateFinished);
-        connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
-                this, &ShotgunEntity::onShotgunCreateError);
-    } else if (branch()->count() > 0) {
-        QVariantList batchRequests;
-        foreach (const QVariant d, data()) {
-            QVariantMap batchRequest;
+        setCount(branch()->count());
 
-            batchRequest["request_type"] = "create";
-            batchRequest["entity_type"] = shotgunEntityName();
-            batchRequest["data"] = d;
-            QStringList returnFields = fields();
-            if (returnFields.length() > 0)
-                batchRequest["return_fields"] = returnFields;
+        if (count() > 0) {
+            debug() << "Updating" << count() << "details with context" << context;
 
-            batchRequests.append(batchRequest);
+            QVariant f = filters();
+            if (f.isValid()) {
+                debug() << "Shotgun filters are" << f;
+                ShotgunReply *reply = Shotgun::staticInstance()->find(shotgunEntityName(), f.toList(), fields());
+
+                connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onFindFinished);
+                connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
+                        this, &ShotgunEntity::onShotgunReadError);
+            } else {
+                debug() << "Skipping, incomplete filters";
+                emit updateFinished(OperationAttached::Finished);
+            }
+        } else {
+            debug() << "Folder" << branch() << "has no details";
+            emit updateFinished(OperationAttached::Finished);
         }
-
-        debug() << "requests:" << batchRequests;
-
-        ShotgunReply *reply = shotgun->batch(batchRequests);
-        connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onBatchCreateFinished);
-        connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
-                this, &ShotgunEntity::onShotgunCreateError);
     } else {
-        error() << "Folder" << branch() << "has no details";
-        emit shotgunPushFinished(OperationAttached::Error);
+        emit updateFinished(OperationAttached::Finished);
     }
 }
 
-const QVariantList ShotgunEntity::data() const
+void ShotgunEntity::onRelease(const QVariant context)
+{
+    if (m_action == ShotgunEntity::Create) {
+        trace() << ".onRelease(" << context << "," << ")";
+
+        QVariant d = data();
+        if (d.isValid()) {
+            setCount(d.toList().length());
+
+            if (d.toList().length() == 1) {
+                debug() << "request:" << d.toList()[0].toMap();
+                QVariant di = d.toList()[0];
+                ShotgunReply *reply = Shotgun::staticInstance()->create(shotgunEntityName(), di.toMap(), fields());
+                connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onCreateFinished);
+                connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
+                        this, &ShotgunEntity::onShotgunCreateError);
+            } else if (d.toList().length() > 1) {
+                QVariantList batchRequests;
+                QStringList returnFields = fields();
+
+                foreach (const QVariant di, d.toList()) {
+                    QVariantMap batchRequest;
+
+                    batchRequest["request_type"] = "create";
+                    batchRequest["entity_type"] = shotgunEntityName();
+                    batchRequest["data"] = di;
+                    if (returnFields.length() > 0)
+                        batchRequest["return_fields"] = returnFields;
+
+                    batchRequests.append(batchRequest);
+                }
+
+                debug() << "requests:" << batchRequests;
+
+                ShotgunReply *reply = Shotgun::staticInstance()->batch(batchRequests);
+                connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onBatchCreateFinished);
+                connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
+                        this, &ShotgunEntity::onShotgunCreateError);
+            } else {
+                error() << "has no data";
+                emit releaseFinished(OperationAttached::Error);
+            }
+        } else {
+            error() << "Incomplete data";
+            emit releaseFinished(OperationAttached::Error);
+        }
+    } else {
+        emit releaseFinished(OperationAttached::Finished);
+    }
+}
+
+const QVariant ShotgunEntity::data() const
 {
     trace() << ".data()";
     Q_ASSERT(branch());
 
+    // data is cartesian product of all fields
+    // (most will be of length 1)
+
+    QList<int> sgfIndex;
+    QList<int> sgfCount;
+    foreach (const ShotgunField *sgf, m_shotgunFields) {
+        sgfCount << sgf->count();
+        sgfIndex << 0;
+    }
+
     QVariantList result;
-    for (int i = 0; i < branch()->count(); i++) {
+
+    while (true) {
+        // add the data at our current indices
         QVariantMap d;
 
         // build data for this entity from the entity's fields
-        foreach (const QObject *o, children()) {
-            const ShotgunField *sgf = qobject_cast<const ShotgunField *>(o);
-            if (sgf) {
-                // name: value pairs
-                QJSValue jsvalue = sgf->details().property(0).property("value");
-                QVariant value;
-                if (jsvalue.isNull())
-                    value = QVariant(QVariant::String); // null QVariant
-                else if (jsvalue.isUndefined())
-                    value = QVariant(); // invalid QVariant
-                else
-                    value = qjsvalue_cast<QVariant>(jsvalue);
-                trace() << "value of" << sgf << "is" << value;
-                Q_ASSERT(value.isValid());
-                // skip null values
-                if (!value.isNull()) {
-                    d.insert(sgf->shotgunFieldName(), value);
+        int i = 0;
+        foreach (const ShotgunField *sgf, m_shotgunFields) {
+            // name: value pairs
+            QJSValue jsValue = sgf->details().property(sgfIndex[i]).property("value");
+            QVariant value;
+            if (jsValue.isNull())
+                value = QVariant(); // invalid QVariant
+            else
+                value = qjsvalue_cast<QVariant>(jsValue);
+
+            if (value.isNull() && sgf->isRequired()) {
+                error() << sgf << "is marked required but is null";
+                return QVariant();
+            }
+
+            d.insert(sgf->shotgunFieldName(), value);
+
+            i++;
+        }
+        result << d;
+
+        // increment our iterators, like an odometer, but from left-to-right
+        // inspired by http://stackoverflow.com/questions/5279051/how-can-i-create-cartesian-product-of-vector-of-vectors
+        for (i = 0; i < sgfCount.length(); i++) {
+            sgfIndex[i]++;
+
+            if (sgfIndex[i] == sgfCount[i]) {
+                if (i + 1 == sgfCount.length()) {
+                    // last counter is about to roll over, we're done
+                    trace() << "    ->" << result;
+                    return result;
+                } else {
+                    // this counter is at the end, reset and roll over
+                    sgfIndex[i] = 0;
                 }
+            } else {
+                break;
             }
         }
-
-        result.append(d);
     }
 
-    trace() << "    ->" << result;
-    return result;
+    return QVariant();
 }
 
-const QVariantList ShotgunEntity::filters() const
+const QVariant ShotgunEntity::jsValueToVariant(const QJSValue &jsValue)
+{
+    QVariant value;
+    if (jsValue.isNull())
+        value = QVariant(QVariant::String); // null QVariant
+    else if (jsValue.isUndefined())
+        value = QVariant(); // invalid QVariant
+    else
+        value = qjsvalue_cast<QVariant>(jsValue);
+
+    return value;
+}
+
+const QVariant ShotgunEntity::filters()
 {
     trace() << ".filters()";
-    Q_ASSERT(branch());
-    Q_ASSERT(branch()->count() == 1);
+    Q_ASSERT(count() > 0);
 
     QVariantList result;
 
     // build filters for this entity from the entity's shotgun fields
-    foreach (const QObject *o, children()) {
-        const ShotgunField *sgf = qobject_cast<const ShotgunField *>(o);
-        if (sgf && sgf->type() != ShotgunField::Url) {
+    foreach (ShotgunField *sgf, m_shotgunFields) {
+        if (sgf->type() != ShotgunField::Url) {
             // we skip Url fields, since they can't be filtered against
             // ["<shotgun field name>", "is", <value for field name>]
-            QJSValue jsvalue = sgf->details().property(0).property("value");
-            QVariant value;
-            if (jsvalue.isNull())
-                value = QVariant(QVariant::String); // null QVariant
-            else if (jsvalue.isUndefined())
-                value = QVariant(); // invalid QVariant
-            else
-                value = qjsvalue_cast<QVariant>(jsvalue);
-            trace() << "value of" << sgf << "is" << value;
-            Q_ASSERT(value.isValid());
-            // we also skip null fields
-            if (!value.isNull()) {
-                QVariantList filter;
-                filter << sgf->shotgunFieldName() << "is" << value;
-                result << QVariant(filter);
+            if (sgf->count() == 1) {
+                QVariant value = jsValueToVariant(sgf->details().property(0).property("value"));
+                sgf->setIndex(0);
+                Q_ASSERT(value.isValid());
+                // we skip null fields... TODO: what if we want to match against a null field?
+                if (!value.isNull()) {
+                    QVariantList filter;
+                    filter << sgf->shotgunFieldName() << "is" << value;
+                    result << QVariant(filter); // have to wrap filter in a QVariant, otherwise it concatenates the lists!
+                }
+            } else if (sgf->count() > 0) {
+                QVariantList filters;
+                for (int i = 0; i < sgf->count(); i++) {
+                    sgf->setIndex(i);
+                    QVariant value = jsValueToVariant(sgf->details().property(i).property("value"));
+                    Q_ASSERT(value.isValid());
+
+                    QVariantList filter;
+                    filter << sgf->shotgunFieldName() << "is" << value;
+                    filters << QVariant(filter);
+                }
+
+                QVariantMap complexFilter;
+                complexFilter.insert("filter_operator", "any");
+                complexFilter.insert("filters", filters);
+                result << complexFilter;
+            } else {
+                // count is 0
+                if (sgf->isRequired()) {
+                    debug() << "field" << sgf << "is marked required, but has no data";
+                    return QVariant();
+                }
             }
         }
     }
@@ -234,38 +310,39 @@ const QVariantList ShotgunEntity::filters() const
     trace() << "    ->" << result;
     return result;
 }
+
 
 
 const QStringList ShotgunEntity::fields() const
 {
     trace() << ".fields()";
     Q_ASSERT(branch());
-    Q_ASSERT(branch()->count() == 1);
 
     QStringList result;
 
     // build a list of Shotgun fields
-    foreach (const QObject *o, children()) {
-        const ShotgunField *sgf = qobject_cast<const ShotgunField *>(o);
-        if (sgf) {
-            result << sgf->shotgunFieldName();
-        }
+    foreach (const ShotgunField *sgf, m_shotgunFields) {
+        result << sgf->shotgunFieldName();
     }
 
     trace() << "    ->" << result;
     return result;
 }
 
-void ShotgunEntity::onReadFinished(const QVariant result)
+void ShotgunEntity::onFindFinished(const QVariant results)
 {
-    trace() << ".onReadFinished(" << result << ")";
-    debug() << "Shotgun.find returned" << result;
+    trace() << ".onFindFinished(" << results << ")";
+    info() << "Shotgun.find returned" << results;
 
-    setDetail(0, "entity", toScriptValue(result.toMap()));
+    int i = 0;
+    foreach (const QVariant result, results.toList()) {
+        setDetail(i, "entity", toScriptValue(result.toMap()));
+        i++;
+    }
 
     QObject::sender()->deleteLater();
 
-    emit shotgunPullFinished(OperationAttached::Finished);
+    emit updateFinished(OperationAttached::Finished);
 }
 
 void ShotgunEntity::onCreateFinished(const QVariant result)
@@ -277,7 +354,7 @@ void ShotgunEntity::onCreateFinished(const QVariant result)
 
     QObject::sender()->deleteLater();
 
-    emit shotgunPushFinished(OperationAttached::Finished);
+    emit releaseFinished(OperationAttached::Finished);
 }
 
 void ShotgunEntity::onBatchCreateFinished(const QVariant result)
@@ -293,7 +370,7 @@ void ShotgunEntity::onBatchCreateFinished(const QVariant result)
 
     debug() << "received" << QJsonDocument::fromVariant(result);
 
-    emit shotgunPushFinished(OperationAttached::Finished);
+    emit releaseFinished(OperationAttached::Finished);
 }
 
 void ShotgunEntity::onShotgunReadError()
@@ -302,12 +379,11 @@ void ShotgunEntity::onShotgunReadError()
     Q_ASSERT(reply);
 
     trace() << ".onShotgunReadError() [error is" << reply->errorString() << "]";
-    debug() << "Shotgun.find failed  [error is" << reply->errorString() << "]";
-    m_status = OperationAttached::Error;
+    error() << "Shotgun.find failed  [error is" << reply->errorString() << "]";
 
     reply->deleteLater();
 
-    emit shotgunPullFinished(OperationAttached::Error);
+    emit updateFinished(OperationAttached::Error);
 }
 
 void ShotgunEntity::onShotgunCreateError()
@@ -316,17 +392,9 @@ void ShotgunEntity::onShotgunCreateError()
     Q_ASSERT(reply);
 
     trace() << ".onShotgunCreateError() [error is" << reply->errorString() << "]";
-    debug() << "Shotgun.create or .batch failed  [error is" << reply->errorString() << "]";
-    m_status = OperationAttached::Error;
+    error() << "Shotgun.create or .batch failed  [error is" << reply->errorString() << "]";
 
     reply->deleteLater();
 
-    emit shotgunPushFinished(OperationAttached::Error);
-}
-
-void ShotgunEntity::updateCount()
-{
-    if (branch()) {
-        setCount(branch()->count());
-    }
+    emit releaseFinished(OperationAttached::Error);
 }

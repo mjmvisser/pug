@@ -20,7 +20,6 @@
 #include "listoperation.h"
 #include "releaseoperation.h"
 #include "updateoperation.h"
-#include "shotgunoperation.h"
 #include "shotgun.h"
 #include "shotgunentity.h"
 #include "shotgunfield.h"
@@ -36,6 +35,13 @@
 #include "tractoroperation.h"
 
 #include "pugplugin.h"
+
+static QObject *Shotgun_provider(QQmlEngine *engine, QJSEngine *scriptEngine)
+{
+    Q_UNUSED(engine);
+    Q_UNUSED(scriptEngine);
+    return Shotgun::staticInstance();
+}
 
 static QObject *Util_provider(QQmlEngine *engine, QJSEngine *scriptEngine)
 {
@@ -69,8 +75,7 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<ReleaseOperation>(uri, 1, 0, "ReleaseOperation");
     qmlRegisterType<Sudo>(uri, 1, 0, "Sudo");
     qmlRegisterType<UpdateOperation>(uri, 1, 0, "UpdateOperation");
-    qmlRegisterType<ShotgunOperation>(uri, 1, 0, "ShotgunOperation");
-    qmlRegisterType<Shotgun>(uri, 1, 0, "Shotgun");
+    qmlRegisterSingletonType<Shotgun>(uri, 1, 0, "Shotgun", Shotgun_provider);
     qmlRegisterType<ShotgunReply>(uri, 1, 0, "ShotgunReply");
     qmlRegisterType<ShotgunEntity>(uri, 1, 0, "ShotgunEntity");
     qmlRegisterType<ShotgunField>(uri, 1, 0, "ShotgunField");

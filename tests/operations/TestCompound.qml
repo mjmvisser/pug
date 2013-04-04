@@ -35,7 +35,7 @@ Node {
         id: nodeC
         name: "nodeC"
         property Node input: nodeB
-        active: true
+        output: true
         
         inputs: Input { name: "input" }
 

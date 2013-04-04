@@ -2,15 +2,26 @@ import Pug 1.0
 
 import "js/shotgunutils.js" as ShotgunUtils
 
+    
 ShotgunEntity {
+    id: elementEntity
+    name: "elementEntity"
     shotgunEntity: "Element"
+    shotgunFields: [
+        codeField,
+        startFrameField,
+        endFrameField,
+        deliveryField,
+        projectField,
+        releaseField,
+        createdByField,
+        updatedByField
+    ]
 
-    ShotgunOperation.action: ShotgunOperation.Create
-
-    property ShotgunEntity project
-    property ShotgunEntity delivery
-    property ShotgunEntity release
-    property ShotgunEntity user
+    property Node project
+    property Node delivery
+    property Node release
+    property Node user
 
     inputs: [
         Input { name: "project" },
@@ -19,17 +30,24 @@ ShotgunEntity {
         Input { name: "user" }
     ]
     
+    output: true
+
     property string code
     //property var sourcePathLink
     
-    params: Param { name: "code" }
-    
+    params: [
+        Param { name: "code" },
+        Param { name: "action" }
+    ]
+
     ShotgunField {
         id: codeField
         name: "code"
+        required: true
         shotgunField: "code"
-        type: ShotgunField.Pattern
+        type: ShotgunField.String
         pattern: code
+        source: elementEntity.parent
     }
     
     // doesn't work, sg_source_path is the wrong type (File instead of Entity)
@@ -68,7 +86,8 @@ ShotgunEntity {
         name: "sg_start_frame"
         shotgunField: "sg_start_frame"
         type: ShotgunField.Number
-        value: _firstFrame()                       
+        value: _firstFrame(index)                       
+        source: elementEntity.parent
     }
 
     ShotgunField {
@@ -76,10 +95,12 @@ ShotgunEntity {
         name: "sg_end_frame"
         shotgunField: "sg_end_frame"
         type: ShotgunField.Number
-        value: _lastFrame()                         
+        value: _lastFrame(index)
+        source: elementEntity.parent
     }
     
     ShotgunField {
+        id: deliveryField
         name: "sg_delivery"
         shotgunField: "sg_delivery"
         type: ShotgunField.Link
@@ -87,13 +108,16 @@ ShotgunEntity {
     }
     
     ShotgunField {
+        id: projectField
         name: "project"
         shotgunField: "project"
+        required: true
         type: ShotgunField.Link
         link: project
     }
     
     ShotgunField {
+        id: releaseField
         name: "sg_release"
         shotgunField: "sg_release"
         type: ShotgunField.Link
@@ -101,6 +125,7 @@ ShotgunEntity {
     }
     
     ShotgunField {
+        id: createdByField
         name: "created_by"
         shotgunField: "created_by"
         type: ShotgunField.Link
@@ -108,6 +133,7 @@ ShotgunEntity {
     }
 
     ShotgunField {
+        id: updatedByField
         name: "updated_by"
         shotgunField: "updated_by"
         type: ShotgunField.Link

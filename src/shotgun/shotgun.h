@@ -112,6 +112,8 @@ public:
             const QString displayName=QString(),
             const QString tagList=QString());
 
+    static Shotgun *staticInstance();
+
 signals:
     void baseUrlChanged(const QUrl url);
     void apiKeyChanged(const QString apiKey);
@@ -152,6 +154,8 @@ private:
     bool buildPayload(QJsonObject& payload, const QString method, const QJsonDocument params, bool includeScriptName=true) const;
     const QVariant transformOutbound(const QVariant params) const;
     ShotgunReply *callRpc(const QString method, const QVariant params, bool includeScriptName=true, ShotgunReply *reply=0);
+
+    static Shotgun *s_instance;
 
     Config m_config;
     QUrl m_baseUrl;

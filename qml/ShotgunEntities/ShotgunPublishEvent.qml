@@ -1,17 +1,29 @@
 import Pug 1.0
 
 ShotgunEntity {
-    id: self
+    id: publishEventEntity
+    name: "publishEventEntity"
     shotgunEntity: "PublishEvent"
+    shotgunFields: [
+        projectField,
+        codeField,
+        versionField,
+        variationField,
+        pathField,
+        linkField,
+        stepField,
+        imageField,
+        filmstripField,
+        createdByField,
+        updatedByField            
+    ]
 
-    ShotgunOperation.action: ShotgunOperation.Create
-    
-    property ShotgunEntity project
-    property ShotgunEntity link
-    property ShotgunEntity step
-    property Node thumbnail
-    property Node filmstrip 
-    property ShotgunEntity user
+    property Node project
+    property Node link
+    property Node step
+    property Node thumbnail: null
+    property Node filmstrip: null
+    property Node user
 
     inputs: [
         Input { name: "project" },
@@ -22,81 +34,101 @@ ShotgunEntity {
         Input { name: "user" }
     ]
 
+    output: true
+
     property string code 
-    
+
     params: [
-        Param { name: "code" }
+        Param { name: "code" },
     ]
 
     ShotgunField {
-        name: "project"
+        id: projectField
+        name: "projectField"
         shotgunField: "project"
+        required: true
         type: ShotgunField.Link
         link: project
     }
 
     ShotgunField {
-        name: "code"
+        id: codeField
+        name: "codeField"
         shotgunField: "code"
-        type: ShotgunField.Pattern
+        required: true
+        type: ShotgunField.String
         pattern: code
+        source: publishEventEntity.parent
     }
 
     ShotgunField {
-        name: "sg_version"
+        id: versionField
+        name: "versionField"
         shotgunField: "sg_version"
         type: ShotgunField.Number
         field: "VERSION"
+        source: publishEventEntity.parent
     }
     
     ShotgunField {
-        name: "sg_variation"
+        id: variationField
+        name: "variationField"
         shotgunField: "sg_variation"
         field: "VARIATION"
+        source: publishEventEntity.parent
     }
     
     ShotgunField {
-        name: "sg_path"
+        id: pathField
+        name: "pathField"
         shotgunField: "sg_path"
         type: ShotgunField.Path
+        source: publishEventEntity.parent
     }
 
     ShotgunField {
-        name: "sg_link"
+        id: linkField
+        name: "linkField"
         shotgunField: "sg_link"
         type: ShotgunField.Link
-        link: self.link
+        link: publishEventEntity.link
     }
 
     ShotgunField {
         id: stepField
-        name: "sg_step"
+        name: "stepField"
         shotgunField: "sg_step"
         type: ShotgunField.Link
         link: step
     }
     
     ShotgunField {
-        name: "sg_image"
+        id: imageField
+        name: "imageField"
         shotgunField: "image"
-        value: (thumbnail && thumbnail.details[index]) ? thumbnail.details[index].element.pattern : 0
+        type: ShotgunField.Path
+        source: thumbnail
     }
 
     ShotgunField {
-        name: "sg_filmstrip"
+        id: filmstripField
+        name: "filmstripField"
         shotgunField: "filmstrip_image"
-        value: (filmstrip && filmstrip.details[index]) ? filmstrip.details[index].element.pattern : 0
+        type: ShotgunField.Path
+        source: filmstrip
     }
 
     ShotgunField {
-        name: "created_by"
+        id: createdByField
+        name: "createdByField"
         shotgunField: "created_by"
         type: ShotgunField.Link
         link: user
     }
 
     ShotgunField {
-        name: "updated_by"
+        id: updatedByField
+        name: "updatedByField"
         shotgunField: "updated_by"
         type: ShotgunField.Link
         link: user

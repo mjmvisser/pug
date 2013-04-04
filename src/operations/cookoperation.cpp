@@ -71,7 +71,7 @@ void CookOperationAttached::run()
                 emit cookAtIndex(i, context());
             }
         } else {
-            warning() << node() << "has nothing to cook";
+            debug() << node() << "has nothing to cook";
             setStatus(OperationAttached::Finished);
             continueRunning();
         }

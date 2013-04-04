@@ -10,6 +10,7 @@ PugTestCase {
         Util.mkpath(tmpDir + "releasetests/abc/foo/work");
         Util.mkpath(tmpDir + "releasetests/abc/foo/release/main/v001");
         Util.mkpath(tmpDir + "releasetests/abc/foo/release/main/v002");
+        Util.mkpath(tmpDir + "releasetests/abc/foo/release/alt");
         Util.touch(tmpDir + "releasetests/abc/foo/work/bar.txt");
         Util.touch(tmpDir + "releasetests/abc/foo/work/dag.0001.txt");
         Util.touch(tmpDir + "releasetests/abc/foo/work/dag.0002.txt");
@@ -31,6 +32,7 @@ PugTestCase {
         Util.remove(tmpDir + "releasetests/abc/foo/release/main/v003/dag.0002.txt");
         Util.remove(tmpDir + "releasetests/abc/foo/release/main/v003/dag.0003.txt");
         Util.remove(tmpDir + "releasetests/abc/foo/release/main/v003/dag.0004.txt");
+        Util.remove(tmpDir + "releasetests/abc/foo/release/alt/v001/bar.txt");
         Util.rmdir(tmpDir + "releasetests/abc/foo/work");
         Util.rmdir(tmpDir + "releasetests/abc/foo/work");
         Util.rmdir(tmpDir + "releasetests/abc/foo/release/main/v001");
@@ -38,10 +40,14 @@ PugTestCase {
         Util.rmdir(tmpDir + "releasetests/abc/foo/release/main/v003");
         Util.rmdir(tmpDir + "releasetests/abc/foo/release/main/v004");
         Util.rmdir(tmpDir + "releasetests/abc/foo/release/main");
+        Util.rmdir(tmpDir + "releasetests/abc/foo/release/alt/v001");
+        Util.rmdir(tmpDir + "releasetests/abc/foo/release/alt");
         Util.rmdir(tmpDir + "releasetests/abc/foo/release");
         Util.rmdir(tmpDir + "releasetests/abc/foo");
         Util.rmdir(tmpDir + "releasetests/abc");
         Util.rmdir(tmpDir + "releasetests");
+        updateSpy.clear();
+        releaseSpy.clear();
     }
 
     Root {
@@ -63,7 +69,8 @@ PugTestCase {
             Field { name: "BAR" },
             Field { name: "DAG" },
             FrameSpecField { name: "FRAME" },
-            Field { name: "VERSION"; type: Field.Integer; width: 3 }
+            Field { name: "VERSION"; type: Field.Integer; width: 3 },
+            Field { name: "VARIATION" }
         ]
         
         Folder {
@@ -81,7 +88,7 @@ PugTestCase {
             Folder {
                 id: releaseBranch
                 name: "releaseBranch"
-                pattern: "release/main/v{VERSION}/"
+                pattern: "release/{VARIATION}/v{VERSION}/"
                 ReleaseOperation.versionField: "VERSION"
                 
                 File {
@@ -137,71 +144,108 @@ PugTestCase {
         compare(releaseBranch.ReleaseOperation.findLastVersion(context), 2);
     }
 
-    // function test_releaseFile() {
-        // var context = {ROOT: tmpDir, FOO: "foo", BAR: "bar"};
-        // var workPath = tmpDir + "releasetests/abc/foo/work/bar.txt";
-        // var releasePath_v003 = tmpDir + "releasetests/abc/foo/release/main/v003/bar.txt";
-        // var releasePath_v004 = tmpDir + "releasetests/abc/foo/release/main/v004/bar.txt";
-//         
-        // var workFileElementsView = Util.elementsView(workFile);
-        // var releaseFileElementsView = Util.elementsView(releaseFile);
-//         
-        // release.run(releaseFile, context);
-        // releaseSpy.wait(500);
-        // compare(release.status, Operation.Finished);
-        // compare(workFile.details.length, 1);
-        // compare(workFileElementsView.elements.length, 1);
-        // compare(workFileElementsView.elements[0].path(), workPath);
-        // compare(workFile.ReleaseOperation.status, Operation.Finished);
-        // compare(releaseFileElementsView.elements.length, 1);
-        // compare(releaseFileElementsView.elements[0].path(), releasePath_v003);
-        // compare(releaseFile.details.length, 1);
-        // verify(Util.exists(releasePath_v003));
-//         
-        // release.run(releaseFile, context);
-        // releaseSpy.wait(500);
-        // compare(release.status, Operation.Finished);
-        // compare(workFile.ReleaseOperation.status, Operation.Finished);
-        // compare(workFile.details.length, 1);
-        // compare(releaseFile.details.length, 1);
-        // compare(releaseFileElementsView.elements.length, 1);
-        // compare(releaseFileElementsView.elements[0].path(), releasePath_v004);
-        // verify(Util.exists(releasePath_v004));
-    // }
-//     
-    // function zeroFill( number, width ) {
-        // width -= number.toString().length;
-        // if ( width > 0 ) {
-            // return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
+    function test_updateRelease() {
+        var context = {ROOT: tmpDir, FOO: "foo", BAR: "bar", VARIATION: "main"};
+        update.run(releaseFile, context);
+        updateSpy.wait(500);
+        compare(update.status, Operation.Finished);
+        compare(releaseBranch.details.length, 2);
+        
+        var context = {ROOT: tmpDir, FOO: "foo", BAR: "bar", VARIATION: "alt"};
+        update.run(releaseFile, context);
+        updateSpy.wait(500);
+        compare(update.status, Operation.Finished);
+        compare(releaseBranch.details.length, 0);
+    }
+
+    function test_releaseFile() {
+        var context = {ROOT: tmpDir, FOO: "foo", BAR: "bar", VARIATION: "main"};
+        var workPath = tmpDir + "releasetests/abc/foo/work/bar.txt";
+        var releasePath_v003 = tmpDir + "releasetests/abc/foo/release/main/v003/bar.txt";
+        var releasePath_v004 = tmpDir + "releasetests/abc/foo/release/main/v004/bar.txt";
+        var altReleasePath_v001 = tmpDir + "releasetests/abc/foo/release/alt/v001/bar.txt";
+        
+        var workFileElementsView = Util.elementsView(workFile);
+        var releaseFileElementsView = Util.elementsView(releaseFile);
+        
+        release.run(releaseFile, context);
+        releaseSpy.wait(500);
+        compare(release.status, Operation.Finished);
+        compare(workFile.details.length, 1);
+        compare(workFileElementsView.elements.length, 1);
+        compare(workFileElementsView.elements[0].path(), workPath);
+        compare(workFile.ReleaseOperation.status, Operation.Finished);
+        compare(releaseFileElementsView.elements.length, 1);
+        compare(releaseFileElementsView.elements[0].path(), releasePath_v003);
+        compare(releaseFile.details.length, 1);
+        verify(Util.exists(releasePath_v003));
+        
+        release.run(releaseFile, context);
+        releaseSpy.wait(500);
+        compare(release.status, Operation.Finished);
+        compare(workFile.ReleaseOperation.status, Operation.Finished);
+        compare(workFile.details.length, 1);
+        compare(releaseFile.details.length, 2);
+        compare(releaseFileElementsView.elements.length, 2);
+        compare(releaseFileElementsView.elements[1].path(), releasePath_v004);
+        verify(Util.exists(releasePath_v004));
+        
+        update.run(releaseFile, context);
+        updateSpy.wait(500);
+        compare(update.status, Operation.Finished);
+        compare(releaseBranch.details.length, 4);
+        
+        context.VARIATION = "alt";
+        release.run(releaseFile, context);
+        releaseSpy.wait(500);
+        compare(release.status, Operation.Finished);
+        compare(workFile.ReleaseOperation.status, Operation.Finished);
+        compare(workFile.details.length, 1);
+        compare(releaseFile.details.length, 1);
+        compare(releaseFileElementsView.elements.length, 1);
+        compare(releaseFileElementsView.elements[0].path(), altReleasePath_v001);
+        verify(Util.exists(releasePath_v004));
+
+        delete context["VARIATION"];
+        update.run(releaseFile, context);
+        updateSpy.wait(500);
+        compare(update.status, Operation.Finished);
+        compare(releaseBranch.details.length, 5);
+    }
+    
+    function zeroFill( number, width ) {
+        width -= number.toString().length;
+        if ( width > 0 ) {
+            return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
+        }
+        return number + ""; // always return a string
+    }
+    
+    function test_releaseSequence() {
+        var context = {ROOT: tmpDir, FOO: "foo", DAG: "dag", VARIATION: "main"};
+        update.run(releaseSeq, context);
+        updateSpy.wait(500);
+
+        var releaseSeqElementsView = Util.elementsView(releaseSeq);
+        
+        release.run(releaseSeq, context);
+        releaseSpy.wait(500);
+        
+        var releasePath = tmpDir + "releasetests/abc/foo/release/main/v003/dag.%04d.txt";
+        
+        // console.log(workSeq.details.length);
+        // for (var i = 0; i < workSeq.details.length; i++) {
+            // console.log("detail " + i + " " + workSeq.details[i].pattern);
         // }
-        // return number + ""; // always return a string
-    // }
-//     
-    // function test_releaseSequence() {
-        // var context = {ROOT: tmpDir, FOO: "foo", DAG: "dag"};
-        // update.run(releaseSeq, context);
-        // updateSpy.wait(500);
-// 
-        // var releaseSeqElementsView = Util.elementsView(releaseSeq);
-//         
-        // release.run(releaseSeq, context);
-        // releaseSpy.wait(500);
-//         
-        // var releasePath = tmpDir + "releasetests/abc/foo/release/main/v003/dag.%04d.txt";
-//         
-        // // console.log(workSeq.details.length);
-        // // for (var i = 0; i < workSeq.details.length; i++) {
-            // // console.log("detail " + i + " " + workSeq.details[i].pattern);
-        // // }
-//         
-        // compare(workSeq.details.length, 1);
-        // compare(releaseSeq.details.length, 1);
-        // compare(releaseSeqElementsView.elements.length, 1);
-        // compare(releaseSeqElementsView.elements[0].pattern, releasePath);
-//         
-        // for (var frame = 1; frame <= 4; frame++) {
-            // var framePath = releasePath.replace("%04d", zeroFill(frame, 4));
-            // verify(Util.exists(framePath), framePath);
-        // }
-    // }
+        
+        compare(workSeq.details.length, 1);
+        compare(releaseSeq.details.length, 1);
+        compare(releaseSeqElementsView.elements.length, 1);
+        compare(releaseSeqElementsView.elements[0].pattern, releasePath);
+        
+        for (var frame = 1; frame <= 4; frame++) {
+            var framePath = releasePath.replace("%04d", zeroFill(frame, 4));
+            verify(Util.exists(framePath), framePath);
+        }
+    }
 }

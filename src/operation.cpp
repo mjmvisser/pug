@@ -7,7 +7,6 @@ OperationAttached::OperationAttached(QObject *parent) :
     m_status(OperationAttached::Invalid),
     m_operation()
 {
-    connect(this, &OperationAttached::finished, this, &OperationAttached::onFinished);
 }
 
 const QVariantMap OperationAttached::context() const
@@ -72,8 +71,6 @@ OperationAttached::Status OperationAttached::inputsStatus() const
             status = inputStatus;
     }
 
-    trace() << node() << ".inputsStatus() ->" << status;
-
     return status;
 }
 
@@ -81,11 +78,12 @@ OperationAttached::Status OperationAttached::childrenStatus() const
 {
     OperationAttached::Status status = OperationAttached::Invalid;
 
-    foreach (QObject * o, node()->children()) {
-        Node *child = qobject_cast<Node *>(o);
-        if (child && child->isActive()) {
-            OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
+    foreach (const QObject* obj, node()->children()) {
+        const Node *child = qobject_cast<const Node *>(obj);
+        if (child && child->isOutput()) {
+            const OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
             OperationAttached::Status childStatus = childAttached->status();
+            trace() << "status of" << child << "is" << childStatus;
             if (childStatus > status)
                 status = childStatus;
         }
@@ -108,9 +106,9 @@ void OperationAttached::resetInputsStatus()
 void OperationAttached::resetChildrenStatus()
 {
     // reset children
-    foreach (QObject * o, node()->children()) {
-        Node *child = qobject_cast<Node *>(o);
-        if (child && child->isActive()) {
+    foreach (QObject* obj, node()->children()) {
+        Node *child = qobject_cast<Node *>(obj);
+        if (child && child->isOutput()) {
             OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
             childAttached->resetAllStatus();
         }
@@ -120,47 +118,85 @@ void OperationAttached::resetChildrenStatus()
 void OperationAttached::resetAllStatus()
 {
     // already reset?
-    if (status() == OperationAttached::None)
+    if (m_status == OperationAttached::None)
         return;
 
     debug() << node() << ".resetAllStatus()";
 
-
-    // reset ourself
-    resetStatus();
-
     resetInputsStatus();
-    resetChildrenStatus();
+
+    switch (node()->dependencyOrder()) {
+    case Node::InputsChildrenSelf:
+        resetChildrenStatus();
+        resetStatus();
+        break;
+
+    case Node::InputsSelfChildren:
+        resetStatus();
+        resetChildrenStatus();
+        break;
+
+    default:
+        Q_ASSERT(false);
+        break;
+    }
 }
 
-void OperationAttached::resetChildren()
+void OperationAttached::resetInputs(QSet<const OperationAttached *>& visited)
 {
-    // reset children
-    foreach (QObject * o, node()->children()) {
-        Node *child = qobject_cast<Node *>(o);
-        if (child) {
+    foreach (Node *input, node()->upstream()) {
+        debug() << "Resetting input" << input;
+        OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
+        inputAttached->resetAll(m_context, visited);
+    }
+}
+
+void OperationAttached::resetChildren(QSet<const OperationAttached *>& visited)
+{
+    foreach (QObject* obj, node()->children()) {
+        Node *child = qobject_cast<Node *>(obj);
+        if (child && child->isOutput()) {
             OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-            childAttached->resetAll(m_context);
+            childAttached->resetAll(m_context, visited);
         }
     }
 }
 
-void OperationAttached::resetAll(const QVariantMap context)
+void OperationAttached::resetAll(const QVariantMap context, QSet<const OperationAttached *>& visited)
 {
+    if (visited.contains(this))
+        return;
+    else
+        visited.insert(this);
+
     trace() << node() << ".resetAll(" << context << ")";
 
-    debug() << "Resetting" << node() << "to" << context;
+    debug() << "Resetting" << node();
 
     setContext(context);
 
-    // reset ourself
-    reset();
+    resetInputs(visited);
 
-    resetChildren();
+    switch (node()->dependencyOrder()) {
+    case Node::InputsChildrenSelf:
+        resetChildren(visited);
+        reset();
+        break;
+
+    case Node::InputsSelfChildren:
+        reset();
+        resetChildren(visited);
+        break;
+
+    default:
+        Q_ASSERT(false);
+        break;
+    }
 }
 
 void OperationAttached::run(Operation *op)
 {
+    debug() << "running" << node() << "with" << op;
     trace() << node() << ".run(" << op << "," << ")";
     Q_ASSERT(op);
 
@@ -183,17 +219,17 @@ void OperationAttached::run(Operation *op)
     //   - None: has not been run since reset
     //   - Idle: run already called by another input
     //   - Finished: finished by another index
-    debug() << node() << "status is" << status();
-    Q_ASSERT(status() == OperationAttached::None);
+    debug() << node() << "status is" << m_status;
+    Q_ASSERT(m_status == OperationAttached::None);
 
-    if (status() == OperationAttached::None) {
+    if (m_status == OperationAttached::None) {
         // we haven't been run yet
         debug() << node() <<  "setting status to" << OperationAttached::Idle;
         setStatus(OperationAttached::Idle);
 
         m_operation = op;
 
-        continueRunning();
+        dispatchInputs();
     }
 }
 
@@ -202,115 +238,92 @@ void OperationAttached::continueRunning()
     trace() << node() << ".continueRunning()";
     Q_ASSERT(m_operation);
 
-    // lock inputs with lockInput flag == true
-    foreach (const Input *in, node()->inputs()) {
-        if (in->lockInput()) {
-            foreach (Node *input, node()->upstream(in)) {
-                input->setLocked(true);
-            }
-        }
-    }
-
-    OperationAttached::Status inStatus = inputsStatus();
-    OperationAttached::Status childStatus = childrenStatus();
-    debug() << node() << "-- inStatus" << inStatus << "status" << status()
-            << "childStatus" << childStatus;
-
-    switch (inStatus) {
-    case OperationAttached::Running:
-        break;
-
-    case OperationAttached::Idle:
-    case OperationAttached::None:
-        // inputs haven't been run yet
-        runInputs();
-        break;
-
-    case OperationAttached::Error:
-        // error in inputs
-        setStatus(OperationAttached::Error);
-        emit finished(this);
-        break;
-
-    case OperationAttached::Invalid:
-    case OperationAttached::Finished:
-        // no inputs or finished
-        switch (status()) {
-        case OperationAttached::Running:
-            // nothing to do
-            break;
-
-        case OperationAttached::None:
-            // should never get here, since our status is set to idle before we're called for the first time
-            Q_ASSERT(false);
-            break;
-
-        case OperationAttached::Idle:
-            debug() << node() << "setting status to" << OperationAttached::Running;
-            setStatus(OperationAttached::Running);
-            debug() << node() << "calling run()";
-            run();
-            break;
-
-        case OperationAttached::Error:
-            debug() << node()
-                    << ".continueRunning, status is error, emitting finished";
-            setStatus(OperationAttached::Error);
-            emit finished(this);
-            break;
-
-        case OperationAttached::Finished:
-            switch (childStatus) {
-            case OperationAttached::Running:
-                // nothing to do;
-                break;
-
-            case OperationAttached::Idle:
-            case OperationAttached::None:
-                runChildren();
-                break;
-
-            case OperationAttached::Error:
-                debug() << node()
-                        << ".continueRunning, childStatus is error, emitting finished";
-                setStatus(OperationAttached::Error);
-                emit finished(this);
-                break;
-
-            case OperationAttached::Invalid:
-            case OperationAttached::Finished:
-                debug() << node() << ".continueRunning, OK, emitting finished";
-                setStatus(OperationAttached::Finished);
-                emit finished(this);
-                break;
-            }
-            break;
-
-        case OperationAttached::Invalid:
-            // we should never get here
-            error() << node() << "status is invalid";
-            Q_ASSERT(false);
-            //setStatus(OperationAttached::Error);
-            //emit finished(this);
-            break;
-        }
-        break;
-    }
-}
-
-void OperationAttached::onFinished(OperationAttached *attached)
-{
-    Q_UNUSED(attached);
-    Q_ASSERT(attached == this);
-
-    // unlock inputs with lockInput flag == true
-    foreach (const Input *in, node()->inputs()) {
-        if (in->lockInput()) {
-            foreach (Node *input, node()->upstream(in)) {
-                input->setLocked(false);
-            }
-        }
-    }
+    dispatchInputs();
+//
+//    OperationAttached::Status inStatus = inputsStatus();
+//    OperationAttached::Status childStatus = childrenStatus();
+//    info() << node() << "inputsStatus:" << inStatus << "status:" << m_status << "childrenStatus:" << childStatus;
+//
+//    switch (inStatus) {
+//    case OperationAttached::Running:
+//        break;
+//
+//    case OperationAttached::Idle:
+//    case OperationAttached::None:
+//        // inputs haven't been run yet
+//        runInputs();
+//        break;
+//
+//    case OperationAttached::Error:
+//        // error in inputs
+//        setStatus(OperationAttached::Error);
+//        emit finished(this);
+//        break;
+//
+//    case OperationAttached::Invalid:
+//    case OperationAttached::Finished:
+//        // no inputs or finished
+//        switch (m_status) {
+//        case OperationAttached::Running:
+//            // nothing to do
+//            break;
+//
+//        case OperationAttached::None:
+//            // should never get here, since our status is set to idle before we're called for the first time
+//            Q_ASSERT(false);
+//            break;
+//
+//        case OperationAttached::Idle:
+//            debug() << node() << "setting status to" << OperationAttached::Running;
+//            setStatus(OperationAttached::Running);
+//            debug() << node() << "calling run()";
+//            run();
+//            break;
+//
+//        case OperationAttached::Error:
+//            debug() << node()
+//                    << ".continueRunning, status is error, emitting finished";
+//            setStatus(OperationAttached::Error);
+//            emit finished(this);
+//            break;
+//
+//        case OperationAttached::Finished:
+//            switch (childStatus) {
+//            case OperationAttached::Running:
+//                // nothing to do;
+//                break;
+//
+//            case OperationAttached::Idle:
+//            case OperationAttached::None:
+//                runChildren();
+//                break;
+//
+//            case OperationAttached::Error:
+//                debug() << node()
+//                        << ".continueRunning, childStatus is error, emitting finished";
+//                setStatus(OperationAttached::Error);
+//                emit finished(this);
+//                break;
+//
+//            case OperationAttached::Invalid:
+//            case OperationAttached::Finished:
+//                debug() << node() << ".continueRunning, OK, emitting finished";
+//                setStatus(OperationAttached::Finished);
+//                emit finished(this);
+//                break;
+//            }
+//            break;
+//
+//        case OperationAttached::Invalid:
+//            // we should never get here
+//            error() << node() << "status is invalid";
+//            Q_ASSERT(false);
+//            //setStatus(OperationAttached::Error);
+//            //emit finished(this);
+//            break;
+//        }
+//        break;
+//    }
 }
 
 void OperationAttached::runInputs()
@@ -318,10 +331,11 @@ void OperationAttached::runInputs()
     trace() << node() << "runInputs()";
     Q_ASSERT(m_operation);
 
+    debug() << node() << "running inputs";
+
     // run inputs and connect their finished signal to ourself
     foreach (Node *input, node()->upstream()) {
-        OperationAttached *inputAttached = input->attachedPropertiesObject
-                < OperationAttached > (operationMetaObject());
+        OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
 
         OperationAttached::Status inputStatus = inputAttached->status();
 
@@ -331,7 +345,6 @@ void OperationAttached::runInputs()
                 || inputStatus == OperationAttached::Idle
                 || inputStatus == OperationAttached::Running)
         {
-            debug() << "connecting" << inputAttached->node() << inputAttached << ".finished to" << node();
             connect(inputAttached, &OperationAttached::finished,
                     this, &OperationAttached::onInputFinished);
         }
@@ -351,14 +364,12 @@ void OperationAttached::runChildren()
     trace() << node() << ".runChildren()";
     Q_ASSERT(m_operation);
 
-    // run children with active flag and connect their finished signal to ourself
-    foreach (QObject * o, node()->children())
-    {
-        Node *child = qobject_cast<Node *>(o);
-        if (child && child->isActive()) {
-            debug() << "got" << child;
-            OperationAttached *childAttached = child->attachedPropertiesObject<
-                    OperationAttached>(operationMetaObject());
+    debug() << node() << "running children";
+
+    foreach (QObject* obj, node()->children()) {
+        Node *child = qobject_cast<Node *>(obj);
+        if (child && child->isOutput()) {
+            OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
 
             OperationAttached::Status childStatus = childAttached->status();
 
@@ -387,8 +398,56 @@ void OperationAttached::onInputFinished(OperationAttached *attached)
     debug() << attached->node() << "finished for" << node();
     disconnect(attached, &OperationAttached::finished,
                this, &OperationAttached::onInputFinished);
-    // continue cooking
-    continueRunning();
+
+    dispatchInputs();
+}
+
+void OperationAttached::dispatchInputs()
+{
+    OperationAttached::Status inStatus = inputsStatus();
+
+    debug() << node() << "inputs status is" << inStatus;
+
+    switch (inStatus) {
+    case OperationAttached::Running:
+        // we'll get triggered again when another input finishes
+        break;
+
+    case OperationAttached::None:
+    case OperationAttached::Idle:
+        // continue running inputs
+        debug() << "Running inputs for" << node();
+        runInputs();
+        break;
+
+    case OperationAttached::Error:
+        // error in inputs
+        setStatus(OperationAttached::Error);
+        emit finished(this);
+        break;
+
+    case OperationAttached::Invalid:
+    case OperationAttached::Finished:
+        // no inputs or finished
+        switch (node()->dependencyOrder()) {
+        case Node::InputsChildrenSelf:
+            dispatchChildren();
+            break;
+
+        case Node::InputsSelfChildren:
+            dispatch();
+            break;
+
+        default:
+            Q_ASSERT(false);
+            break;
+        }
+        break;
+
+    default:
+        Q_ASSERT(false);
+        break;
+    }
 }
 
 void OperationAttached::onChildFinished(OperationAttached *attached)
@@ -396,9 +455,103 @@ void OperationAttached::onChildFinished(OperationAttached *attached)
     trace() << node() << ".onChildFinished(" << attached->node() << ")";
     disconnect(attached, &OperationAttached::finished, this,
             &OperationAttached::onChildFinished);
-    // continue cooking
-    continueRunning();
+
+    dispatchChildren();
 }
+
+void OperationAttached::dispatchChildren()
+{
+    OperationAttached::Status childStatus = childrenStatus();
+
+    debug() << node() << "children status is" << childStatus;
+
+    switch (childStatus) {
+    case OperationAttached::Running:
+        // we'll get run again when the next child finishes
+        break;
+
+    case OperationAttached::Idle:
+    case OperationAttached::None:
+        // continue running children
+        debug() << "Running children for" << node();
+        runChildren();
+        break;
+
+    case OperationAttached::Error:
+        setStatus(OperationAttached::Error);
+        emit finished(this);
+        break;
+
+    case OperationAttached::Invalid:
+    case OperationAttached::Finished:
+        switch (node()->dependencyOrder()) {
+        case Node::InputsChildrenSelf:
+            dispatch();
+            break;
+
+        case Node::InputsSelfChildren:
+            emit finished(this);
+            break;
+
+        default:
+            Q_ASSERT(false);
+            break;
+        }
+        break;
+
+    default:
+        Q_ASSERT(false);
+        break;
+    }
+}
+
+void OperationAttached::dispatch()
+{
+    debug() << node() << "status is" << m_status;
+
+    switch (m_status) {
+    case OperationAttached::Running:
+        break;
+
+    case OperationAttached::None:
+        // should never get here, since our status is set to idle before we're called for the first time
+        Q_ASSERT(false);
+        break;
+
+    case OperationAttached::Idle:
+        debug() << "Running" << node();
+        setStatus(OperationAttached::Running);
+        run();
+        break;
+
+    case OperationAttached::Error:
+        setStatus(OperationAttached::Error);
+        emit finished(this);
+        break;
+
+    case OperationAttached::Invalid:
+    case OperationAttached::Finished:
+        switch (node()->dependencyOrder()) {
+        case Node::InputsChildrenSelf:
+            emit finished(this);
+            break;
+
+        case Node::InputsSelfChildren:
+            dispatchChildren();
+            break;
+
+        default:
+            Q_ASSERT(false);
+            break;
+        }
+        break;
+
+    default:
+        Q_ASSERT(false);
+        break;
+    }
+}
+
 
 void OperationAttached::setContext(const QVariantMap context)
 {
@@ -498,15 +651,20 @@ void Operation::resetAll(Node *node, const QVariantMap context)
 
     m_context = context;
 
-    Root *root = qobject_cast<Root *>(node->rootBranch());
-    Q_ASSERT(root);
+    // reset dependencies
+    foreach (Operation *op, m_dependencies) {
+        op->resetAll(node, context);
+    }
 
-    // reset all operations
-    foreach (Operation *op, root->operations()) {
-        // reset the whole tree
-        OperationAttached *rootAttached = root->attachedPropertiesObject<OperationAttached>(op->metaObject());
-        Q_ASSERT(rootAttached);
-        rootAttached->resetAll(context);
+    QSet<const OperationAttached* > visited;
+
+    OperationAttached *attached = node->attachedPropertiesObject<OperationAttached>(metaObject());
+    Q_ASSERT(attached);
+    attached->resetAll(context, visited);
+
+    // reset triggers
+    foreach (Operation *op, m_triggers) {
+        op->resetAll(node, context);
     }
 }
 
@@ -534,7 +692,7 @@ void Operation::resetAllStatus(Node *node)
 
 void Operation::run(Node *node, const QVariant context, bool reset)
 {
-    info() << "Running" << name() << "on" << node->path();
+    debug() << "Running" << name() << "on" << node->path();
     trace() << ".run(" << node << "," << context << "," << reset << ")";
     if (!node) {
         emit finished(OperationAttached::Error);
@@ -548,7 +706,7 @@ void Operation::run(Node *node, const QVariant context, bool reset)
     // reset all reachable OperationAttached statuses
     resetAllStatus(node);
 
-    Q_ASSERT(status() == OperationAttached::None);
+    Q_ASSERT(m_status == OperationAttached::None);
 
     // onward!
     startRunning(node);
@@ -558,7 +716,7 @@ void Operation::startRunning(Node *node)
 {
     trace() << ".startRunning(" << node << ")";
     Q_ASSERT(node);
-    Q_ASSERT(status() == OperationAttached::None);
+    Q_ASSERT(m_status == OperationAttached::None);
 
     // stash our running node and context to pass to dependencies and triggers
     m_node = node;

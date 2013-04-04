@@ -28,7 +28,6 @@ TestCase {
         }
         
         Process {
-            logLevel: Log.Trace
             id: cookOnlyProcess
             count: 1
             argv: {

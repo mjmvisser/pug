@@ -80,7 +80,7 @@ void UpdateOperationAttached::run()
                 emit updateAtIndex(i, context());
             }
         } else {
-            warning() << node() << "has nothing to update";
+            warning() << node() << "(parent" << node()->parent<Node>() << ") has nothing to update";
             setStatus(OperationAttached::Finished);
             continueRunning();
         }
@@ -95,6 +95,7 @@ void UpdateOperationAttached::onUpdateFinished(int s)
 {
     trace() << node() << ".onUpdateFinished(" << static_cast<OperationAttached::Status>(s) << ")";
     Q_ASSERT(operation());
+    Q_ASSERT(status() == OperationAttached::Running);
     setStatus(static_cast<OperationAttached::Status>(s));
 
     info() << "UpdateFinished" << node() << "with status" << status();

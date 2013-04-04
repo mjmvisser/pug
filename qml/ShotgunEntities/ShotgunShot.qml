@@ -1,12 +1,21 @@
 import Pug 1.0
 
 ShotgunEntity {
+    id: shotEntity
+    name: "shotEntity"
     shotgunEntity: "Shot"
-
-    property ShotgunEntity project
-    property ShotgunEntity scene: null
-    property ShotgunEntity sequence: null
+    shotgunFields: [
+        codeField,
+        sceneField,
+        sequenceField,
+        projectField,
+        headInField,
+        tailOutField
+    ]
     
+    property Node project
+    property Node scene: null
+    property Node sequence: null
     
     inputs: [
         Input { name: "project" },
@@ -14,13 +23,19 @@ ShotgunEntity {
         Input { name: "sequence" }
     ]
     
+    output: true
+
     ShotgunField {
+        id: codeField
         name: "code"
         shotgunField: "code"
+        required: true
         field: "SHOT"
+        source: shotEntity.parent
     }
     
     ShotgunField {
+        id: sceneField
         name: "sg_scene"
         shotgunField: "sg_scene"
         type: ShotgunField.Link
@@ -28,6 +43,7 @@ ShotgunEntity {
     }
     
     ShotgunField {
+        id: sequenceField
         name: "sg_sequence"
         shotgunField: "sg_sequence"
         type: ShotgunField.Link
@@ -35,21 +51,27 @@ ShotgunEntity {
     }
     
     ShotgunField {
+        id: projectField
         name: "project"
         shotgunField: "project"
+        required: true
         type: ShotgunField.Link
         link: project
     }
     
     ShotgunField {
+        id: headInField
         name: "sg_head_in"
         shotgunField: "sg_head_in"
         type: ShotgunField.Number
+        source: shotEntity.parent
     }
     
     ShotgunField {
+        id: tailOutField
         name: "sg_tail_out"
         shotgunField: "sg_tail_out"
         type: ShotgunField.Number
+        source: shotEntity.parent
     }
 }

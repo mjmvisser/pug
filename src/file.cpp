@@ -13,18 +13,25 @@
 #include "elementview.h"
 #include "frameview.h"
 #include "filepattern.h"
+#include "releaseoperation.h"
 
 File::File(QObject *parent) :
     Branch(parent),
     m_input(),
     m_linkType(File::Hard),
-    m_frames(0)
+    m_frames(0),
+    m_queue(new FileOpQueue(this))
 {
     setExactMatch(true);
 
     // update -> onUpdate
     connect(this, &File::update, this, &File::onUpdate);
     connect(this, &File::cookAtIndex, this, &File::onCookAtIndex);
+
+    // release connections
+    connect(this, &File::release, this, &File::onRelease);
+    connect(m_queue, &FileOpQueue::finished, this, &File::onFileOpQueueFinished);
+    connect(m_queue, &FileOpQueue::error, this, &File::onFileOpQueueError);
 
     Input *input = addInput(this, "input");
     input->setDependency(Input::Frame);
@@ -92,7 +99,7 @@ void File::onUpdate(const QVariant context)
 
     OperationAttached::Status status = OperationAttached::Finished;
 
-    if (m_input && !isLocked()) {
+    if (m_input) {
         setCount(m_input->count());
 
         debug() << "input count is" << m_input->count();
@@ -147,33 +154,29 @@ void File::onUpdate(const QVariant context)
 
         setCount(matches.size());
 
-        debug() << "matched" << matches.count() << "patterns";
+        info() << "matched" << matches.count() << "patterns";
 
         if (matches.size() > 0) {
             int index = 0;
             QMapIterator<QString, QSet<QFileInfo> > i(matches);
             while (i.hasNext()) {
                 i.next();
-                ElementView *element = elementsView->elementAt(index);
-                element->setPattern(i.key());
 
-                if (m_frames) {
-                    FramePattern fp(m_frames->list());
-                    element->scan(i.value().toList(), fp);
-                } else {
-                    element->scan(i.value().toList());
+                if (i.value().toList().length() > 0) {
+                    ElementView *element = elementsView->elementAt(index);
+                    element->setPattern(i.key());
+
+                    if (m_frames) {
+                        FramePattern fp(m_frames->list());
+                        element->scan(i.value().toList(), fp);
+                    } else {
+                        element->scan(i.value().toList());
+                    }
+
+                    const QVariantMap elementContext = parse(i.key()).toMap();
+
+                    setContext(index, mergeContexts(context.toMap(), elementContext));
                 }
-
-                QStringList files;
-                foreach (const QFileInfo info, i.value()) {
-                    files << info.filePath();
-                }
-
-                debug() << "matched files" << files;
-
-                const QVariantMap elementContext = parse(i.key()).toMap();
-
-                setContext(index, mergeContexts(context.toMap(), elementContext));
 
                 index++;
             }
@@ -187,7 +190,7 @@ void File::onCookAtIndex(int index, const QVariant context)
 {
     trace() << ".onCookAtIndex(" << index << "," << context << ")";
 
-    if (m_input && !isLocked()) {
+    if (m_input) {
         setCount(m_input->count());
 
         QScopedPointer<ElementsView> inputElementsView(new ElementsView(m_input));
@@ -316,4 +319,121 @@ bool File::makeLink(const QString &src, const QString &dest) const
     }
 
     return success;
+}
+
+void File::onRelease(const QVariant context)
+{
+    trace() << ".onRelease(" << context << ")";
+
+    ReleaseOperationAttached *attached = attachedPropertiesObject<ReleaseOperationAttached>(&ReleaseOperation::staticMetaObject);
+
+    if (attached->source()) {
+        Q_ASSERT(context.toMap().contains("VERSION"));
+
+        OperationAttached::Status status = OperationAttached::Running;
+
+        m_queue->setSudo(attached->sudo());
+
+        QScopedPointer<ElementsView> elementsView(new ElementsView(this));
+        QScopedPointer<ElementsView> sourceElementsView(new ElementsView(attached->source()));
+
+        int index = elementsView->elementCount();
+        setCount(index + sourceElementsView->elementCount());
+
+        for (int sourceIndex = 0; sourceIndex < sourceElementsView->elementCount(); sourceIndex++) {
+            ElementView *sourceElement = sourceElementsView->elementAt(sourceIndex);
+            ElementView *element = elementsView->elementAt(index);
+
+            QVariantMap destContext = mergeContexts(context.toMap(),
+                    attached->source()->details().property(index).property("context").toVariant().toMap());
+
+            FilePattern srcPattern = FilePattern(sourceElement->pattern());
+            FilePattern destPattern = FilePattern(map(destContext));
+
+            element->setPattern(destPattern.pattern());
+            setContext(index, destContext);
+
+            if (srcPattern.isSequence()) {
+                if (destPattern.isSequence()) {
+                    // source and destination are both sequences
+                    if (!frames() || sourceElement->frameList() == frames()->list()) {
+                        element->setFrameCount(element->frameCount());
+
+                        for (int frameIndex = 0; frameIndex < sourceElement->frameCount(); frameIndex++) {
+                            int frame = sourceElement->frameAt(frameIndex)->frame();
+
+                            const QString srcPath = srcPattern.path(frame);
+                            const QString destPath = destPattern.path(frame);
+
+                            releaseFile(srcPath, destPath, attached->mode());
+                        }
+                    } else {
+                        error() << "dest frames [" << frames()->list() << "] doesn't match source element [" << sourceElement->frameList() << "]";
+                        status = OperationAttached::Error;
+                    }
+                } else {
+                    error() << "source is a sequence, but dest is not";
+                    status = OperationAttached::Error;
+                    break;
+                }
+            } else {
+                if (destPattern.isSequence()) {
+                    error() << "dest is a sequence, but source is not";
+                    status = OperationAttached::Error;
+                    break;
+                } else {
+                    const QString srcPath = srcPattern.path();
+                    const QString destPath = destPattern.path();
+
+                    releaseFile(srcPath, destPath, attached->mode());
+                }
+            }
+
+            index++;
+        }
+
+        if (status == OperationAttached::Error)
+            emit releaseFinished(status);
+        else
+            m_queue->run();
+
+    } else {
+        emit releaseFinished(OperationAttached::Finished);
+    }
+}
+
+void File::releaseFile(const QString srcPath, const QString destPath, int mode) const
+{
+    trace() << ".releaseFile(" << srcPath << "," << destPath << ")";
+    if (!destPath.isEmpty()) {
+        QFileInfo destInfo(destPath);
+        if (!destInfo.absoluteDir().exists())
+            m_queue->mkdir(destInfo.absoluteDir().absolutePath());
+
+        switch (mode) {
+        case ReleaseOperationAttached::Copy:
+            m_queue->copy(srcPath, destPath);
+            break;
+
+        case ReleaseOperationAttached::Move:
+            m_queue->move(srcPath, destPath);
+            break;
+
+        default:
+            error() << this << "unknown file mode " << mode;
+            break;
+        }
+    }
+}
+
+void File::onFileOpQueueFinished()
+{
+    trace() << ".onFileOpQueueFinished()";
+    emit releaseFinished(OperationAttached::Finished);
+}
+
+void File::onFileOpQueueError()
+{
+    trace() << ".onFileOpQueueError()";
+    emit releaseFinished(OperationAttached::Error);
 }
