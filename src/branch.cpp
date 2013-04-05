@@ -287,7 +287,7 @@ static const QString escapeSpecialCharacters(const QString r)
 
 const QVariant Branch::match(const QString pattern, const QString path, bool exact, bool partial) const
 {
-    //trace() << ".match(" << pattern << "," << path << "," << exact << ")";
+    trace() << ".match(" << pattern << "," << path << "," << exact << ")";
     static const QRegularExpression replaceFieldsRegexp("\\{(\\w+)\\}");
 
     const QString escapedPattern = escapeSpecialCharacters(pattern);
@@ -336,10 +336,14 @@ const QVariant Branch::match(const QString pattern, const QString path, bool exa
         matchRegexpStr += escapedPattern.mid(lastEnd);
     }
 
+    // replace %04d with \d{4}
+    static const QRegularExpression replaceFrameSpecRegexp("%0(\\d+)d");
+    matchRegexpStr.replace(replaceFrameSpecRegexp, "\\d{\\1}");
+
     if (exact)
         matchRegexpStr += "$";
 
-    //info() << ".match" << path << "with" << matchRegexpStr;
+    debug() << ".match" << path << "with" << matchRegexpStr;
 
     QRegularExpression matchRegexp(matchRegexpStr);
 
@@ -348,7 +352,7 @@ const QVariant Branch::match(const QString pattern, const QString path, bool exa
     QRegularExpressionMatch match = matchRegexp.match(path, 0,
             partial ? QRegularExpression::PartialPreferCompleteMatch : QRegularExpression::NormalMatch);
 
-    //info() << "result:" << match;
+    debug() << "result:" << match;
 
     if (match.hasMatch() || match.hasPartialMatch()) {
         QVariantMap context;
@@ -375,7 +379,7 @@ const QVariant Branch::match(const QString pattern, const QString path, bool exa
                 return QVariant();
         }
 
-        //debug() << "result:" << context;
+        debug() << "result:" << context;
 
         return context;
     }
@@ -435,7 +439,7 @@ const QString Branch::formatFields(const QString pattern, const QVariant data) c
 
 const QVariant Branch::parse(const QString path, bool partial) const
 {
-    //trace() << ".parse(" << path << ")";
+    trace() << ".parse(" << path << ")";
     const Branch *rootBranch = 0;
     if (m_pattern.length() == 0 || m_pattern[0] != '/') {
         // not absolute;
@@ -451,12 +455,12 @@ const QVariant Branch::parse(const QString path, bool partial) const
             if (fields.contains("_")) {
                 QString remainder = fields.take("_").toString();
 
-                //debug() << ".parse got" << fields << remainder;
+                debug() << ".parse got" << fields << remainder;
 
                 // match the remainder
                 const QVariant ourData = match(m_pattern, remainder, m_exactMatchFlag, partial);
 
-                //debug() << ".parse matched" << ourData;
+                debug() << ".parse matched" << ourData;
 
                 if (ourData.isValid()) {
                     const QVariantMap ourFields = ourData.toMap();
