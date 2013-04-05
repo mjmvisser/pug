@@ -263,6 +263,22 @@ void ElementView::scan(const QFileInfoList &entries, const FramePattern &framePa
     }
 }
 
+void ElementView::scan()
+{
+    trace() << ".scan()";
+
+    FilePattern filePattern(pattern());
+
+    QDir parentDir = QDir(filePattern.directory());
+    Q_ASSERT(!parentDir.isRoot());
+
+    info() << "matching patterns in" << parentDir << "with" << filePattern.pattern();
+
+    QFileInfoList entries = parentDir.entryInfoList();
+
+    scan(entries);
+}
+
 const QList<int> ElementView::frameList() const
 {
     QList<int> result;

@@ -50,6 +50,7 @@ public:
     int frameCount() const;
     void setFrameCount(int);
 
+    void scan();
     void scan(const QFileInfoList &);
     void scan(const QFileInfoList &, const FramePattern &);
 
