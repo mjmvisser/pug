@@ -6,7 +6,7 @@ ElementsView::ElementsView(Node *node, QObject *parent) :
     DetailsView(node, parent)
 {
     Q_ASSERT(node);
-    connect(node, &Node::countChanged, this, &ElementsView::sync);
+    connect(node, &Node::detailsChanged, this, &ElementsView::sync);
     connect(node, &Node::detailsChanged, this, &ElementsView::elementsChanged);
     sync();
 }

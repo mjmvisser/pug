@@ -27,6 +27,7 @@ ElementView::ElementView(Node *node, int index, QObject *parent) :
     Q_ASSERT(index >= 0);
     Q_ASSERT(node);
 
+    connect(node, &Node::detailsChanged, this, &ElementView::sync);
     connect(node, &Node::detailsChanged, this, &ElementView::elementChanged);
     sync();
 }
@@ -56,9 +57,8 @@ QQmlListProperty<FrameView> ElementView::frames_()
                                        ElementView::frame_at);
 }
 
-void ElementView::setFrames(const QQmlListReference &ref)
+void ElementView::setFrames(ElementView *that)
 {
-    ElementView *that = static_cast<ElementView *>(ref.object());
     setFrameCount(that->frameCount());
     for (int i = 0; i < frameCount(); i++) {
         m_frames[i]->setFrame(that->m_frames[i]->frame());
@@ -268,7 +268,6 @@ const QList<int> ElementView::frameList() const
     QList<int> result;
     for (int i = 0; i < m_frames.length(); i++)
         result.append(m_frames[i]->frame());
-    qSort(result);
     return result;
 }
 
