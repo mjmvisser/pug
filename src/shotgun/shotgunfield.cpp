@@ -114,7 +114,6 @@ void ShotgunField::links_append(QQmlListProperty<Node> *prop, Node *e)
 {
     ShotgunField *that = static_cast<ShotgunField *>(prop->object);
 
-    e->setParent(that);
     that->m_links.append(e);
     emit that->linksChanged();
 }
@@ -138,9 +137,7 @@ Node *ShotgunField::link_at(QQmlListProperty<Node> *prop, int i)
 void ShotgunField::links_clear(QQmlListProperty<Node> *prop)
 {
     ShotgunField *that = static_cast<ShotgunField *>(prop->object);
-    foreach (Node *e, that->m_links) {
-        e->setParent(0);
-    }
+    that->m_links.clear();
     emit that->linksChanged();
 }
 
