@@ -54,8 +54,7 @@ void UpdateOperationAttached::onUpdateFinished(int s)
     Q_ASSERT(status() == OperationAttached::Running);
     setStatus(static_cast<OperationAttached::Status>(s));
 
-    info() << "UpdateFinished" << node() << "with status" << status();
-    info() << "Result is" << node()->details().toVariant();
+    info() << "Updated" << node() << "with status" << status() << "details" << QJsonDocument::fromVariant(node()->details().toVariant()).toJson();
 
     continueRunning();
 }

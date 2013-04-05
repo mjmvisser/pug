@@ -44,8 +44,7 @@ void CookOperationAttached::onCookFinished(int s)
     trace() << node() << ".onCookFinished(" << static_cast<OperationAttached::Status>(s) << ")";
     setStatus(static_cast<OperationAttached::Status>(s));
 
-    info() << "CookFinished" << node() << "with status" << status();
-    info() << "Result is" << node()->details().toVariant();
+    info() << "Cooked" << node() << "with status" << status() << "details" << QJsonDocument::fromVariant(node()->details().toVariant()).toJson();
 
     continueRunning();
 }

@@ -215,8 +215,7 @@ void ReleaseOperationAttached::onReleaseFinished(int s)
     Q_ASSERT(operation());
     setStatus(static_cast<OperationAttached::Status>(s));
 
-    info() << "ReleaseFinished" << node() << "with status" << status();
-    info() << "Result is" << node()->details().toVariant();
+    info() << "Released" << node() << "with status" << status() << "details" << QJsonDocument::fromVariant(node()->details().toVariant()).toJson();
 
     continueRunning();
 }
