@@ -491,6 +491,8 @@ const QVariant ShotgunField::buildLinkValue(int index, const QVariantMap context
         if (linkedEntity) {
             const QVariantMap sg_entity = linkedEntity->details().property(index).property("entity").toVariant().toMap();
 
+            debug() << "building link value at index" << index << "with entity" << sg_entity;
+
             if (sg_entity.contains("id") && sg_entity.contains("type")) {
                 QVariantMap link;
                 link["type"] = sg_entity["type"];
@@ -525,6 +527,8 @@ const QVariant ShotgunField::buildMultiLinkValue(int index, const QVariantMap co
     for (int i = 0; i < m_links.length(); i++) {
         if (m_links[i]) {
             const QVariantMap sg_entity = link()->details().property(index).property("entity").toVariant().toMap();
+
+            debug() << "building multilink value at index" << index << "with entity" << sg_entity;
 
             if (sg_entity.contains("id") && sg_entity.contains("type")) {
                 QVariantMap link;
