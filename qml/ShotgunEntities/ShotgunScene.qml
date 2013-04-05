@@ -13,7 +13,9 @@ ShotgunEntity {
 
     inputs: Input { name: "project" }
 
-    output: true
+    output: (action === ShotgunEntity.Create)
+
+    count: parent.count
 
     ShotgunField {
         id: codeField

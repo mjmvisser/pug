@@ -23,7 +23,9 @@ ShotgunEntity {
         Input { name: "sequence" }
     ]
     
-    output: true
+    output: (action === ShotgunEntity.Create)
+
+    count: parent.count
 
     ShotgunField {
         id: codeField

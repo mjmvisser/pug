@@ -28,7 +28,9 @@ ShotgunEntity {
         Input { name: "user" }
     ]
 
-    output: true
+    output: (action === ShotgunEntity.Create)
+
+    count: parent.count
 
     params: [
         Param { name: "action" }

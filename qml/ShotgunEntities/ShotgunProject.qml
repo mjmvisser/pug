@@ -8,7 +8,9 @@ ShotgunEntity {
         nameField
     ]    
 
-    output: true
+    output: (action === ShotgunEntity.Create)
+
+    count: parent.count
 
     ShotgunField {
         id: nameField

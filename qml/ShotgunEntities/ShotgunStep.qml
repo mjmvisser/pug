@@ -8,7 +8,9 @@ ShotgunEntity {
         codeField
     ]
     
-    output: true
+    output: (action === ShotgunEntity.Create)
+
+    count: parent.count
 
     property string step
 
