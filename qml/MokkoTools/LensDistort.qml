@@ -35,11 +35,17 @@ Process {
 
     cookable: true
 
-    argv: [Qt.resolvedUrl("scripts/lensdistort").replace("file://", ""),
-           "--nukeNodePath", nukeScript.details[0].element.pattern,
-           "--inputPath", input.details[index].element.pattern,
-           "--outputFormat", format + (mode == "undistort" ? "_und" : ""),
-           "--outputPath", __outputPath(index)]
+    argv: try { 
+            [Qt.resolvedUrl("scripts/lensdistort").replace("file://", ""),
+             "--nukeNodePath", nukeScript.details[0].element.pattern,
+             "--inputPath", input.details[index].element.pattern,
+             "--outputFormat", format + (mode == "undistort" ? "_und" : ""),
+             "--outputPath", __outputPath(index),
+             "--frameStart", inputElementsView.elements[index].frameStart(),
+             "--frameEnd", inputElementsView.elements[index].frameEnd()]
+          } catch (e) {
+              []
+          } 
     
     function __setDetails(index) {
         elementsView.elements[index].pattern = __outputPath(index, details[index].context);

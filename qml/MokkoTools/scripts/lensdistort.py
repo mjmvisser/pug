@@ -10,10 +10,12 @@ parser.add_option("", "--nukeNodePath", action="store")
 parser.add_option("", "--inputPath", action="store")
 parser.add_option("", "--outputFormat", action="store")
 parser.add_option("", "--outputPath", action="store")
+parser.add_option("", "--frameStart", type="int", action="store")
+parser.add_option("", "--frameEnd", type="int", action="store")
 
 options, args = parser.parse_args()
 
-for required_attr in ["inputPath", "outputFormat", "outputPath"]:
+for required_attr in ["inputPath", "outputFormat", "outputPath", "frameStart", "frameEnd"]:
     if not getattr(options, required_attr):
         parser.error("No --%s specified." % required_attr)
 
@@ -21,6 +23,8 @@ input_path = options.inputPath
 nuke_node_path = options.nukeNodePath
 output_format = options.outputFormat
 output_path = options.outputPath
+first = options.frameStart
+last = options.frameEnd
 
 if nuke_node_path is not None and not output_format.endswith("_und"):
     parser.error("nukeNodePath specified, but outputFormat is not _und")
@@ -30,16 +34,6 @@ elif not nuke_node_path and output_format.endswith("_und"):
 # use Nuke-style instead of hashes
 input_path = nukescripts.replaceHashes(input_path)
 input_path = os.path.abspath(input_path)
-
-# (*&#(*&@# Nuke doesn't detect the frame range, so we have to do it ourselves
-first = 1
-last = 1
-for f in range(0, 2000):
-    if os.path.exists(input_path % f):
-        if f < first:
-            first = f
-        if f > last:
-            last = f
 
 if nuke_node_path:
     # read undistort node

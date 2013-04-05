@@ -7,4 +7,5 @@ else
 fi
 
 # run the script through Nuke
-exec $nuke -t $0.py "$@"
+# nuke seems to eat the last arg
+exec $nuke -t $0.py "$@" ""
