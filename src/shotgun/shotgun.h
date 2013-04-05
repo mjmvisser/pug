@@ -66,7 +66,7 @@ public:
     Q_INVOKABLE ShotgunReply *find(const QString entityType,
             const QVariantList filters,
             const QStringList fields,
-            const QStringList order = QStringList(),
+            const QVariantList order = QVariantList(),
             const QString filterOperator = "all",
             int limit = 0,
             bool retiredOnly = false,
@@ -77,7 +77,7 @@ public:
     Q_INVOKABLE ShotgunReply *findOne(const QString entityType,
             const QVariantList filters,
             const QStringList fields,
-            const QStringList order = QStringList(),
+            const QVariantList order = QVariantList(),
             const QString filterOperator="all",
             bool retiredOnly = false);
     Q_INVOKABLE ShotgunReply *findOne(const QString entityType,
@@ -150,7 +150,7 @@ private:
     const QVariantList mapToList(const QVariantMap map, const QString keyName="field_name", const QString valueName="value") const;
     const QVariantMap translateFilters(const QVariantList filters, const QString filterOperator) const;
     const QVariantMap constructReadParameters(const QString entityType, const QStringList fields,
-            const QVariantMap filters, bool retiredOnly, const QStringList order) const;
+            const QVariantMap filters, bool retiredOnly, const QVariantList order) const;
     bool buildPayload(QJsonObject& payload, const QString method, const QJsonDocument params, bool includeScriptName=true) const;
     const QVariant transformOutbound(const QVariant params) const;
     ShotgunReply *callRpc(const QString method, const QVariant params, bool includeScriptName=true, ShotgunReply *reply=0);

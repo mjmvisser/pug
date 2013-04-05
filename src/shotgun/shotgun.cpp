@@ -172,7 +172,7 @@ const QVariantMap Shotgun::translateFilters(const QVariantList filters, const QS
 }
 
 const QVariantMap Shotgun::constructReadParameters(const QString entityType, const QStringList fields,
-        const QVariantMap filters, bool retiredOnly, const QStringList order) const
+        const QVariantMap filters, bool retiredOnly, const QVariantList order) const
 {
     trace() << ".constructReadParameters(" << entityType << "," << fields << "," << filters << "," << retiredOnly << "," << order << ")";
     QVariantMap params;
@@ -215,7 +215,7 @@ const QVariantMap Shotgun::constructReadParameters(const QString entityType, con
 ShotgunReply *Shotgun::find(const QString entityType,
         const QVariantList filters,
         const QStringList fields,
-        const QStringList order,
+        const QVariantList order,
         const QString filterOperator,
         int limit,
         bool retiredOnly,
@@ -268,7 +268,7 @@ ShotgunReply *Shotgun::find(const QString entityType,
 ShotgunReply *Shotgun::findOne(const QString entityType,
         const QVariantList filters,
         const QStringList fields,
-        const QStringList order,
+        const QVariantList order,
         const QString filterOperator,
         bool retiredOnly)
 {
