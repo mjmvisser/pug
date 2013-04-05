@@ -182,6 +182,16 @@ PugTestCase {
                     pattern: "{FILENAME}.{EXT}"
                 }
             }
+            
+            LatestShotgunPublishEvent {
+                id: sg_latestReleaseFile
+                name: "sg_latestReleaseFile"
+                project: sg_project
+                link: sg_delivery
+                step: sg_deliveryStep
+                code: "from_client_{TRANSFER}_v{VERSION}"
+            }
+            
         }
         
         Folder {
@@ -256,6 +266,15 @@ PugTestCase {
                     }
                 }
             }
+
+            LatestShotgunPublishEvent {
+                id: latestReleaseSeq
+                name: "latestReleaseSeq"
+                project: sg_project
+                link: sg_shot
+                step: sg_compStep
+                code: "{SEQUENCE}_{SHOT}_comp_v{VERSION}"
+            }
             
             Folder {
                 id: compWork
@@ -284,7 +303,7 @@ PugTestCase {
         signalName: "finished"
     }
 
-    function skip_test_1updateFile() {
+    function test_1updateFile() {
         // TODO: why does this fail if it runs AFTER test_releaseFile?
         var context = {PROJECT: "888_test",
                    TRANSFER: "20121018",
@@ -363,6 +382,14 @@ PugTestCase {
         compare(workFile.details[0].element.pattern, workPath);
         compare(releaseFile.details.length, 1);
         compare(releaseFile.details[0].element.pattern, releasePath);
+
+        context.VERSION = 1;
+        updateSpy.clear();
+        update.run(sg_latestReleaseFile, context);
+        updateSpy.wait(10000);
+        
+        compare(sg_latestReleaseFile.UpdateOperation.status, Operation.Finished);
+        compare(sg_latestReleaseFile.details.length, 1);
     }
 
     function test_releaseSeq() {
@@ -408,6 +435,17 @@ PugTestCase {
         
         compare(sg_compRelease.details.length, 1);
         compare(sg_releaseSeqFile.details.length, 1);
+        
+        context.VERSION = 1;
+        updateSpy.clear();
+        update.run(latestReleaseSeq, context);
+        updateSpy.wait(10000);
+        
+        compare(latestReleaseSeq.UpdateOperation.status, Operation.Finished);
+        compare(latestReleaseSeq.details.length, 1);
+        verify(latestReleaseSeq.details[0].element.frames);
+        compare(latestReleaseSeq.details[0].element.frames.length, 100);
+        
     }
     
     function skip_test_pullFields() {

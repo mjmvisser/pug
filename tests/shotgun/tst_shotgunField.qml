@@ -63,6 +63,7 @@ PugTestCase {
                 name: "sg_project"
                 shotgunEntity: "Project"
                 shotgunFields: sg_projectName
+                count: parent.count
             }
         }
             
@@ -87,6 +88,8 @@ PugTestCase {
                     sg_stringValueField
                 ]
                 
+                count: parent.count
+
                 ShotgunField {
                     id: sg_patternField
                     name: "sg_patternField"
@@ -113,40 +116,39 @@ PugTestCase {
                     link: sg_project
                 }
             
-            ShotgunField {
-                id: sg_pathField
-                name: "sg_pathField"
-                shotgunField: "sg_path"
-                type: ShotgunField.Path
-                source: file
-            }
-            
-            ShotgunField {
-                id: sg_numberField
-                name: "sg_numberField"
-                shotgunField: "sg_version"
-                type: ShotgunField.Number
-                field: "NUMBER"
-                source: file
-            }
-            
-            ShotgunField {
-                id: sg_stringField
-                name: "sg_stringField"
-                shotgunField: "sg_variation"
-                type: ShotgunField.String
-                field: "STRING"
-                source: file
-            }
-            
-            ShotgunField {
-                id: sg_stringValueField
-                name: "sg_stringValueField"
-                shotgunField: "sg_layer"
-                type: ShotgunField.String
-                value: "foo"
-            }
+                ShotgunField {
+                    id: sg_pathField
+                    name: "sg_pathField"
+                    shotgunField: "sg_path"
+                    type: ShotgunField.Path
+                    source: file
+                }
                 
+                ShotgunField {
+                    id: sg_numberField
+                    name: "sg_numberField"
+                    shotgunField: "sg_version"
+                    type: ShotgunField.Number
+                    field: "NUMBER"
+                    source: file
+                }
+                
+                ShotgunField {
+                    id: sg_stringField
+                    name: "sg_stringField"
+                    shotgunField: "sg_variation"
+                    type: ShotgunField.String
+                    field: "STRING"
+                    source: file
+                }
+                
+                ShotgunField {
+                    id: sg_stringValueField
+                    name: "sg_stringValueField"
+                    shotgunField: "sg_layer"
+                    type: ShotgunField.String
+                    value: "foo"
+                }
             }
         }
     }
