@@ -551,18 +551,28 @@ const QMap<QString, QSet<QFileInfo> > Branch::listMatchingPatterns(const QVarian
 
         FilePattern fp(path);
         //debug() << "========================================adding empty match" << fp.pattern();
-        result.insert(fp.pattern(), QSet<QFileInfo>());
 
-        QDir parentDir = QDir(fp.directory());
-        if (!m_exactMatchFlag)
-            parentDir.cdUp();
+        QFileInfo pathInfo(fp.pattern());
 
-        result = listMatchingPatternsHelper(parentDir, context, result);
+        if (pathInfo.exists()) {
+            // optimization so we don't scan unnecessarily
+            QSet<QFileInfo> infoSet;
+            infoSet << pathInfo;
+            result.insert(fp.pattern(), infoSet);
 
-        QMapIterator<QString, QSet<QFileInfo> > j(result);
-        while (j.hasNext()) {
-            j.next();
-            debug() << "got:" << j.key() << j.value().count();
+        } else {
+            result.insert(fp.pattern(), QSet<QFileInfo>());
+            QDir parentDir = QDir(fp.directory());
+            if (!m_exactMatchFlag)
+                parentDir.cdUp();
+
+            result = listMatchingPatternsHelper(parentDir, context, result);
+
+            QMapIterator<QString, QSet<QFileInfo> > j(result);
+            while (j.hasNext()) {
+                j.next();
+                debug() << "got:" << j.key() << j.value().count();
+            }
         }
 
     } else if (root()) {
