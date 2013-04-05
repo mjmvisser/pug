@@ -12,8 +12,8 @@ ShotgunEntity {
 
     property string step
 
-     params: [
-        Param { name: "step" },
+    params: [
+        Param { name: "step" }
     ]
    
     ShotgunField {

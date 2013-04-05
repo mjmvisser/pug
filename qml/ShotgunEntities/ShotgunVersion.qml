@@ -43,7 +43,7 @@ ShotgunEntity {
     property string code
 
     params: [
-        Param { name: "code" },
+        Param { name: "code" }
     ]
     
     ShotgunField {

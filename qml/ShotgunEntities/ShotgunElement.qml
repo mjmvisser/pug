@@ -36,8 +36,7 @@ ShotgunEntity {
     //property var sourcePathLink
     
     params: [
-        Param { name: "code" },
-        Param { name: "action" }
+        Param { name: "code" }
     ]
 
     ShotgunField {
