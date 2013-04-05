@@ -6,7 +6,6 @@ ShotgunEntity {
     shotgunEntity: "PublishEvent"
     shotgunFields: [
         projectField,
-        codeField,
         versionField,
         variationField,
         pathField,
@@ -32,12 +31,6 @@ ShotgunEntity {
 
     output: (action === ShotgunEntity.Create)
 
-    property string code 
-
-    params: [
-        Param { name: "code" }
-    ]
-
     ShotgunField {
         id: projectField
         name: "projectField"
@@ -45,16 +38,6 @@ ShotgunEntity {
         required: true
         type: ShotgunField.Link
         link: project
-    }
-
-    ShotgunField {
-        id: codeField
-        name: "codeField"
-        shotgunField: "code"
-        required: true
-        type: ShotgunField.String
-        pattern: code
-        source: publishEventEntity.parent
     }
 
     ShotgunField {
@@ -67,8 +50,6 @@ ShotgunEntity {
         id: variationField
         name: "variationField"
         shotgunField: "sg_variation"
-        field: "VARIATION"
-        source: publishEventEntity.parent
     }
     
     ShotgunField {

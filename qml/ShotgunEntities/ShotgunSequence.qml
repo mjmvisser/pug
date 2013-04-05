@@ -1,9 +1,9 @@
 import Pug 1.0
 
 ShotgunEntity {
-    id: sceneEntity
-    name: "sceneEntity"
-    shotgunEntity: "Scene"
+    id: sequenceEntity
+    name: "sequenceEntity"
+    shotgunEntity: "Sequence"
     shotgunFields: [
         codeField,
         projectField
@@ -22,8 +22,8 @@ ShotgunEntity {
         name: "code"
         shotgunField: "code"
         required: true
-        field: "SCENE"
-        source: sceneEntity.parent
+        field: "SEQUENCE"
+        source: sequenceEntity.parent
     }
     
     ShotgunField {

@@ -14,6 +14,7 @@ ShotgunEntity {
         stepField,
         imageField,
         filmstripField,
+        dependenciesField,
         createdByField,
         updatedByField            
     ]
@@ -24,6 +25,7 @@ ShotgunEntity {
     property Node thumbnail: null
     property Node filmstrip: null
     property Node user
+    property list<Node> dependencies
 
     inputs: [
         Input { name: "project" },
@@ -31,17 +33,22 @@ ShotgunEntity {
         Input { name: "step" },
         Input { name: "thumbnail" },
         Input { name: "filmstrip" },
-        Input { name: "user" }
+        Input { name: "user" },
+        Input { name: "dependencies" }
     ]
 
     output: (action === ShotgunEntity.Create)
 
     count: parent.count
 
-    property string code 
+    property string code
+    property string category
+    property string resolution
 
     params: [
-        Param { name: "code" }
+        Param { name: "code" },
+        Param { name: "category" },
+        Param { name: "resolution" }
     ]
 
     ShotgunField {
@@ -61,6 +68,20 @@ ShotgunEntity {
         type: ShotgunField.String
         pattern: code
         source: publishEventEntity.parent
+    }
+
+    ShotgunField {
+        id: categoryField
+        name: "categoryField"
+        type: ShotgunField.String
+        value: category
+    }
+
+    ShotgunField {
+        id: resolutionField
+        name: "resolutionField"
+        type: ShotgunField.String
+        value: resolution
     }
 
     ShotgunField {
@@ -118,6 +139,14 @@ ShotgunEntity {
         shotgunField: "filmstrip_image"
         type: ShotgunField.Path
         source: filmstrip
+    }
+
+    ShotgunField {
+        id: dependenciesField
+        name: "dependenciesField"
+        shotgunField: "sg_dependencies"
+        type: ShotgunField.MultiLink
+        links: dependencies
     }
 
     ShotgunField {

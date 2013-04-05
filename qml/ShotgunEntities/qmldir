@@ -6,6 +6,7 @@ ShotgunElement 1.0 ShotgunElement.qml
 ShotgunPublishEvent 1.0 ShotgunPublishEvent.qml
 LatestShotgunPublishEvent 1.0 LatestShotgunPublishEvent.qml
 ShotgunScene 1.0 ShotgunScene.qml
+ShotgunSequence 1.0 ShotgunSequence.qml
 ShotgunShot 1.0 ShotgunShot.qml
 ShotgunStep 1.0 ShotgunStep.qml
 ShotgunVersion 1.0 ShotgunVersion.qml
