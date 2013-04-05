@@ -94,6 +94,7 @@ private:
     QVariantList m_filters;
     QVariantList m_order;
     int m_limit;
+    QVariantMap m_context;
 };
 
 

@@ -149,7 +149,9 @@ void ShotgunEntity::onUpdate(const QVariant context)
 
             QVariant f = allFilters();
             if (f.isValid()) {
-                info() << "Shotgun filters are" << QJsonDocument::fromVariant(f).toJson();
+                m_context = context.toMap();
+
+                debug() << "Shotgun filters are" << QJsonDocument::fromVariant(f).toJson();
                 ShotgunReply *reply = Shotgun::staticInstance()->find(shotgunEntityName(), f.toList(), fields(), order(), "all", limit());
 
                 connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onFindFinished);
@@ -179,6 +181,7 @@ void ShotgunEntity::onRelease(const QVariant context)
 
             if (d.toList().length() == 1) {
                 debug() << "request:" << d.toList()[0].toMap();
+                m_context = context.toMap();
                 QVariant di = d.toList()[0];
                 ShotgunReply *reply = Shotgun::staticInstance()->create(shotgunEntityName(), di.toMap(), fields());
                 connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onCreateFinished);
@@ -379,6 +382,7 @@ void ShotgunEntity::onFindFinished(const QVariant results)
 
     int i = 0;
     foreach (const QVariant result, results.toList()) {
+        setContext(i, m_context);
         setDetail(i, "entity", toScriptValue(result.toMap()));
 
         // path fields become elements
