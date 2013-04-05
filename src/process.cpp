@@ -11,11 +11,13 @@
 Process::Process(QObject *parent) :
     Node(parent),
     m_ignoreExitCode(false),
+    m_updatableFlag(false),
+    m_cookableFlag(false),
     m_updatingFlag(false),
     m_cookingFlag(false)
 {
-    connect(this, &Process::updateAtIndex, this, &Process::onUpdateAtIndex);
-    connect(this, &Process::cookAtIndex, this, &Process::onCookAtIndex);
+    connect(this, &Process::update, this, &Process::onUpdate);
+    connect(this, &Process::cook, this, &Process::onCook);
 }
 
 const QStringList Process::argv() const
@@ -74,6 +76,32 @@ void Process::setIgnoreExitCode(bool flag)
     }
 }
 
+bool Process::isUpdatable() const
+{
+    return m_updatableFlag;
+}
+
+void Process::setUpdatable(bool f)
+{
+    if (m_updatableFlag != f) {
+        m_updatableFlag = f;
+        emit updatableChanged(f);
+    }
+}
+
+bool Process::isCookable() const
+{
+    return m_cookableFlag;
+}
+
+void Process::setCookable(bool f)
+{
+    if (m_cookableFlag != f) {
+        m_cookableFlag = f;
+        emit cookableChanged(f);
+    }
+}
+
 bool Process::isUpdating() const
 {
     return m_updatingFlag;
@@ -100,39 +128,41 @@ void Process::setCooking(bool f)
     }
 }
 
-void Process::onUpdateAtIndex(int i, const QVariant context)
+void Process::onUpdate(const QVariant context)
 {
-    trace() << ".onUpdateAtIndex(" << i << "," << context << ")";
-    setUpdating(true);
-    setIndex(i);
-    if (m_argv.isEmpty()) {
-        debug() << "no args, skipping update";
-        setUpdating(false);
-        emit updateAtIndexFinished(i, OperationAttached::Finished);
-        return;
-    }
-
+    trace() << ".onUpdate(" << context << ")";
     Q_ASSERT(!m_cookingFlag);
-    executeAtIndex(i, context);
-}
-
-void Process::onCookAtIndex(int i, const QVariant context)
-{
-    trace() << ".onCookAtIndex(" << i << "," << context << ")";
-    setCooking(true);
-    setIndex(i);
-    if (m_argv.isEmpty()) {
-        debug() << "no args, skipping cook";
-        setCooking(false);
-        emit cookAtIndexFinished(i, OperationAttached::Finished);
-        return;
+    if (m_updatableFlag) {
+        setUpdating(true);
+        m_statuses.clear();
+        for (int index = 0; index < count(); index++) {
+            setIndex(index);
+            executeForIndex(index, context);
+        }
+    } else {
+        debug() << "not updatable, skipping update";
+        emit updateFinished(OperationAttached::Finished);
     }
-
-    Q_ASSERT(!m_updatingFlag);
-    executeAtIndex(i, context);
 }
 
-void Process::executeAtIndex(int i, const QVariant context)
+void Process::onCook(const QVariant context)
+{
+    trace() << ".onCook(" << context << ")";
+    Q_ASSERT(!m_updatingFlag);
+    if (m_cookableFlag) {
+        setCooking(true);
+        m_statuses.clear();
+        for (int index = 0; index < count(); index++) {
+            setIndex(index);
+            executeForIndex(index, context);
+        }
+    } else {
+        debug() << "not cookable, skipping cook";
+        emit cookFinished(OperationAttached::Finished);
+    }
+}
+
+void Process::executeForIndex(int index, const QVariant context)
 {
     Q_ASSERT(m_updatingFlag || m_cookingFlag);
 
@@ -155,40 +185,38 @@ void Process::executeAtIndex(int i, const QVariant context)
             processEnv.insert(it.key(), it.value().toString());
     }
 
-    m_processes[i] = new QProcess(this);
+    m_processes[index] = new QProcess(this);
 
-    connect(m_processes[i], &QProcess::readyReadStandardOutput, this, &Process::onReadyReadStandardOutput);
-    connect(m_processes[i], &QProcess::readyReadStandardError, this, &Process::onReadyReadStandardError);
-    connect(m_processes[i], static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+    connect(m_processes[index], &QProcess::readyReadStandardOutput, this, &Process::onReadyReadStandardOutput);
+    connect(m_processes[index], &QProcess::readyReadStandardError, this, &Process::onReadyReadStandardError);
+    connect(m_processes[index], static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             this, &Process::onProcessFinished);
-    connect(m_processes[i], static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error),
+    connect(m_processes[index], static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error),
             this, &Process::onProcessError);
 
-    m_processes[i]->setProcessEnvironment(processEnv);
+    m_processes[index]->setProcessEnvironment(processEnv);
 
-    m_contexts[m_processes[i]] = context.toMap();
+    // stash the context before we get argv, since that may change it
+    setDetail(index, "context", toScriptValue(context));
 
     debug() << "process argv:" << m_argv;
 
     QStringList args = m_argv;
 
-    if (args.length() > 0) {
-        QString program = args.takeFirst();
+    QString program;
+    if (!args.isEmpty())
+        program = args.takeFirst();
 
-        m_processes[i]->start(program, args);
+    m_processes[index]->start(program, args);
 
-        // write any input
-        if (!m_stdin.isEmpty()) {
-            info() << m_stdin;
-            m_processes[i]->write(m_stdin.toUtf8());
-        }
-
-        // close stdin so we don't hang indefinitely
-        m_processes[i]->closeWriteChannel();
-    } else {
-        error() << "Process has no args";
-        emit cookAtIndexFinished(i, OperationAttached::Error);
+    // write any input
+    if (!m_stdin.isEmpty()) {
+        info() << m_stdin;
+        m_processes[index]->write(m_stdin.toUtf8());
     }
+
+    // close stdin so we don't hang indefinitely
+    m_processes[index]->closeWriteChannel();
 }
 
 void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status status)
@@ -197,20 +225,22 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     Q_ASSERT(process);
     Q_ASSERT(m_cookingFlag || m_updatingFlag);
 
-    int i = m_processes.indexOf(process);
-    Q_ASSERT(i >= 0);
+    int index = m_processes.indexOf(process);
+    Q_ASSERT(index >= 0);
 
     QString stdout = m_stdouts.take(process);
 
     debug() << "stdout:" << stdout;
 
     QVariantMap context = m_contexts.take(process);
-    setDetail(i, "context", toScriptValue(context));
-    setDetail(i, "process", "stdout", toScriptValue(stdout));
-    setDetail(i, "process", "exitCode", toScriptValue(process->exitCode()));
+    setDetail(index, "context", toScriptValue(context));
+    setDetail(index, "process", "stdout", toScriptValue(stdout));
+    setDetail(index, "process", "exitCode", toScriptValue(process->exitCode()));
 
-    m_processes[i] = 0;
+    m_processes[index] = 0;
     process->deleteLater();
+
+    m_statuses << status;
 
     int finishedProcessCount = 0;
     qCount(m_processes, static_cast<QProcess *>(0), finishedProcessCount);
@@ -218,14 +248,14 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
         if (finishedProcessCount == count()) {
             // all done
             setUpdating(false);
+            emit updateFinished(m_statuses.status());
         }
-        emit updateAtIndexFinished(i, status);
     } else if (m_cookingFlag) {
         if (finishedProcessCount == count()) {
             // all done
             setCooking(false);
+            emit cookFinished(m_statuses.status());
         }
-        emit cookAtIndexFinished(i, status);
     }
 }
 

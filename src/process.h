@@ -16,6 +16,8 @@ class Process : public Node
     Q_PROPERTY(QString stdin READ stdin WRITE setStdin NOTIFY stdinChanged)
     Q_PROPERTY(QJSValue env READ env WRITE setEnv NOTIFY envChanged)
     Q_PROPERTY(bool ignoreExitCode READ ignoreExitCode WRITE setIgnoreExitCode NOTIFY ignoreExitCodeChanged)
+    Q_PROPERTY(bool updatable READ isUpdatable WRITE setUpdatable NOTIFY updatableChanged)
+    Q_PROPERTY(bool cookable READ isCookable WRITE setCookable NOTIFY cookableChanged)
     Q_PROPERTY(bool updating READ isUpdating NOTIFY updatingChanged)
     Q_PROPERTY(bool cooking READ isCooking NOTIFY cookingChanged)
 public:
@@ -33,6 +35,12 @@ public:
     bool ignoreExitCode() const;
     void setIgnoreExitCode(bool);
 
+    bool isCookable() const;
+    void setCookable(bool);
+
+    bool isUpdatable() const;
+    void setUpdatable(bool);
+
     bool isUpdating() const;
     bool isCooking() const;
 
@@ -41,17 +49,19 @@ signals:
     void envChanged();
     void stdinChanged(const QString stdin);
     void ignoreExitCodeChanged(bool ignoreExitCodeChanged);
+    void cookableChanged(bool cookable);
+    void updatableChanged(bool udpatable);
     void updatingChanged(bool updating);
     void cookingChanged(bool cooking);
 
-    void updateAtIndex(int index, const QVariant context);
-    void updateAtIndexFinished(int index, int status);
-    void cookAtIndex(int index, const QVariant context);
-    void cookAtIndexFinished(int index, int status);
+    void update(const QVariant context);
+    void updateFinished(int status);
+    void cook(const QVariant context);
+    void cookFinished(int status);
 
 protected slots:
-    void onUpdateAtIndex(int index, const QVariant context);
-    void onCookAtIndex(int index, const QVariant context);
+    void onUpdate(const QVariant context);
+    void onCook(const QVariant context);
     void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onProcessError(QProcess::ProcessError);
     void onReadyReadStandardOutput();
@@ -64,17 +74,20 @@ protected slots:
 private:
     void setUpdating(bool);
     void setCooking(bool);
-    void executeAtIndex(int index, const QVariant context);
+    void executeForIndex(int index, const QVariant context);
 
     QStringList m_argv;
     QString m_stdin;
     QJSValue m_env;
     bool m_ignoreExitCode;
+    bool m_updatableFlag;
+    bool m_cookableFlag;
     bool m_updatingFlag;
     bool m_cookingFlag;
     QVector<QProcess *> m_processes;
     QHash<QProcess *, QString> m_stdouts;
     QHash<QProcess *, QVariantMap> m_contexts;
+    OperationStatusList m_statuses;
 };
 
 #endif // PROCESS_H

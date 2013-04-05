@@ -495,12 +495,9 @@ int Node::index() const
 void Node::setIndex(int index)
 {
     if (m_index != index) {
-        if (index >= m_count) {
-            error() << "Attempting to set index to" << index << "but count is only" << m_count;
-        } else {
-            m_index = index;
+        m_index = index;
+        if (m_index >= 0 && m_index < m_count)
             emit indexChanged(index);
-        }
     }
 }
 

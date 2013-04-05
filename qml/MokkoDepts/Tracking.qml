@@ -147,10 +147,16 @@ Folder {
             pattern: "exports/{SEQUENCE}_{SHOT}_cam.mel"
         }
         
+        File {
+            id: plateSeqRef
+            input: node("/plate/release/plateReleaseSeq")
+            context: {VERSION: sg_latestApprovedPlateVersion()}
+        }
+        
         LensDistort {
             id: workLowUndist
             name: "workLowUndist"
-            input: node("/plate/release/plateReleaseSeq")
+            input: plateSeqRef
             nukeScript: workNukeScript
             format: "low"
             mode: "undistort"

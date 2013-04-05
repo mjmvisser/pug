@@ -66,7 +66,7 @@ OperationAttached::Status OperationAttached::inputsStatus() const
     foreach (const Node* input, node()->upstream()) {
         const OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
         OperationAttached::Status inputStatus = inputAttached->status();
-        trace() << "status of" << input << "is" << inputStatus;
+        //trace() << "status of" << input << "is" << inputStatus;
         if (inputStatus > status)
             status = inputStatus;
     }
@@ -83,7 +83,7 @@ OperationAttached::Status OperationAttached::childrenStatus() const
         if (child && child->isOutput()) {
             const OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
             OperationAttached::Status childStatus = childAttached->status();
-            trace() << "status of" << child << "is" << childStatus;
+            //trace() << "status of" << child << "is" << childStatus;
             if (childStatus > status)
                 status = childStatus;
         }
@@ -145,7 +145,6 @@ void OperationAttached::resetAllStatus()
 void OperationAttached::resetInputs(QSet<const OperationAttached *>& visited)
 {
     foreach (Node *input, node()->upstream()) {
-        debug() << "Resetting input" << input;
         OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
         inputAttached->resetAll(m_context, visited);
     }
@@ -339,7 +338,7 @@ void OperationAttached::runInputs()
 
         OperationAttached::Status inputStatus = inputAttached->status();
 
-        debug() << node() << "input" << input << "has status" << inputStatus;
+        //debug() << node() << "input" << input << "has status" << inputStatus;
 
         if (inputStatus == OperationAttached::None
                 || inputStatus == OperationAttached::Idle

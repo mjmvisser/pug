@@ -18,25 +18,24 @@ TestCase {
         Process {
             id: trueProcess
             count: 1
+            cookable: true
+            updatable: true
             argv: ["true"]
         }   
         
         Process {
             id: falseProcess
             count: 1
+            cookable: true
+            updatable: true
             argv: ["false"]
         }
         
         Process {
             id: cookOnlyProcess
             count: 1
-            argv: {
-                if (cooking) {
-                    return ["true"];
-                } else {
-                    return [];
-                }
-            }
+            cookable: true
+            argv: ["true"]
         }
     }
 

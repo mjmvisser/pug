@@ -37,15 +37,15 @@ signals:
     void update(const QVariant context);
     void updateFinished(int status);
 
-    void cookAtIndex(int index, const QVariant context);
-    void cookAtIndexFinished(int index, int status);
+    void cook(const QVariant context);
+    void cookFinished(int status);
 
     void release(const QVariant context);
     void releaseFinished(int status);
 
 private slots:
     void onUpdate(const QVariant context);
-    void onCookAtIndex(int index, const QVariant context);
+    void onCook(const QVariant context);
     void onRelease(const QVariant context);
 
     void onFileOpQueueFinished();

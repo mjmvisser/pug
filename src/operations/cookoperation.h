@@ -15,43 +15,16 @@ public:
 
 signals:
     void cook(const QVariant env);
-    void cookAtIndex(int index, const QVariant env);
 
 protected:
     virtual const QMetaObject *operationMetaObject() const;
 
 private slots:
     void onCookFinished(int);
-    void onCookAtIndexFinished(int, int);
 
 private:
-    enum Mode { Skip, Cook, CookAtIndex };
-    friend QDebug operator<<(QDebug dbg, Mode m);
-
-    Mode m_mode;
-    OperationStatusList m_indexStatus;
-    int m_cookAtIndexFinishedCount;
+    bool m_cookable;
 };
-
-inline QDebug operator<<(QDebug dbg, CookOperationAttached::Mode m)
-{
-    switch (m) {
-    case CookOperationAttached::Skip:
-        dbg.nospace() << "Skip";
-        break;
-    case CookOperationAttached::Cook:
-        dbg.nospace() << "Cook";
-        break;
-    case CookOperationAttached::CookAtIndex:
-        dbg.nospace() << "CookAtIndex";
-        break;
-    default:
-        dbg.nospace() << "Unknown!";
-        break;
-    }
-
-    return dbg.maybeSpace();
-}
 
 class CookOperation : public Operation
 {

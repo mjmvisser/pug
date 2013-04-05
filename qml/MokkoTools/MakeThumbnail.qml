@@ -11,38 +11,32 @@ Process {
     inputs: Input { name: "input" }
     params: Param { name: "filmstrip" }
 
-    function __outputPath(index, context) {
-        var inputElementsView = Util.elementsView(input);
-        var directory = context["PUGWORK"] + (self.name ? self.name + "/" : "");
+    property var inputElementsView: Util.elementsView(input)
+    property var elementsView: Util.elementsView(self)
+
+    function __outputPath(index) {
+        var directory = input.details[index].context["PUGWORK"] + (self.name ? self.name + "/" : "");
         var baseName = inputElementsView.elements[index].baseName();
         var ext = self.filmstrip ? "_filmstrip.jpg" : "_thumbnail.jpg";
         return directory + baseName + ext;
     }
 
-    argv: {
-        if (cooking) {
-            var inputElementsView = Util.elementsView(input);
-            return [Qt.resolvedUrl("scripts/makeThumbnail.py").replace("file://", ""),
-                    "--inputPath", inputElementsView.elements[index].pattern,
-                    "--outputPath", __outputPath(index, CookOperation.context),
-                    "--firstFrame", inputElementsView.elements[index].firstFrame(),
-                    "--lastFrame", inputElementsView.elements[index].lastFrame(),
-                    "--filmstrip", filmstrip]
-        } else {
-            return [];
-        }
-    }
+    cookable: true
 
-    onUpdateAtIndex: {
-        var elementsView = Util.elementsView(self);
-        elementsView.elements[index].pattern = __outputPath(index, context);
-        updateAtIndexFinished(index, Operation.Finished);
-    }
+    argv: try {
+              [Qt.resolvedUrl("scripts/makeThumbnail.py").replace("file://", ""),
+               "--inputPath", inputElementsView.elements[index].pattern,
+               "--outputPath", __outputPath(index),
+               "--firstFrame", inputElementsView.elements[index].frameStart(),
+               "--lastFrame",  inputElementsView.elements[index].frameEnd(),
+               "--filmstrip", filmstrip] 
+          } catch (e) {
+              []
+          }
     
-    onCookAtIndex: {
-        var elementsView = Util.elementsView(self);
-        elementsView.elements[index].pattern = __outputPath(index, context); 
-        cookAtIndexFinished(index, Operation.Finished);
+    onCookFinished: {
+        for (index = 0; index < count; index++) {
+            elementsView.elements[index].pattern = __outputPath(index);
+        } 
     }
-    
 }

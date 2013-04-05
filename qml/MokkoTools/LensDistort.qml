@@ -26,41 +26,29 @@ Process {
 
     count: input ? input.count : 0
 
-    function __outputPath(index, context) {
-        var inputElementsView = Util.elementsView(input);
-        return context["PUGWORK"] + (self.name ? self.name + "/" : "") + inputElementsView.elements[0].path() + mode + "_" + format + "_" + index + ".%04d." + fileType;
+    property var inputElementsView: Util.elementsView(input)
+    property var elementsView: Util.elementsView(self)
+
+    function __outputPath(index) {
+        return input.details[index].context["PUGWORK"] + (self.name ? self.name + "/" : "") + inputElementsView.elements[0].path() + mode + "_" + format + "_" + index + ".%04d." + fileType;
     }
 
-    argv: { 
-        if (cooking) {
-            return [Qt.resolvedUrl("scripts/lensdistort").replace("file://", ""),
-                    "--nukeNodePath", nukeScript.details[index].element.pattern,
-                    "--inputPath", input.details[index].element.pattern,
-                    "--outputFormat", format + (mode == "undistort" ? "_und" : ""),
-                    "--outputPath", __outputPath(index, details[index].context)]
-        } else {
-            return [];
-        }
-    }
+    cookable: true
 
-    function __setDetails(index, context) {
-        var elementsView = Util.elementsView(self);
-        var inputElementsView = Util.elementsView(input);
-        elementsView.elements[index].pattern = __outputPath(index, context)
-        elementsView.elements[index].setFrames(inputElementsView.elements[index].frames);
-        details[index].context = input.details[index].context;
-        for (var k in context) {
-            if (context.hasOwnProperty(k) && !(k in details[index].context)) {
-                details[index].context[k] = context[k];
-            }
+    argv: [Qt.resolvedUrl("scripts/lensdistort").replace("file://", ""),
+           "--nukeNodePath", nukeScript.details[0].element.pattern,
+           "--inputPath", input.details[index].element.pattern,
+           "--outputFormat", format + (mode == "undistort" ? "_und" : ""),
+           "--outputPath", __outputPath(index)]
+    
+    function __setDetails(index) {
+        elementsView.elements[index].pattern = __outputPath(index, details[index].context);
+        elementsView.elements[index].setFrames(inputElementsView.elements[index]);
+    }
+    
+    onCookFinished: {
+        for (index = 0; index < count; index++) {
+            __setDetails(0);
         }
-    }
-    
-    onUpdateAtIndex: {
-        __setDetails(index, context);
-    }
-    
-    onCookAtIndex: {
-        __setDetails(index, context);
     }
 }

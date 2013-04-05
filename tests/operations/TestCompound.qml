@@ -20,14 +20,16 @@ Node {
         
         count: self.count
         
-        signal cookAtIndex(int index, var context)
-        signal cookAtIndexFinished(int index, int status)
+        signal cook(var context)
+        signal cookFinished(int status)
 
-        onCookAtIndex: {
-            details[index] = {"result": input.details[index].result + " -> " + name + index,
-                              "context": context};
+        onCook: {
+            for (index = 0; index < count; index++) {
+                details[index] = {"result": input.details[index].result + " -> " + name + index,
+                                  "context": context};
+            }
             detailsChanged();
-            cookAtIndexFinished(index, Operation.Finished);                              
+            cookFinished(Operation.Finished);                              
         }
     }
 
@@ -41,14 +43,16 @@ Node {
 
         count: input.count
         
-        signal cookAtIndex(int index, var context)
-        signal cookAtIndexFinished(int index, int status)
+        signal cook(var context)
+        signal cookFinished(int status)
 
-        onCookAtIndex: {
-            details[index] = {"result": input.details[index].result + " -> " + name + index,
-                              "context": context};
+        onCook: {
+            for (index = 0; index < count; index++) {
+                details[index] = {"result": input.details[index].result + " -> " + name + index,
+                                  "context": context};
+            }
             detailsChanged();
-            cookAtIndexFinished(index, Operation.Finished);                              
+            cookFinished(Operation.Finished);                              
         }
     }
 }        

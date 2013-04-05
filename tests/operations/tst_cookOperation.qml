@@ -83,48 +83,51 @@ PugTestCase {
 
                     inputs: Input { name: "input" }
 
-                    signal updateAtIndex(int index, var context)
-                    signal updateAtIndexFinished(int index, int status)
+                    signal update(var context)
+                    signal updateFinished(int status)
                     
-                    onUpdateAtIndex: {
-                        trace("onUpdateAtIndex(" + index + ", " + context);
+                    onUpdate: {
+                        trace("onUpdate(" + context);
 
                         var inputElementsView = Util.elementsView(input);
                         var elementsView = Util.elementsView(copier);
                         
-                        var inputPath = elementsView.elements[index].path();
-                        var outputDir = inputElementsView.elements[index].directory() + "temp/";
-                        var outputPath = outputDir + "temp_" + inputElementsView.elements[index].baseName() + "." + inputElementsView.elements[index].extension();
-
-                        elementsView.elements[index].pattern = outputPath;
-                        details[index].context = input.details[index].context;
-                        for (var attrname in context) {
-                            if (context.hasOwnProperty(attrname)) {
-                                details[index].context[attrname] = context[attrname];
+                        for (index = 0; index < count; index++) {
+                            var inputPath = elementsView.elements[index].path();
+                            var outputDir = inputElementsView.elements[index].directory() + "temp/";
+                            var outputPath = outputDir + "temp_" + inputElementsView.elements[index].baseName() + "." + inputElementsView.elements[index].extension();
+    
+                            elementsView.elements[index].pattern = outputPath;
+                            details[index].context = input.details[index].context;
+                            for (var attrname in context) {
+                                if (context.hasOwnProperty(attrname)) {
+                                    details[index].context[attrname] = context[attrname];
+                                }
                             }
                         }
                         
-                        updateAtIndexFinished(index, Operation.Finished);
+                        updateFinished(Operation.Finished);
                     }
 
-                    signal cookAtIndex(int index, var context)
-                    signal cookAtIndexFinished(int index, int status)
+                    signal cook(var context)
+                    signal cookFinished(int status)
                     
-                    onCookAtIndex: {
-                        trace("onCookAtIndex(" + index + ", " + context);
-                        
+                    onCook: {
+                        trace("onCook(" + context);
                         var inputElementsView = Util.elementsView(input);
                         var elementsView = Util.elementsView(copier);
                         
-                        var inputPath = inputElementsView.elements[index].path();
-                        var outputDir = elementsView.elements[index].directory();
-                        var outputPath = elementsView.elements[index].path();
-
-                        if (!Util.exists(outputDir))
-                            Util.mkpath(outputDir);
-                        Util.copy(inputPath, outputPath);
+                        for (index = 0; index < count; index++) {
+                            var inputPath = inputElementsView.elements[index].path();
+                            var outputDir = elementsView.elements[index].directory();
+                            var outputPath = elementsView.elements[index].path();
+    
+                            if (!Util.exists(outputDir))
+                                Util.mkpath(outputDir);
+                            Util.copy(inputPath, outputPath);
+                        }
                         
-                        cookAtIndexFinished(index, Operation.Finished);
+                        cookFinished(Operation.Finished);
                     }
                 }
                 
@@ -143,14 +146,16 @@ PugTestCase {
     
             count: 5
             
-            signal cookAtIndex(int index, var context)
-            signal cookAtIndexFinished(int index, int status)
+            signal cook(var context)
+            signal cookFinished(int status)
     
-            onCookAtIndex: {
-                details[index] = {"result": name + index,
-                                  "context": context};
+            onCook: {
+                for (index = 0; index < count; index++) {
+                    details[index] = {"result": name + index,
+                                      "context": context};
+                }
                 detailsChanged();
-                cookAtIndexFinished(index, Operation.Finished);                              
+                cookFinished(Operation.Finished);                              
             }
         }   
         

@@ -26,7 +26,7 @@ File::File(QObject *parent) :
 
     // update -> onUpdate
     connect(this, &File::update, this, &File::onUpdate);
-    connect(this, &File::cookAtIndex, this, &File::onCookAtIndex);
+    connect(this, &File::cook, this, &File::onCook);
 
     // release connections
     connect(this, &File::release, this, &File::onRelease);
@@ -186,95 +186,99 @@ void File::onUpdate(const QVariant context)
     emit updateFinished(status);
 }
 
-void File::onCookAtIndex(int index, const QVariant context)
+void File::onCook(const QVariant context)
 {
-    trace() << ".onCookAtIndex(" << index << "," << context << ")";
+    trace() << ".onCook(" << context << ")";
 
     if (m_input) {
         setCount(m_input->count());
 
         QScopedPointer<ElementsView> inputElementsView(new ElementsView(m_input));
-        ElementView *inputElement = inputElementsView->elementAt(index);
-        Q_ASSERT(inputElement);
 
-        FilePattern inputPattern = FilePattern(inputElement->pattern());
+        for (int index = 0; index < count(); index++) {
+            setIndex(index);
+            ElementView *inputElement = inputElementsView->elementAt(index);
+            Q_ASSERT(inputElement);
 
-        QScopedPointer<ElementsView> elementsView(new ElementsView(this));
-        ElementView *element = elementsView->elementAt(index);
-        Q_ASSERT(element);
+            FilePattern inputPattern = FilePattern(inputElement->pattern());
 
-        const QVariantMap inputContext = mergeContexts(context.toMap(),
-                m_input->details().property(index).property("context").toVariant().toMap());
+            QScopedPointer<ElementsView> elementsView(new ElementsView(this));
+            ElementView *element = elementsView->elementAt(index);
+            Q_ASSERT(element);
 
-        setContext(index, inputContext);
+            const QVariantMap inputContext = mergeContexts(context.toMap(),
+                    m_input->details().property(index).property("context").toVariant().toMap());
 
-        if (fieldsComplete(inputContext)) {
-            const FilePattern destPattern(map(inputContext));
+            setContext(index, inputContext);
 
-            element->setPattern(destPattern.pattern());
+            if (fieldsComplete(inputContext)) {
+                const FilePattern destPattern(map(inputContext));
 
-            if (inputPattern.isSequence()) {
-                if (destPattern.isSequence()) {
-                    // input and this are both sequences
-                    if (!m_frames || inputElement->frameList() == m_frames->list()) {
-                        // frames match
-                        element->setFrameCount(inputElement->frameCount());
-                        for (int frameIndex = 0; frameIndex < inputElement->frameCount(); frameIndex++) {
-                            debug() << "cooking frameIndex" << frameIndex;
-                            FrameView *frame = element->frameAt(frameIndex);
-                            FrameView *inputFrame = inputElement->frameAt(frameIndex);
-                            Q_ASSERT(frame);
-                            Q_ASSERT(inputFrame);
+                element->setPattern(destPattern.pattern());
 
-                            frame->setFrame(inputFrame->frame());
+                if (inputPattern.isSequence()) {
+                    if (destPattern.isSequence()) {
+                        // input and this are both sequences
+                        if (!m_frames || inputElement->frameList() == m_frames->list()) {
+                            // frames match
+                            element->setFrameCount(inputElement->frameCount());
+                            for (int frameIndex = 0; frameIndex < inputElement->frameCount(); frameIndex++) {
+                                debug() << "cooking frameIndex" << frameIndex;
+                                FrameView *frame = element->frameAt(frameIndex);
+                                FrameView *inputFrame = inputElement->frameAt(frameIndex);
+                                Q_ASSERT(frame);
+                                Q_ASSERT(inputFrame);
 
-                            const QString srcPath = inputPattern.path(inputFrame->frame());
-                            const QString destPath = destPattern.path(inputFrame->frame());
+                                frame->setFrame(inputFrame->frame());
 
-                            // TODO: dependency check
-                            if (!makeLink(srcPath, destPath)) {
-                                emit cookAtIndexFinished(index, OperationAttached::Error);
-                                return;
+                                const QString srcPath = inputPattern.path(inputFrame->frame());
+                                const QString destPath = destPattern.path(inputFrame->frame());
+
+                                // TODO: dependency check
+                                if (!makeLink(srcPath, destPath)) {
+                                    emit cook(OperationAttached::Error);
+                                    return;
+                                }
                             }
+                        } else {
+                            error() << "frames [" << m_frames->pattern() << "] do not match input element frames [" << inputElement->framePattern() << "]";
+                            emit cookFinished(OperationAttached::Error);
+                            return;
                         }
                     } else {
-                        error() << "frames [" << m_frames->pattern() << "] do not match input element frames [" << inputElement->framePattern() << "]";
-                        emit cookAtIndexFinished(index, OperationAttached::Error);
+                        error() << "input is a sequence, but this node is not";
+                        debug() << "inputPattern is" << inputPattern.pattern();
+                        debug() << "destPattern is" << destPattern.pattern();
+                        emit cookFinished(OperationAttached::Error);
                         return;
                     }
                 } else {
-                    error() << "input is a sequence, but this node is not";
-                    debug() << "inputPattern is" << inputPattern.pattern();
-                    debug() << "destPattern is" << destPattern.pattern();
-                    emit cookAtIndexFinished(index, OperationAttached::Error);
-                    return;
+                    if (destPattern.isSequence()) {
+                        // TODO: at some point we want to support this
+                        // how? need a frame range for this node tho
+                        error() << "this node is a sequence, but input node is not";
+                        emit cookFinished(OperationAttached::Error);
+                    } else {
+                        debug() << "cooking element";
+                        const QString srcPath = inputPattern.path();
+                        const QString destPath = destPattern.path();
+
+                        // TODO: dependency check
+                        if (!makeLink(srcPath, destPath)) {
+                            emit cookFinished(OperationAttached::Error);
+                            return;
+                        }
+                    }
                 }
             } else {
-                if (destPattern.isSequence()) {
-                    // TODO: at some point we want to support this
-                    // how? need a frame range for this node tho
-                    error() << "this node is a sequence, but input node is not";
-                    emit cookAtIndexFinished(index, OperationAttached::Error);
-                } else {
-                    debug() << "cooking element";
-                    const QString srcPath = inputPattern.path();
-                    const QString destPath = destPattern.path();
-
-                    // TODO: dependency check
-                    if (!makeLink(srcPath, destPath)) {
-                        emit cookAtIndexFinished(index, OperationAttached::Error);
-                        return;
-                    }
-                }
+                error() << "fields incomplete for input context" << inputContext;
+                emit cookFinished(OperationAttached::Error);
+                return;
             }
-        } else {
-            error() << "fields incomplete for input context" << inputContext;
-            emit cookAtIndexFinished(index, OperationAttached::Error);
-            return;
         }
     }
 
-    emit cookAtIndexFinished(index, OperationAttached::Finished);
+    emit cookFinished(OperationAttached::Finished);
 }
 
 bool File::makeLink(const QString &src, const QString &dest) const
