@@ -181,7 +181,7 @@ void OperationAttached::run(Operation *op)
 
     // check for cycles
     if (node()->cycleCheck()) {
-        error() << "Cycle found!";
+        error() << "Cycle found on" << node();
 
         Node *p = node();
         while (p) {

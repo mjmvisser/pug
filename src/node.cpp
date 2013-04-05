@@ -708,7 +708,7 @@ bool Node::cycleCheck(const QList<const Node *>& visited) const
     myVisited.append(this);
 
     if (visited.contains(this)) {
-        error() << "found cycle at" << this << "in" << myVisited;
+        error() << "found cycle:" << visited;
         return true;
     }
 
