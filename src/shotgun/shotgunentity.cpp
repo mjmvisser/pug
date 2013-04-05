@@ -2,10 +2,12 @@
 #include "shotgunfield.h"
 #include "branch.h"
 #include "shotgun.h"
+#include "elementsview.h"
 
 ShotgunEntity::ShotgunEntity(QObject *parent) :
     Node(parent),
-    m_action(ShotgunEntity::Find)
+    m_action(ShotgunEntity::Find),
+    m_limit(0)
 {
     addInput(this, "branch");
     addInput(this, "shotgunFields");
@@ -98,20 +100,57 @@ void ShotgunEntity::setAction(ShotgunEntity::Action a)
     }
 }
 
+const QVariantList ShotgunEntity::filters() const
+{
+    return m_filters;
+}
+
+void ShotgunEntity::setFilters(const QVariantList f)
+{
+    if (m_filters != f) {
+        m_filters = f;
+        emit filtersChanged(f);
+    }
+}
+
+const QVariantList ShotgunEntity::order() const
+{
+    return m_order;
+}
+
+void ShotgunEntity::setOrder(const QVariantList o)
+{
+    if (m_order != o) {
+        m_order = o;
+        emit orderChanged(o);
+    }
+}
+
+int ShotgunEntity::limit() const
+{
+    return m_limit;
+}
+
+void ShotgunEntity::setLimit(int l)
+{
+    if (m_limit != l) {
+        m_limit = l;
+        emit limitChanged(l);
+    }
+}
+
 void ShotgunEntity::onUpdate(const QVariant context)
 {
-    if (branch() && m_action == ShotgunEntity::Find) {
+    if (m_action == ShotgunEntity::Find) {
         trace() << ".onUpdate(" << context << "," << ")";
-
-        setCount(branch()->count());
 
         if (count() > 0) {
             debug() << "Updating" << count() << "details with context" << context;
 
-            QVariant f = filters();
+            QVariant f = allFilters();
             if (f.isValid()) {
-                debug() << "Shotgun filters are" << f;
-                ShotgunReply *reply = Shotgun::staticInstance()->find(shotgunEntityName(), f.toList(), fields());
+                info() << "Shotgun filters are" << QJsonDocument::fromVariant(f).toJson();
+                ShotgunReply *reply = Shotgun::staticInstance()->find(shotgunEntityName(), f.toList(), fields(), order(), "all", limit());
 
                 connect(reply, &ShotgunReply::finished, this, &ShotgunEntity::onFindFinished);
                 connect(reply, static_cast<ShotgunReply::ErrorFunc>(&ShotgunReply::error),
@@ -121,7 +160,7 @@ void ShotgunEntity::onUpdate(const QVariant context)
                 emit updateFinished(OperationAttached::Finished);
             }
         } else {
-            debug() << "Folder" << branch() << "has no details";
+            debug() << "no details";
             emit updateFinished(OperationAttached::Finished);
         }
     } else {
@@ -259,7 +298,7 @@ const QVariant ShotgunEntity::jsValueToVariant(const QJSValue &jsValue)
     return value;
 }
 
-const QVariant ShotgunEntity::filters()
+const QVariant ShotgunEntity::allFilters()
 {
     trace() << ".filters()";
     Q_ASSERT(count() > 0);
@@ -307,6 +346,9 @@ const QVariant ShotgunEntity::filters()
         }
     }
 
+    // add custom filters
+    result << m_filters;
+
     trace() << "    ->" << result;
     return result;
 }
@@ -332,11 +374,22 @@ const QStringList ShotgunEntity::fields() const
 void ShotgunEntity::onFindFinished(const QVariant results)
 {
     trace() << ".onFindFinished(" << results << ")";
-    info() << "Shotgun.find returned" << results;
+
+    QScopedPointer<ElementsView> elementsView(new ElementsView(this));
 
     int i = 0;
     foreach (const QVariant result, results.toList()) {
         setDetail(i, "entity", toScriptValue(result.toMap()));
+
+        // path fields become elements
+        foreach (const ShotgunField *sgf, m_shotgunFields) {
+            const QString shotgunFieldName = sgf->shotgunFieldName();
+            if (sgf->type() == ShotgunField::Path && !shotgunFieldName.isEmpty()) {
+                elementsView->elementAt(i)->setPattern(result.toMap()[shotgunFieldName].toString());
+                elementsView->elementAt(i)->scan();
+            }
+        }
+
         i++;
     }
 

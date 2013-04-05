@@ -1,6 +1,7 @@
 #ifndef SHOTGUNENTITY_H
 #define SHOTGUNENTITY_H
 
+#include <QVariant>
 #include <QString>
 #include <QQmlListProperty>
 
@@ -15,6 +16,9 @@ class ShotgunEntity : public Node
     Q_PROPERTY(Branch *branch READ branch NOTIFY branchChanged);
     Q_PROPERTY(QQmlListProperty<ShotgunField> shotgunFields READ shotgunFields_ NOTIFY shotgunFieldsChanged)
     Q_PROPERTY(Action action READ action WRITE setAction NOTIFY actionChanged)
+    Q_PROPERTY(QVariantList filters READ filters WRITE setFilters NOTIFY filtersChanged)
+    Q_PROPERTY(QVariantList order READ order WRITE setOrder NOTIFY orderChanged)
+    Q_PROPERTY(int limit READ limit WRITE setLimit NOTIFY limitChanged)
     Q_ENUMS(Action)
 public:
     enum Action { Invalid, None, Find, Create };
@@ -33,11 +37,23 @@ public:
     Action action() const;
     void setAction(Action);
 
+    const QVariantList filters() const;
+    void setFilters(const QVariantList);
+
+    const QVariantList order() const;
+    void setOrder(const QVariantList);
+
+    int limit() const;
+    void setLimit(int);
+
 signals:
     void shotgunEntityNameChanged(const QString shotgunEntity);
     void branchChanged(const Branch *branch);
     void shotgunFieldsChanged();
     void actionChanged(Action action);
+    void filtersChanged(const QVariantList filters);
+    void orderChanged(const QVariantList order);
+    void limitChanged(int limit);
 
     void update(const QVariant context);
     void updateFinished(int status);
@@ -62,7 +78,7 @@ private:
 
     const QVariant data() const;
     const QStringList fields() const;
-    const QVariant filters();
+    const QVariant allFilters();
 
     static const QVariant jsValueToVariant(const QJSValue &jsValue);
 
@@ -75,6 +91,9 @@ private:
     QList<ShotgunField *> m_shotgunFields;
     QString m_shotgunEntityName;
     Action m_action;
+    QVariantList m_filters;
+    QVariantList m_order;
+    int m_limit;
 };
 
 
