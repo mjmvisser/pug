@@ -20,14 +20,15 @@ Folder {
 
         ShotgunVersion {
             id: sg_releaseFullUndistVersion
+            action: ShotgunEntity.Create
             name: "sg_releaseFullUndistVersion"
             project: node("/project/sg_project")
             link: node("/shot/sg_shot")
             step: sg_step
             user: node("/sg_user")
             code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
-            thumbnail: workFullUndistThumbnail
-            filmstrip: workFullUndistFilmstrip
+            thumbnail: workUndistThumbnail
+            filmstrip: workUndistFilmstrip
         }
 
         File {
@@ -38,12 +39,14 @@ Folder {
             ReleaseOperation.source: work3deScene
 
             ShotgunPublishEvent {
-                id: sg_release3deSceneFile
-                name: "sg_release3deSceneFile"
+                id: sg_release3deScene
+                action: ShotgunEntity.Create
+                name: "sg_release3deScene"
                 project: node("/project/sg_project")
                 link: node("/shot/sg_shot")
                 step: sg_step
                 user: node("/sg_user")
+                category: "source"
             }
         }
         
@@ -55,12 +58,14 @@ Folder {
             ReleaseOperation.source: workNukeScript
 
             ShotgunPublishEvent {
-                id: sg_releaseNukeScriptFile
-                name: "sg_releaseNukeScriptFile"
+                id: sg_releaseNukeScript
+                name: "sg_releaseNukeScript"
                 project: node("/project/sg_project")
                 link: node("/shot/sg_shot")
                 step: sg_step
                 user: node("/sg_user")
+                category: "nk"
+                dependencies: sg_release3deScene
             }
         }
 
@@ -72,12 +77,14 @@ Folder {
             ReleaseOperation.source: workMelScript
 
             ShotgunPublishEvent {
-                id: sg_releaseMelScriptFile
-                name: "sg_releaseMelScriptFile"
+                id: sg_releaseMelScript
+                name: "sg_releaseMelScript"
                 project: node("/project/sg_project")
                 link: node("/shot/sg_shot")
                 step: sg_step
                 user: node("/sg_user")
+                category: "mel"
+                dependencies: sg_release3deScene
             }
         }
 
@@ -89,14 +96,17 @@ Folder {
             ReleaseOperation.source: workLowUndist
 
             ShotgunPublishEvent {
-                id: sg_releaseLowUndistFile
-                name: "sg_releaseLowUndistFile"
+                id: sg_releaseLowUndist
+                name: "sg_releaseLowUndist"
                 project: node("/project/sg_project")
                 link: node("/shot/sg_shot")
                 step: sg_step
                 user: node("/sg_user")
-                thumbnail: workLowUndistThumbnail
-                filmstrip: workLowUndistFilmstrip
+                resolution: "1280x720"
+                category: "render"
+                thumbnail: workUndistThumbnail
+                filmstrip: workUndistFilmstrip
+                dependencies: [sg_releaseNukeScript, workLowUndist.input]
             }
         }
 
@@ -104,21 +114,23 @@ Folder {
             id: releaseFullUndist
             name: "releaseFullUndist"
             root: release
-            pattern: "render/2560x1350/jpg/{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_{VERSION}_2560x1350.%04d.jpg"
+            pattern: "render/2048x1152/jpg/{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_{VERSION}_2048x1152.%04d.jpg"
             ReleaseOperation.source: workFullUndist
 
             ShotgunPublishEvent {
-                id: sg_releaseFullUndistFile
-                name: "sg_releaseFullUndistFile"
+                id: sg_releaseFullUndist
+                name: "sg_releaseFullUndist"
                 project: node("/project/sg_project")
                 link: node("/shot/sg_shot")
                 step: sg_step
                 user: node("/sg_user")
-                thumbnail: workFullUndistThumbnail
-                filmstrip: workFullUndistFilmstrip
+                resolution: "2048x1152"
+                category: "render"
+                thumbnail: workUndistThumbnail
+                filmstrip: workUndistFilmstrip
+                dependencies: [sg_releaseNukeScript, workLowUndist.input]
             }
         }
-        
     }
     
     Folder {
@@ -137,7 +149,7 @@ Folder {
             id: workNukeScript
             name: "workNukeScript"
             root: work
-            pattern: "exports/{SEQUENCE}_{SHOT}_cam.nk"
+            pattern: "exports/{SEQUENCE}_{SHOT}.nk"
         }
 
         File {
@@ -146,61 +158,40 @@ Folder {
             root: work
             pattern: "exports/{SEQUENCE}_{SHOT}_cam.mel"
         }
-        
-        File {
-            id: plateSeqRef
-            input: node("/plate/release/plateReleaseSeq")
-            context: {VERSION: sg_latestApprovedPlateVersion()}
-        }
-        
+
         LensDistort {
             id: workLowUndist
             name: "workLowUndist"
-            input: plateSeqRef
+            input: node("/plate/sg_currentPlate")
             nukeScript: workNukeScript
             format: "low"
             mode: "undistort"
-            active: true
+            output: true
         }
         
-        MakeThumbnail {
-            id: workLowUndistThumbnail
-            name: "workLowUndistThumbnail"
-            input: workLowUndist
-            active: true
-        }
-        
-        MakeThumbnail {
-            id: workLowUndistFilmstrip
-            name: "workLowUndistFilmstrip"
-            input: workLowUndist
-            filmstrip: true
-            active: true
-        }
-
         LensDistort {
             id: workFullUndist
             name: "workFullUndist"
-            input: node("/plate/release/releaseSeq")
+            input: node("/plate/sg_currentPlate")
             nukeScript: workNukeScript
             format: "full"
             mode: "undistort"
-            active: true
+            output: true
         }
         
         MakeThumbnail {
-            id: workFullUndistThumbnail
-            name: "workFullUndistThumbnail"
-            input: workFullUndist
-            active: true
+            id: workUndistThumbnail
+            name: "workUndistThumbnail"
+            input: workLowUndist
+            output: true
         }
         
         MakeThumbnail {
-            id: workFullUndistFilmstrip
-            name: "workFullUndistFilmstrip"
-            input: workFullUndist
+            id: workUndistFilmstrip
+            name: "workUndistFilmstrip"
+            input: workLowUndist
             filmstrip: true
-            active: true
+            output: true
         }
     }
 }
