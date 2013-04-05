@@ -45,9 +45,8 @@ public:
     const Node *node() const;
     Node *node();
 
-    Q_INVOKABLE void resetStatus();
-    Q_INVOKABLE virtual void reset();
-    Q_INVOKABLE virtual void run() = 0;
+    virtual void reset();
+    virtual void run() = 0;
 
     void run(Operation *);
 

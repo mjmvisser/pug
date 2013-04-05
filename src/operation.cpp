@@ -47,16 +47,8 @@ Node* OperationAttached::node()
     return parent<Node>();
 }
 
-void OperationAttached::resetStatus()
-{
-    trace() << node() << "resetStatus()";
-    setStatus(OperationAttached::None);
-}
-
 void OperationAttached::reset()
 {
-    trace() << node() << "reset()";
-    setStatus(OperationAttached::Invalid);
 }
 
 OperationAttached::Status OperationAttached::inputsStatus() const
@@ -123,23 +115,10 @@ void OperationAttached::resetAllStatus()
 
     debug() << node() << ".resetAllStatus()";
 
+    setStatus(OperationAttached::None);
+
     resetInputsStatus();
-
-    switch (node()->dependencyOrder()) {
-    case Node::InputsChildrenSelf:
-        resetChildrenStatus();
-        resetStatus();
-        break;
-
-    case Node::InputsSelfChildren:
-        resetStatus();
-        resetChildrenStatus();
-        break;
-
-    default:
-        Q_ASSERT(false);
-        break;
-    }
+    resetChildrenStatus();
 }
 
 void OperationAttached::resetInputs(QSet<const OperationAttached *>& visited)
@@ -173,6 +152,7 @@ void OperationAttached::resetAll(const QVariantMap context, QSet<const Operation
     debug() << "Resetting" << node();
 
     setContext(context);
+    setStatus(OperationAttached::Invalid);
 
     resetInputs(visited);
 
