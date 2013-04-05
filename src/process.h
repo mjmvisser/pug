@@ -86,6 +86,7 @@ private:
     bool m_cookingFlag;
     QVector<QProcess *> m_processes;
     QHash<QProcess *, QString> m_stdouts;
+    QHash<QProcess *, QString> m_stderrs;
     QHash<QProcess *, QVariantMap> m_contexts;
     OperationStatusList m_statuses;
 };

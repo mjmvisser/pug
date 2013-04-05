@@ -229,12 +229,15 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     Q_ASSERT(index >= 0);
 
     QString stdout = m_stdouts.take(process);
+    QString stderr = m_stderrs.take(process);
 
     debug() << "stdout:" << stdout;
+    debug() << "stderr:" << stdout;
 
     QVariantMap context = m_contexts.take(process);
     setDetail(index, "context", toScriptValue(context));
     setDetail(index, "process", "stdout", toScriptValue(stdout));
+    setDetail(index, "process", "stderr", toScriptValue(stderr));
     setDetail(index, "process", "exitCode", toScriptValue(process->exitCode()));
 
     m_processes[index] = 0;
@@ -292,7 +295,7 @@ void Process::onReadyReadStandardOutput()
 void Process::onReadyReadStandardError()
 {
     QProcess *process = qobject_cast<QProcess *>(QObject::sender());
-    debug() << process->readAllStandardError();
+    m_stdouts[process].append(process->readAllStandardError());
 }
 
 void Process::componentComplete()
