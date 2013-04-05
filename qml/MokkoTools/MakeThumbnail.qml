@@ -29,7 +29,7 @@ Process {
                "--outputPath", __outputPath(index),
                "--firstFrame", inputElementsView.elements[index].frameStart(),
                "--lastFrame",  inputElementsView.elements[index].frameEnd(),
-               "--filmstrip", filmstrip] 
+               "--filmstrip", filmstrip]
           } catch (e) {
               []
           }
