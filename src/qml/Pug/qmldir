@@ -1,5 +1,4 @@
 module Pug
 FrameSpecField 1.0 FrameSpecField.qml
-FileRef 1.0 FileRef.qml
 ProcessDetails 1.0 ProcessDetails.qml
 plugin pugplugin
