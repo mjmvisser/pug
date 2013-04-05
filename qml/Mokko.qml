@@ -1,14 +1,16 @@
+import QtQuick 2.0
 import Pug 1.0
 import MokkoDepts 1.0
 import ShotgunEntities 1.0
 
 Root {
-    logLevel: Log.Info 
-    Shotgun {
-        id: shotgun
-        baseUrl: "https://mokko.shotgunstudio.com"
-        apiKey: "ef0623879e54c9f4f2d80f9502a7adea09bfcf8f"
-        scriptName: "test"
+    logLevel: Log.Info
+    
+    
+    Component.onCompleted: {
+        Shotgun.baseUrl = "https://mokko.shotgunstudio.com";
+        Shotgun.apiKey = "eefeed79c47b4630bd8acf326bec745dc9bfb73a";
+        Shotgun.scriptName = "pug";
     }
     
     operations: [
@@ -16,22 +18,15 @@ Root {
             id: update
             name: "update"
         },
-        ShotgunOperation {
-            id: shotgunPull
-            name: "shotgunPull"
-            mode: ShotgunOperation.Pull
-            shotgun: shotgun
-            dependencies: update
-        },
         ListOperation {
             id: ls
             name: "ls"
-            dependencies: shotgunPull
+            dependencies: update
         },
         CookOperation {
             id: cook
             name: "cook"
-            dependencies: shotgunPull
+            dependencies: update
         },
         ReleaseOperation {
             id: release
@@ -40,13 +35,6 @@ Root {
                 user: "prod"
             }
             dependencies: cook
-            triggers: shotgunPush
-        },
-        ShotgunOperation {
-            id: shotgunPush
-            name: "shotgunPush"
-            mode: ShotgunOperation.Push
-            shotgun: shotgun
         },
         TractorOperation {
             id: tractor
@@ -81,7 +69,7 @@ Root {
     	name: "root"
     	pattern: "/prod/projects/"
     }
-    
+
     Folder {
         id: project
     	name: "project"
@@ -101,14 +89,14 @@ Root {
     // }
     
     Folder {
-        id: scene
-        name: "scene"
+        id: sequence
+        name: "sequence"
     	pattern: "shots/{SEQUENCE}/"
     	root: project
 
-        ShotgunScene {
-            id: sg_scene
-            name: "sg_scene"
+        ShotgunSequence {
+            id: sg_sequence
+            name: "sg_sequence"
             project: sg_project
         }
     }
@@ -117,13 +105,13 @@ Root {
         id: shot
         name: "shot"
     	pattern: "{SHOT}/"
-    	root: scene
+    	root: sequence
 
         ShotgunShot {
             id: sg_shot
             name: "sg_shot"
             project: sg_project
-            scene: sg_scene
+            sequence: sg_sequence
         }
     }
     
@@ -145,12 +133,12 @@ Root {
         root: shot
     }
     
-    Folder {
-        id: asset
-        name: "asset"
-        pattern: "assets/{ASSET_TYPE}/{ASSET}/"
-        root: project
-    }
+    // Folder {
+        // id: asset
+        // name: "asset"
+        // pattern: "assets/{ASSET_TYPE}/{ASSET}/"
+        // root: project
+    // }
     
     // Modeling {
         // id: model
