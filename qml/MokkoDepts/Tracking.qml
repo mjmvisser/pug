@@ -164,7 +164,7 @@ Folder {
             name: "workLowUndist"
             input: node("/plate/sg_currentPlate")
             nukeScript: workNukeScript
-            format: "low"
+            format: "720p"
             mode: "undistort"
             output: true
         }
