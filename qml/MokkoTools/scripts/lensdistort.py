@@ -12,6 +12,7 @@ parser.add_option("", "--outputFormat", action="store")
 parser.add_option("", "--outputPath", action="store")
 parser.add_option("", "--frameStart", type="int", action="store")
 parser.add_option("", "--frameEnd", type="int", action="store")
+parser.add_option("", "--onlyDump", action="store_true")
 
 options, args = parser.parse_args()
 
@@ -25,6 +26,7 @@ output_format = options.outputFormat
 output_path = options.outputPath
 first = options.frameStart
 last = options.frameEnd
+onlyDump = options.onlyDump
 
 if nuke_node_path is not None and not output_format.endswith("_und"):
     parser.error("nukeNodePath specified, but outputFormat is not _und")
@@ -87,4 +89,7 @@ write_output.setInput(0, last_node)
 if not os.path.exists(os.path.dirname(output_path)):
     os.makedirs(os.path.dirname(output_path))
 
-nuke.executeMultiple([write_output], [(first, last, 1)])
+if onlyDump:
+    nuke.scriptSaveAs("/usr/tmp/dump.nk");
+else:
+    nuke.executeMultiple([write_output], [(first, last, 1)])
