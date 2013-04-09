@@ -231,9 +231,6 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     QString stdout = m_stdouts.take(process);
     QString stderr = m_stderrs.take(process);
 
-    debug() << "stdout:" << stdout;
-    debug() << "stderr:" << stdout;
-
     QVariantMap context = m_contexts.take(process);
     setDetail(index, "context", toScriptValue(context));
     setDetail(index, "process", "stdout", toScriptValue(stdout));
@@ -283,6 +280,8 @@ void Process::onProcessError(QProcess::ProcessError err)
     trace() << ".onProcessError(" << process->errorString() << ")";
 
     error() << "process failed:" << m_argv;
+    error() << "stdout:" << m_stdouts[process];
+    error() << "stderr:" << m_stderrs[process];
     handleFinishedProcess(process, OperationAttached::Error);
 }
 
