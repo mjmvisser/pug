@@ -101,7 +101,7 @@ const QString FilePattern::patternFromPath(const QString &path)
                 "("
                     "(?<frame>[0-9.]*?)|"
                     "(?<frameSpec>"
-                        "(?<hash>#)|"
+                        "(?<hash>#+)|"
                         "(?<whirl>@+)|"
                         "(?<nuke>%0\\d+d)|"
                         "(?<houdini>($F?<width>(\\d?)))"
@@ -130,7 +130,10 @@ const QString FilePattern::patternFromPath(const QString &path)
                 frameSpec = "%d";
             }
         } else if (!match.captured("hash").isNull()) {
-            frameSpec = "%04d";
+            int width = match.captured("hash").length();
+            if (width == 1)
+                width = 4;
+            frameSpec = "%" + QString("0%1d").arg(width);
 
         } else if (!match.captured("whirl").isNull()) {
             int width = match.captured("whirl").length();

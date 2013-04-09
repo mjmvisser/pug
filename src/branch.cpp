@@ -340,6 +340,9 @@ const QVariant Branch::match(const QString pattern, const QString path, bool exa
     static const QRegularExpression replaceFrameSpecRegexp("%0(\\d+)d");
     matchRegexpStr.replace(replaceFrameSpecRegexp, "\\d{\\1}");
 
+    // replace #### with \d{4}
+    matchRegexpStr.replace("####", "\\d{4}");
+
     if (exact)
         matchRegexpStr += "$";
 
