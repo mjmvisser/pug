@@ -4,7 +4,7 @@ import ShotgunEntities 1.0
 import MokkoTools 1.0
 
 Folder {
-    pattern: "3d/tracking/"
+    pattern: "dept/tracking/"
     
     ShotgunStep {
         id: sg_step
@@ -47,6 +47,7 @@ Folder {
                 step: sg_step
                 user: node("/sg_user")
                 category: "source"
+                code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
             }
         }
         
@@ -92,7 +93,7 @@ Folder {
             id: releaseLowUndist
             name: "releaseLowUndist"
             root: release
-            pattern: "render/1280x675/jpg/{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_{VERSION}_1280x675.%04d.jpg"
+            pattern: "render/1120x630/jpg/{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_{VERSION}_1120x630.%04d.jpg"
             ReleaseOperation.source: workLowUndist
 
             ShotgunPublishEvent {
@@ -102,7 +103,7 @@ Folder {
                 link: node("/shot/sg_shot")
                 step: sg_step
                 user: node("/sg_user")
-                resolution: "1280x720"
+                resolution: "1120x630"
                 category: "render"
                 thumbnail: workUndistThumbnail
                 filmstrip: workUndistFilmstrip
@@ -114,7 +115,7 @@ Folder {
             id: releaseFullUndist
             name: "releaseFullUndist"
             root: release
-            pattern: "render/2048x1152/jpg/{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_{VERSION}_2048x1152.%04d.jpg"
+            pattern: "render/2240x1260/jpg/{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_{VERSION}_2240x1260.%04d.jpg"
             ReleaseOperation.source: workFullUndist
 
             ShotgunPublishEvent {
@@ -124,7 +125,7 @@ Folder {
                 link: node("/shot/sg_shot")
                 step: sg_step
                 user: node("/sg_user")
-                resolution: "2048x1152"
+                resolution: "2240x1260"
                 category: "render"
                 thumbnail: workUndistThumbnail
                 filmstrip: workUndistFilmstrip
@@ -149,7 +150,7 @@ Folder {
             id: workNukeScript
             name: "workNukeScript"
             root: work
-            pattern: "exports/{SEQUENCE}_{SHOT}.nk"
+            pattern: "exports/{SEQUENCE}_{SHOT}_cam.nk"
         }
 
         File {
@@ -164,12 +165,13 @@ Folder {
             name: "workLowUndist"
             input: node("/plate/sg_currentPlate")
             nukeScript: workNukeScript
-            format: "720p"
+            format: "low"
             mode: "undistort"
             output: true
         }
         
         LensDistort {
+            logLevel: Log.Info
             id: workFullUndist
             name: "workFullUndist"
             input: node("/plate/sg_currentPlate")
