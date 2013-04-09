@@ -60,9 +60,8 @@ QQmlListProperty<FrameView> ElementView::frames_()
 void ElementView::setFrames(ElementView *that)
 {
     setFrameCount(that->frameCount());
-    for (int i = 0; i < frameCount(); i++) {
+    for (int i = 0; i < frameCount(); i++)
         m_frames[i]->setFrame(that->m_frames[i]->frame());
-    }
 }
 
 int ElementView::frame_count(QQmlListProperty<FrameView> *prop)
@@ -101,8 +100,8 @@ int ElementView::frameCount() const
 
 void ElementView::setFrameCount(int count)
 {
-    for (int i = m_frames.length(); i < count; i++)
-        m_frames.append(new FrameView(node(), m_index, i, this));
+    node()->details().property(m_index).property("element").property("frames").setProperty("length", count);
+    emit node()->detailsChanged();
 }
 
 const QDateTime ElementView::timestamp() const
