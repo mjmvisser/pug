@@ -14,7 +14,6 @@ class TractorTask : public TractorBlock
     Q_OBJECT
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
     Q_PROPERTY(bool serialSubtasks READ hasSerialSubtasks WRITE setSerialSubtasks NOTIFY serialSubtasksChanged)
-    Q_PROPERTY(QQmlListProperty<TractorTask> subtasks READ subtasks_ NOTIFY subtasksChanged)
     Q_PROPERTY(QQmlListProperty<TractorCmd> cmds READ cmds_ NOTIFY cmdsChanged)
     Q_PROPERTY(QQmlListProperty<TractorCmd> cleanup READ cleanup_ NOTIFY cleanupChanged)
 public:
@@ -26,7 +25,6 @@ public:
     bool hasSerialSubtasks() const;
     void setSerialSubtasks(bool);
 
-    QQmlListProperty<TractorTask> subtasks_();
     void addSubtask(TractorTask *);
 
     QQmlListProperty<TractorCmd> cmds_();
@@ -40,17 +38,10 @@ public:
 signals:
     void titleChanged(const QString &title);
     void serialSubtasksChanged(bool serialSubtasks);
-    void subtasksChanged();
     void cmdsChanged();
     void cleanupChanged();
 
 private:
-    // subtasks property
-    static void subtasks_append(QQmlListProperty<TractorTask> *, TractorTask *);
-    static int subtasks_count(QQmlListProperty<TractorTask> *);
-    static TractorTask *subtask_at(QQmlListProperty<TractorTask> *, int);
-    static void subtasks_clear(QQmlListProperty<TractorTask> *);
-
     // cmds property
     static void cmds_append(QQmlListProperty<TractorCmd> *, TractorCmd *);
     static int cmds_count(QQmlListProperty<TractorCmd> *);

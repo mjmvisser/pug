@@ -34,53 +34,9 @@ void TractorTask::setSerialSubtasks(bool flag) {
     }
 }
 
-QQmlListProperty<TractorTask> TractorTask::subtasks_()
-{
-    return QQmlListProperty<TractorTask>(this, 0, TractorTask::subtasks_append,
-                                        TractorTask::subtasks_count,
-                                        TractorTask::subtask_at,
-                                        TractorTask::subtasks_clear);
-}
-
 void TractorTask::addSubtask(TractorTask *task)
 {
-    task->setParent(this);
     m_subtasks.append(task);
-}
-
-// subtasks property
-void TractorTask::subtasks_append(QQmlListProperty<TractorTask> *prop, TractorTask *p)
-{
-    TractorTask *that = static_cast<TractorTask *>(prop->object);
-
-    p->setParent(that);
-    that->m_subtasks.append(p);
-    emit that->subtasksChanged();
-}
-
-int TractorTask::subtasks_count(QQmlListProperty<TractorTask> *prop)
-{
-    TractorTask *that = static_cast<TractorTask *>(prop->object);
-    return that->m_subtasks.count();
-}
-
-TractorTask *TractorTask::subtask_at(QQmlListProperty<TractorTask> *prop, int i)
-{
-    TractorTask *that = static_cast<TractorTask *>(prop->object);
-    if (i < that->m_subtasks.count())
-        return that->m_subtasks[i];
-    else
-        return 0;
-}
-
-void TractorTask::subtasks_clear(QQmlListProperty<TractorTask> *prop)
-{
-    TractorTask *that = static_cast<TractorTask *>(prop->object);
-    foreach (TractorTask *p, that->m_subtasks) {
-        p->setParent(0);
-    }
-    that->m_subtasks.clear();
-    emit that->subtasksChanged();
 }
 
 QQmlListProperty<TractorCmd> TractorTask::cmds_()
@@ -194,35 +150,35 @@ const QString TractorTask::asString(int indent) const
     if (m_serialSubtasksFlag)
         stream << " -serialsubtasks {1}";
 
-    if (m_subtasks.length() > 0) {
+    if (!m_subtasks.isEmpty()) {
         stream << " -subtasks {" << endl;
-
         foreach (const TractorTask *subtask, m_subtasks) {
-            stream << subtask->asString(indent + 4);
+            stream << subtask->asString(indent + 4) << endl;
         }
-
-        stream << spaces << "}" << endl;
+        stream << spaces << "}";
     }
 
-    if (m_cmds.length() > 0) {
+    if (!m_cmds.isEmpty()) {
         stream << " -cmds {" << endl;
 
         foreach (const TractorCmd *cmd, m_cmds) {
             stream << cmd->asString(indent + 4);
         }
 
-        stream << spaces << "}" << endl;
+        stream << spaces << "}";
     }
 
-    if (m_cleanup.length() > 0) {
+    if (!m_cleanup.isEmpty()) {
         stream << " -cleanup {" << endl;
 
         foreach (const TractorCmd *cmd, m_cleanup) {
             stream << cmd->asString(indent + 4);
         }
 
-        stream << spaces << "}" << endl;
+        stream << spaces << "}";
     }
+
+    stream << endl;
 
     return s;
 }

@@ -26,7 +26,7 @@ TractorOperationAttached::TractorOperationAttached(QObject *parent) :
 
 TractorOperationAttached *TractorOperationAttached::parentAttached()
 {
-    Node *p = node()->firstParent<Node>();
+    Node *p = node()->parent<Node>();
     return p ? p->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject()) : 0;
 }
 
@@ -92,6 +92,7 @@ void TractorOperationAttached::generateTask()
         m_tractorTask->deleteLater();
 
     m_tractorTask = new TractorTask(parentAttached() ? parentAttached()->m_tractorTask : 0);
+    error() << m_tractorTask->QObject::parent();
     m_tractorTask->setTitle(node()->objectName());
 
     // find the first folder parent and get the context
@@ -320,6 +321,70 @@ TractorJob *TractorOperation::tractorJob()
     return m_tractorJob;
 }
 
+static QStringList SKIP_VARS =
+        QStringList()
+        << "ARCH"
+        << "BASH"
+        << "BASHOPTS"
+        << "BASH_ALIASES"
+        << "BASH_ARGC"
+        << "BASH_ARGV"
+        << "BASH_CMDS"
+        << "BASH_EXECUTION_STRING"
+        << "BASH_LINENO"
+        << "BASH_SOURCE"
+        << "BASH_VERSINFO"
+        << "BASH_VERSION"
+        << "DBUS_SESSION_BUS_ADDRESS""OSTYPE"
+        << "DESKTOP_SESSION"
+        << "DIRSTACK"
+        << "EUID"
+        << "GROUP"
+        << "GROUPS"
+        << "HISTCONTROL"
+        << "HISTSIZE"
+        << "HOME"
+        << "HOSTNAME"
+        << "HOSTTYPE"
+        << "IFS"
+        << "IMSETTINGS_INTEGRATE_DESKTOP"
+        << "IMSETTINGS_MODULE"
+        << "KDEDIRS"
+        << "KDE_FULL_SESSION"
+        << "KDE_IS_PRELINKED"
+        << "KDE_MULTIHEAD"
+        << "KDE_SESSION_UID"
+        << "KDE_SESSION_VERSION"
+        << "KMP_DUPLICATE_LIB_OK"
+        << "KONSOLE_DBUS_SERVICE"
+        << "KONSOLE_DBUS_SESSION"
+        << "LANG"
+        << "LANGUAGE"
+        << "LOGNAME"
+        << "LS_COLORS"
+        << "MACHTYPE_"
+        << "MAIL"
+        << "MAYA_APP_DIR"
+        << "OPTERR"
+        << "OPTIND"
+        << "OS"
+        << "OSTYPE"
+        << "POSIXLY_CORRECT"
+        << "PPID"
+        << "PYTHONHOME" // inserted by Maya
+        << "PROFILEHOME"
+        << "SHELL"
+        << "SHELLOPTS"
+        << "SHLVL"
+        << "SSH_AGENT_PID"
+        << "SSH_ASKPASS"
+        << "SSH_AUTH_SOCK"
+        << "WINDOWID"
+        << "WINDOWPATH"
+        << "XCURSOR_THEME"
+        << "UID"
+        << "USER";
+
 void TractorOperation::run(Node *node, const QVariant context, bool reset)
 {
     trace() << ".run(" << node << "," << context << "," << reset << ")";
@@ -328,8 +393,41 @@ void TractorOperation::run(Node *node, const QVariant context, bool reset)
 
     if (m_mode == TractorOperation::Generate || m_mode == TractorOperation::Submit) {
         m_tractorJob = buildTractorJob(node, context);
+
+        QDir tractorDataDir(context.toMap()["TRACTOR_DATA_DIR"].toString());
+        tractorDataDir.mkpath("foo");
+
+        // env dump
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        // add our env
+        for (QVariantMap::const_iterator it = context.toMap().constBegin(); it != context.toMap().constEnd(); ++it) {
+            if (it.value().canConvert<QString>())
+                env.insert(it.key(), it.value().toString());
+        }
+
+        QTemporaryFile envFile(QDir(context.toMap()["TRACTOR_DATA_DIR"].toString()).filePath("tractorXXXXXX.env"));
+        envFile.setAutoRemove(false);
+        if (envFile.open()) {
+            QTextStream stream(&envFile);
+            foreach (const QString key, env.keys()) {
+                if (!SKIP_VARS.contains(key)) {
+                    stream << key << "=" << env.value(key) << endl;
+                }
+            }
+            envFile.close();
+
+            envFile.setPermissions(envFile.permissions() | QFile::ReadGroup | QFile::ReadOwner | QFile::ReadUser);
+
+            m_tractorJob->setEnvKey("envdump=" + envFile.fileName());
+
+        } else {
+            error() << "Can't write environment to" << envFile.fileName();
+        }
+
         if (m_mode == TractorOperation::Submit) {
             m_tractorJob->submit();
+        } else {
+            info() << m_tractorJob->asString();
         }
     } else {
         m_tractorJob = 0;
