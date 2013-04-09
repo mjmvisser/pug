@@ -117,12 +117,16 @@ OperationAttached::Status Pug::runOperation(const QString operationName, const Q
     QVariantMap data = branch->parse(path).toMap();
 
     for (QVariantMap::const_iterator it = extraData.constBegin(); it != extraData.constEnd(); ++it) {
-        if (!data.contains(it.key()))
+        if (!data.contains(it.key())) {
             data.insert(it.key(), it.value());
+        }
     }
 
     for (QVariantMap::const_iterator it = properties.constBegin(); it != properties.constEnd(); ++it) {
-        op->setProperty(it.key().toUtf8().constData(), it.value());
+        bool result = op->setProperty(it.key().toUtf8().constData(), it.value());
+        if (!result) {
+            PugItem::error() << "Failed to set property" << it.key() << "to" << it.value();
+        }
     }
 
     // run a local event loop, terminated when the operation finishes
