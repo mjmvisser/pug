@@ -3,6 +3,7 @@ import Pug 1.0
 
 Process {
     id: self
+    logLevel: Log.Info
 
     // inputs
     property Node input
@@ -34,25 +35,38 @@ Process {
     }
 
     cookable: true
+    updatable: true
 
     argv: try { 
-            [Qt.resolvedUrl("scripts/lensdistort").replace("file://", ""),
-             "--nukeNodePath", nukeScript.details[0].element.pattern,
-             "--inputPath", input.details[index].element.pattern,
-             "--outputFormat", format + (mode == "undistort" ? "_und" : ""),
-             "--outputPath", __outputPath(index),
-             "--frameStart", inputElementsView.elements[index].frameStart(),
-             "--frameEnd", inputElementsView.elements[index].frameEnd()]
+            if (cooking) {
+                [Qt.resolvedUrl("scripts/lensdistort").replace("file://", ""),
+                 "--nukeNodePath", nukeScript.details[0].element.pattern,
+                 "--inputPath", input.details[index].element.pattern,
+                 "--outputFormat", format + (mode == "undistort" ? "_und" : ""),
+                 "--outputPath", __outputPath(index),
+                 "--frameStart", inputElementsView.elements[index].frameStart(),
+                 "--frameEnd", inputElementsView.elements[index].frameEnd()]
+             } else if (updating) {
+                 ["true"]
+             } else {
+                 []
+             }
           } catch (e) {
               []
           } 
     
     function __setDetails(index) {
         elementsView.elements[index].pattern = __outputPath(index, details[index].context);
-        elementsView.elements[index].setFrames(inputElementsView.elements[index]);
+        elementsView.elements[index].scan();
     }
     
     onCookFinished: {
+        for (index = 0; index < count; index++) {
+            __setDetails(0);
+        }
+    }
+    
+    onUpdateFinished: {
         for (index = 0; index < count; index++) {
             __setDetails(0);
         }
