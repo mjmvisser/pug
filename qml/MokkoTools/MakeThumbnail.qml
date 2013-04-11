@@ -21,19 +21,32 @@ Process {
         return directory + baseName + ext;
     }
 
+    updatable: true
     cookable: true
 
     argv: try {
-              [Qt.resolvedUrl("scripts/makeThumbnail.py").replace("file://", ""),
-               "--inputPath", inputElementsView.elements[index].pattern,
-               "--outputPath", __outputPath(index),
-               "--firstFrame", inputElementsView.elements[index].frameStart(),
-               "--lastFrame",  inputElementsView.elements[index].frameEnd(),
-               "--filmstrip", filmstrip]
+              if (updating) {
+                  ["true"]    
+              } else if (cooking) {
+                  [Qt.resolvedUrl("scripts/makeThumbnail.py").replace("file://", ""),
+                   "--inputPath", inputElementsView.elements[index].pattern,
+                   "--outputPath", __outputPath(index),
+                   "--firstFrame", inputElementsView.elements[index].frameStart(),
+                   "--lastFrame",  inputElementsView.elements[index].frameEnd(),
+                   "--filmstrip", filmstrip]
+              } else {
+                  []
+              }
           } catch (e) {
               []
           }
     
+    onUpdateFinished: {
+        for (index = 0; index < count; index++) {
+            elementsView.elements[index].pattern = __outputPath(index);
+        } 
+    }
+
     onCookFinished: {
         for (index = 0; index < count; index++) {
             elementsView.elements[index].pattern = __outputPath(index);
