@@ -4,6 +4,7 @@ import Pug 1.0
 Process {
     id: self
     logLevel: Log.Info
+    TractorOperation.tags: "nuke"
 
     // inputs
     property Node input
@@ -56,6 +57,10 @@ Process {
           } 
     
     function __setDetails(index) {
+        // merge the input context
+        details[index].context = Util.mergeContexts(input.details[index].context, details[index].context);
+
+        // set the pattern and scan for file info
         elementsView.elements[index].pattern = __outputPath(index, details[index].context);
         elementsView.elements[index].scan();
     }
