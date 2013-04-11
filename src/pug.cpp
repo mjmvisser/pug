@@ -97,7 +97,7 @@ const QString Pug::map(const QString node, const QVariantMap fields) const {
     return result.toString();
 }
 
-OperationAttached::Status Pug::runOperation(const QString operationName, const QVariantMap properties, const QString path, const QVariantMap extraData)
+OperationAttached::Status Pug::runOperation(const QString operationName, const QVariantMap properties, const QString nodePath, const QVariantMap context)
 {
     // find the operation
     Operation *op = m_root->findOperation(operationName);
@@ -107,19 +107,31 @@ OperationAttached::Status Pug::runOperation(const QString operationName, const Q
         return OperationAttached::Invalid;
     }
 
-    Branch *branch = m_root->findBranch(path);
+//    Branch *branch = m_root->findBranch(path);
+//
+//    if (!branch) {
+//        PugItem::error() << "Can't find branch for" << path;
+//        return OperationAttached::Invalid;
+//    }
+//
+//    QVariantMap data = branch->parse(path).toMap();
+//
+//    for (QVariantMap::const_iterator it = context.constBegin(); it != context.constEnd(); ++it) {
+//        if (!data.contains(it.key())) {
+//            data.insert(it.key(), it.value());
+//        }
+//    }
 
-    if (!branch) {
-        PugItem::error() << "Can't find branch for" << path;
-        return OperationAttached::Invalid;
+    Node *node = m_root->node(nodePath);
+
+    if (node->path() != nodePath) {
+        PugItem::error() << "path of node returned is" << node->path() << "not" << nodePath;
+        return OperationAttached::Error;
     }
 
-    QVariantMap data = branch->parse(path).toMap();
-
-    for (QVariantMap::const_iterator it = extraData.constBegin(); it != extraData.constEnd(); ++it) {
-        if (!data.contains(it.key())) {
-            data.insert(it.key(), it.value());
-        }
+    if (!node) {
+        PugItem::error() << "Can't find node" << nodePath;
+        return OperationAttached::Error;
     }
 
     for (QVariantMap::const_iterator it = properties.constBegin(); it != properties.constEnd(); ++it) {
@@ -132,7 +144,7 @@ OperationAttached::Status Pug::runOperation(const QString operationName, const Q
     // run a local event loop, terminated when the operation finishes
     QEventLoop eventLoop;
     connect(op, SIGNAL(finished(OperationAttached::Status)), &eventLoop, SLOT(quit()));
-    QMetaObject::invokeMethod(op, "run", Qt::QueuedConnection, Q_ARG(Node*, branch), Q_ARG(QVariant, data));
+    QMetaObject::invokeMethod(op, "run", Qt::QueuedConnection, Q_ARG(Node*, node), Q_ARG(QVariant, context));
     eventLoop.exec();
 
     return op->status();

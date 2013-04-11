@@ -26,8 +26,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     QMetaObject::invokeMethod(pug, "load", Qt::QueuedConnection, Q_ARG(QString, pugRoot));
     eventLoop.exec();
 
-    QString currentDirPath = qgetenv("PWD");
-    currentDirPath += "/";
+//    QString currentDirPath = qgetenv("PWD");
+//    currentDirPath += "/";
 
     bool printStatus = false;
 
@@ -35,8 +35,9 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
         QStringList args = app.arguments().mid(1);
         QString opName = args.takeFirst();
 
-        QString branch = currentDirPath;
-        QVariantMap properties, extraData;
+        QString nodePath;
+//        QString cwd = currentDirPath;
+        QVariantMap properties, context;
 
         while (args.length() > 0) {
             QString arg = args.takeFirst();
@@ -60,28 +61,36 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
                     if (dataParts.length() != 2) {
                         qWarning() << "Skipping badly formatted context data:" << data;
                     } else {
-                        extraData.insert(dataParts[0], dataParts[1]);
+                        context.insert(dataParts[0], dataParts[1]);
                     }
                 }
             } else if (!arg.startsWith('-')) {
-                QString path = arg;
-                QFileInfo pathInfo(path);
-                if (pathInfo.isDir())
-                    path += "/";
-                branch = path;
+                nodePath = arg;
+//                QString path = arg;
+//                QFileInfo pathInfo(path);
+//                if (pathInfo.isDir())
+//                    path += "/";
+//                cwd = path;
+            } else if (arg == "--") {
+                // pass
             } else {
                 qWarning() << "Skipping unknown parameter:" << arg;
             }
         }
 
-        OperationAttached::Status status = pug->runOperation(opName, properties, branch, extraData);
+        OperationAttached::Status status = pug->runOperation(opName, properties, nodePath, context);
 
         if (printStatus) {
             pug->root()->printStatus();
         }
 
         qDebug() << status;
+        if (status == OperationAttached::Finished)
+            return 0;
+        else
+            return 1;
     } else {
         qDebug() << "usage:" << app.arguments()[0].toUtf8().constData() << "COMMAND" << "[-properties KEY=VALUE ...]" << "[-context KEY=VALUE ...]" << "[PATH]";
+        return 1;
     }
 }
