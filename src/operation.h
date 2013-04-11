@@ -7,6 +7,7 @@
 #include <QString>
 #include <QVariant>
 #include <QSet>
+#include <QFlags>
 
 #include "pugitem.h"
 
@@ -24,6 +25,9 @@ class OperationAttached : public PugItem
 public:
     // these are listed in order of increasing comparison precedence
     enum Status { Invalid, Finished, None, Idle, Running, Error };
+
+    enum Target { Inputs=0x01, Self=0x02, Children=0x04 };
+    Q_DECLARE_FLAGS(Targets, Target)
 
     explicit OperationAttached(QObject *parent = 0);
 
@@ -48,7 +52,7 @@ public:
     virtual void reset();
     virtual void run() = 0;
 
-    void run(Operation *);
+    void run(Operation *, Targets);
 
     void resetAllStatus();
     void resetAll(const QVariantMap, QSet<const OperationAttached *>&);
@@ -121,7 +125,10 @@ private:
     Status m_status;
     QVariantMap m_context;
     Operation *m_operation;
+    Targets m_targets;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(OperationAttached::Targets)
 
 class OperationStatusList : public QList<OperationAttached::Status>
 {
@@ -163,8 +170,10 @@ public:
     void setStatus(OperationAttached::Status);
 
     void resetAll(Node *node, const QVariantMap context);
+    void resetAllStatus(Node *node);
 
-    Q_INVOKABLE virtual void run(Node *node, const QVariant context, bool reset=true);
+    Q_INVOKABLE virtual void run(Node *node, const QVariant context, bool reset=true,
+            OperationAttached::Targets targets=OperationAttached::Inputs|OperationAttached::Self|OperationAttached::Children);
 
     //static OperationAttached *qmlAttachedProperties(QObject *); // must be defined in subclasses
 
@@ -184,9 +193,7 @@ protected slots:
     void onFinished(OperationAttached *);
 
 protected:
-    void resetAllStatus(Node *node);
-
-    void startRunning(Node *node);
+    void startRunning(Node *, OperationAttached::Targets);
     void continueRunning();
 
     OperationAttached::Status dependenciesStatus() const;
@@ -210,6 +217,7 @@ private:
     Node *m_node;
     QVariantMap m_context;
     OperationAttached::Status m_status;
+    OperationAttached::Targets m_targets;
 };
 
 inline QDebug operator<<(QDebug dbg, OperationAttached::Status s)

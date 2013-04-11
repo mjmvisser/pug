@@ -5,7 +5,8 @@
 OperationAttached::OperationAttached(QObject *parent) :
     PugItem(parent),
     m_status(OperationAttached::Invalid),
-    m_operation()
+    m_operation(),
+    m_targets(OperationAttached::Inputs|OperationAttached::Children|OperationAttached::Self)
 {
 }
 
@@ -55,12 +56,15 @@ OperationAttached::Status OperationAttached::inputsStatus() const
 {
     OperationAttached::Status status = OperationAttached::Invalid;
 
-    foreach (const Node* input, node()->upstream()) {
-        const OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-        OperationAttached::Status inputStatus = inputAttached->status();
-        //trace() << "status of" << input << "is" << inputStatus;
-        if (inputStatus > status)
-            status = inputStatus;
+    if (m_targets & OperationAttached::Inputs) {
+        foreach (const Node* input, node()->upstream()) {
+            const OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
+            OperationAttached::Status inputStatus = inputAttached->status();
+            //trace() << "status of" << input << "is" << inputStatus;
+            if (inputStatus > status)
+                status = inputStatus;
+        }
+
     }
 
     return status;
@@ -70,18 +74,18 @@ OperationAttached::Status OperationAttached::childrenStatus() const
 {
     OperationAttached::Status status = OperationAttached::Invalid;
 
-    foreach (const QObject* obj, node()->children()) {
-        const Node *child = qobject_cast<const Node *>(obj);
-        if (child && child->isOutput()) {
-            const OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-            OperationAttached::Status childStatus = childAttached->status();
-            //trace() << "status of" << child << "is" << childStatus;
-            if (childStatus > status)
-                status = childStatus;
+    if (m_targets & OperationAttached::Children) {
+        foreach (const QObject* obj, node()->children()) {
+            const Node *child = qobject_cast<const Node *>(obj);
+            if (child && child->isOutput()) {
+                const OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
+                OperationAttached::Status childStatus = childAttached->status();
+                //trace() << "status of" << child << "is" << childStatus;
+                if (childStatus > status)
+                    status = childStatus;
+            }
         }
     }
-
-    trace() << node() << ".childrenStatus() ->" << status;
 
     return status;
 }
@@ -173,11 +177,13 @@ void OperationAttached::resetAll(const QVariantMap context, QSet<const Operation
     }
 }
 
-void OperationAttached::run(Operation *op)
+void OperationAttached::run(Operation *op, OperationAttached::Targets targets)
 {
-    debug() << "running" << node() << "with" << op;
+    debug() << "running" << node() << "with" << op << static_cast<int>(targets);
     trace() << node() << ".run(" << op << "," << ")";
     Q_ASSERT(op);
+
+    m_targets = targets;
 
     // check for cycles
     if (node()->cycleCheck()) {
@@ -330,7 +336,7 @@ void OperationAttached::runInputs()
 
         if (inputStatus == OperationAttached::None) {
             debug() << node() << "running input" << input;
-            inputAttached->run(m_operation);
+            inputAttached->run(m_operation, m_targets);
         } else if (inputStatus == OperationAttached::Idle) {
             // input has already been run, so transfer control to it
             inputAttached->continueRunning();
@@ -362,7 +368,7 @@ void OperationAttached::runChildren()
 
             if (childStatus == OperationAttached::None) {
                 debug() << node() << "running child" << child;
-                childAttached->run(m_operation);
+                childAttached->run(m_operation, m_targets);
             } else if (childStatus == OperationAttached::Idle) {
                 // child has already been run, so transfer control to it
                 childAttached->continueRunning();
@@ -457,7 +463,6 @@ void OperationAttached::dispatchChildren()
         break;
 
     case OperationAttached::Error:
-        setStatus(OperationAttached::Error);
         emit finished(this);
         break;
 
@@ -504,7 +509,6 @@ void OperationAttached::dispatch()
         break;
 
     case OperationAttached::Error:
-        setStatus(OperationAttached::Error);
         emit finished(this);
         break;
 
@@ -541,7 +545,10 @@ void OperationAttached::setContext(const QVariantMap context)
 }
 
 Operation::Operation(QObject *parent) :
-        PugItem(parent), m_node(), m_status(OperationAttached::Invalid)
+        PugItem(parent),
+        m_node(),
+        m_status(OperationAttached::Invalid),
+        m_targets(OperationAttached::Inputs|OperationAttached::Children|OperationAttached::Self)
 {
 }
 
@@ -625,6 +632,7 @@ void Operation::setStatus(OperationAttached::Status s)
 
 void Operation::resetAll(Node *node, const QVariantMap context)
 {
+    Q_ASSERT(node);
     trace() << ".resetAll(" << node << "," << context << ")";
     // TODO: cycle detection
 
@@ -669,7 +677,7 @@ void Operation::resetAllStatus(Node *node)
     }
 }
 
-void Operation::run(Node *node, const QVariant context, bool reset)
+void Operation::run(Node *node, const QVariant context, bool reset, OperationAttached::Targets targets)
 {
     debug() << "Running" << name() << "on" << node->path();
     trace() << ".run(" << node << "," << context << "," << reset << ")";
@@ -679,26 +687,27 @@ void Operation::run(Node *node, const QVariant context, bool reset)
     }
 
     // ready...
-    if (reset)
+    if (reset) {
         resetAll(node, context.toMap());
 
-    // reset all reachable OperationAttached statuses
-    resetAllStatus(node);
+        // reset all reachable OperationAttached statuses
+        resetAllStatus(node);
+    }
 
     Q_ASSERT(m_status == OperationAttached::None);
 
     // onward!
-    startRunning(node);
+    startRunning(node, targets);
 }
 
-void Operation::startRunning(Node *node)
+void Operation::startRunning(Node *node, OperationAttached::Targets targets)
 {
     trace() << ".startRunning(" << node << ")";
     Q_ASSERT(node);
     Q_ASSERT(m_status == OperationAttached::None);
 
-    // stash our running node and context to pass to dependencies and triggers
     m_node = node;
+    m_targets = targets;
 
     continueRunning();
 }
@@ -734,7 +743,7 @@ void Operation::runDependencies()
         }
 
         if (status == OperationAttached::None)
-            op->startRunning(m_node);
+            op->startRunning(m_node, m_targets);
     }
 }
 
@@ -767,7 +776,7 @@ void Operation::runTriggers()
         }
 
         if (op->status() == OperationAttached::None)
-            op->startRunning(m_node);
+            op->startRunning(m_node, m_targets);
     }
 }
 
@@ -823,14 +832,9 @@ void Operation::continueRunning()
             debug() << node() <<  "setting status to running" << attached;
             setStatus(OperationAttached::Running);
 
-            // reset the attachment statuses again
-            // we do this right before we run it, since the same ObjectAttachment can be used more than once
-            // for example, see tst_testOperation.qml
-            attached->resetAllStatus();
-
             connect(attached, &OperationAttached::finished,
                     this, &Operation::onFinished);
-            attached->run(this);
+            attached->run(this, m_targets);
             break;
 
         case OperationAttached::Running:
