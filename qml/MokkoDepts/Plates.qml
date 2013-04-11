@@ -3,7 +3,7 @@ import ShotgunEntities 1.0
 import MokkoTools 1.0
 
 Folder {
-    pattern: "2d/plate/"
+    pattern: "dept/plate/"
     
     fields: [
         Field { name: "DEPARTMENT"; values: "plate" },
