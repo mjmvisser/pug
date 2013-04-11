@@ -40,12 +40,12 @@ Root {
             id: tractor
             name: "tractor"
             mode: TractorOperation.Submit
-            target: update
+            target: cook
         }
     ]
 
     fields: [
-        Field { name: "PROJECT"; env: "MOKKO_PROJECT_ID"; regexp: "[0-9]{3}_[a-z]+" },
+        Field { name: "PROJECT"; env: "MOKKO_PROJECT_ID"; regexp: "[0-9]{3}_[a-z0-9]+" },
         Field { name: "SEQUENCE"; env: "MOKKO_SEQUENCE" },
         Field { name: "SHOT"; env: "MOKKO_SHOT" },
         Field { name: "ASSET"; env: "MOKKO_ASSET_NAME" },
