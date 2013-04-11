@@ -216,6 +216,8 @@ void ElementView::scan(const QFileInfoList &entries)
 {
     trace() << ".scan(" << ")";
 
+    setFrameCount(0);
+
     FilePattern fp(pattern());
 
     QMap<int, QFileInfo> entriesByFrame;
@@ -238,6 +240,8 @@ void ElementView::scan(const QFileInfoList &entries)
 void ElementView::scan(const QFileInfoList &entries, const FramePattern &framePattern)
 {
     trace() << ".scan(" << ")";
+
+    setFrameCount(0);
 
     FilePattern filePattern(pattern());
 
