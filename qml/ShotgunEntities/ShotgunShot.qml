@@ -23,8 +23,6 @@ ShotgunEntity {
         Input { name: "sequence" }
     ]
     
-    output: (action === ShotgunEntity.Create)
-
     count: parent.count
 
     ShotgunField {

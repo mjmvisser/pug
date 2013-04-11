@@ -30,8 +30,6 @@ ShotgunEntity {
         Input { name: "user" }
     ]
     
-    output: (action === ShotgunEntity.Create)
-
     count: parent.count
 
     property string code

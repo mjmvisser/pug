@@ -29,8 +29,6 @@ ShotgunEntity {
         Input { name: "step" }
     ]
 
-    output: (action === ShotgunEntity.Create)
-
     ShotgunField {
         id: projectField
         name: "projectField"

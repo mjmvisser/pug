@@ -14,8 +14,6 @@ ShotgunEntity {
 
     inputs: Input { name: "project" }
     
-    output: (action === ShotgunEntity.Create)
-
     count: parent.count
 
     ShotgunField {

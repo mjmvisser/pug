@@ -8,8 +8,6 @@ ShotgunEntity {
         loginField
     ]
 
-    output: (action === ShotgunEntity.Create)
-
     count: parent.count
 
     ShotgunField {

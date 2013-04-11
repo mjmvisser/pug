@@ -37,8 +37,6 @@ ShotgunEntity {
         Input { name: "dependencies" }
     ]
 
-    output: (action === ShotgunEntity.Create)
-
     count: parent.count
 
     property string code
