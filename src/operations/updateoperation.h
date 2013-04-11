@@ -9,7 +9,6 @@ class UpdateOperationAttached : public OperationAttached
 public:
     explicit UpdateOperationAttached(QObject *parent = 0);
 
-    virtual void reset();
     virtual void run();
 
 signals:

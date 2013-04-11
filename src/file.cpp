@@ -99,6 +99,8 @@ void File::onUpdate(const QVariant context)
 
     OperationAttached::Status status = OperationAttached::Finished;
 
+    clearDetails();
+
     if (m_input) {
         setCount(m_input->count());
 

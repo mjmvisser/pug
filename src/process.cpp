@@ -133,6 +133,8 @@ void Process::onUpdate(const QVariant context)
     trace() << ".onUpdate(" << context << ")";
     Q_ASSERT(!m_cookingFlag);
     if (m_updatableFlag) {
+        // TODO: what if count is 0?
+        clearDetails();
         setUpdating(true);
         m_statuses.clear();
         for (int index = 0; index < count(); index++) {
@@ -167,6 +169,9 @@ void Process::executeForIndex(int index, const QVariant context)
     Q_ASSERT(m_updatingFlag || m_cookingFlag);
 
     Q_ASSERT(details().isArray());
+
+    // save the context
+    setDetail(index, "context", toScriptValue(context));
 
     if (m_processes.size() != count())
         m_processes.resize(count());
@@ -231,8 +236,6 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     QString stdout = m_stdouts.take(process);
     QString stderr = m_stderrs.take(process);
 
-    QVariantMap context = m_contexts.take(process);
-    setDetail(index, "context", toScriptValue(context));
     setDetail(index, "process", "stdout", toScriptValue(stdout));
     setDetail(index, "process", "stderr", toScriptValue(stderr));
     setDetail(index, "process", "exitCode", toScriptValue(process->exitCode()));

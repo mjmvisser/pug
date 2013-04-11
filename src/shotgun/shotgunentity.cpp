@@ -49,12 +49,11 @@ QQmlListProperty<ShotgunField> ShotgunEntity::shotgunFields_()
 }
 
 // shotgunFields property
-void ShotgunEntity::shotgunFields_append(QQmlListProperty<ShotgunField> *prop, ShotgunField *in)
+void ShotgunEntity::shotgunFields_append(QQmlListProperty<ShotgunField> *prop, ShotgunField *f)
 {
     ShotgunEntity *that = static_cast<ShotgunEntity *>(prop->object);
 
-    in->setParent(that);
-    that->m_shotgunFields.append(in);
+    that->m_shotgunFields.append(f);
     emit that->shotgunFieldsChanged();
 }
 
@@ -76,9 +75,7 @@ ShotgunField *ShotgunEntity::shotgunField_at(QQmlListProperty<ShotgunField> *pro
 void ShotgunEntity::shotgunFields_clear(QQmlListProperty<ShotgunField> *prop)
 {
     ShotgunEntity *that = static_cast<ShotgunEntity *>(prop->object);
-    foreach (ShotgunField *in, that->m_shotgunFields) {
-        in->setParent(0);
-    }
+    that->m_shotgunFields.clear();
     emit that->shotgunFieldsChanged();
 }
 
@@ -141,6 +138,7 @@ void ShotgunEntity::setLimit(int l)
 
 void ShotgunEntity::onUpdate(const QVariant context)
 {
+    clearDetails();
     if (m_action == ShotgunEntity::Find) {
         trace() << ".onUpdate(" << context << "," << ")";
 
@@ -316,7 +314,7 @@ const QVariant ShotgunEntity::allFilters()
             if (sgf->count() == 1) {
                 QVariant value = jsValueToVariant(sgf->details().property(0).property("value"));
                 sgf->setIndex(0);
-                Q_ASSERT(value.isValid());
+                Q_ASSERT(value.isValid() || value.isNull());
                 // we skip null fields... TODO: what if we want to match against a null field?
                 if (!value.isNull()) {
                     QVariantList filter;

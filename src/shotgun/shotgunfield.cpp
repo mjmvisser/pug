@@ -242,6 +242,8 @@ void ShotgunField::onUpdate(const QVariant context)
     info() << "Update with context" << context;
     trace() << ".update(" << context << ")";
 
+    clearDetails();
+
     // TODO: ugly...
     if (source())
         setCount(source()->count());

@@ -27,6 +27,8 @@ void Folder::onUpdate(const QVariant context)
 {
     trace() << ".onUpdate(" << context << ")";
 
+    clearDetails();
+
     QScopedPointer<ElementsView> elementsView(new ElementsView(this));
 
     QVariantMap localContext;

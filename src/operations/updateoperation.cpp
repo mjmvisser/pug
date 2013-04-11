@@ -26,11 +26,6 @@ UpdateOperationAttached::UpdateOperationAttached(QObject *parent) :
     }
 }
 
-void UpdateOperationAttached::reset()
-{
-    node()->clearDetails();
-}
-
 void UpdateOperationAttached::run()
 {
     trace() << node() << ".run()";
