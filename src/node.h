@@ -44,8 +44,8 @@ public:
     bool isOutput() const;
     void setOutput(bool f);
 
-    Q_INVOKABLE Node* node(const QString node);
-    const Node* node(const QString node) const;
+    Q_INVOKABLE Node *node(const QString node);
+    const Node *node(const QString node) const;
 
     Q_INVOKABLE const QString path() const;
 
@@ -159,8 +159,6 @@ protected:
 
 private:
     const Node *nodeInChildren(const QString n) const;
-    const Node *firstNamedParent() const;
-    const Node *nodeInFirstNamedParent(const QString n) const;
 
     // children property
     static void nodes_append(QQmlListProperty<Node> *, Node *);

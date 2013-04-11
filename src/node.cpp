@@ -247,16 +247,6 @@ int Node::childCount() const
     return count;
 }
 
-const Node *Node::firstNamedParent() const
-{
-    const Node *p = parent<Node>();
-    while (p && p->name().isEmpty() && !p->isRoot()) {
-        p = p->parent<Node>();
-    }
-
-    return p;
-}
-
 const Node *Node::node(const QString n) const
 {
     if (n.isNull())
@@ -270,7 +260,7 @@ const Node *Node::node(const QString n) const
         return this;
     } else if (n == "..") {
         // found it!
-        return firstNamedParent();
+        return parent<Node>();
     } else if (n[0] == '/') {
         const Node *r = rootBranch();
         return r ? r->nodeInChildren(n.mid(1)) : 0;
@@ -285,11 +275,9 @@ const Node *Node::node(const QString n) const
             else
                 return nodeInChildren(remainder);
         } else if (root == "..") {
-            return nodeInFirstNamedParent(remainder);
+            return parent<Node>() ? parent<Node>()->nodeInChildren(remainder) : 0;
         } else if (remainder.isEmpty()) {
             return nodeInChildren(root);
-        } else {
-            return nodeInChildren(remainder);
         }
     }
 
@@ -306,24 +294,13 @@ const QString Node::path() const
 {
     QString path = objectName();
 
-    const Node *p = firstNamedParent();
+    const Node *p = parent<Node>();
     if (p) {
         path.prepend("/");
         path.prepend(p->path());
     }
 
     return path;
-}
-
-const Node *Node::nodeInFirstNamedParent(const QString n) const
-{
-    const Node *p = firstNamedParent();
-    if (p) {
-        const Node *result = p->node(n);
-        return result;
-    } else {
-        return 0;
-    }
 }
 
 const Node *Node::nodeInChildren(const QString n) const
