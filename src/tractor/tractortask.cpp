@@ -34,9 +34,20 @@ void TractorTask::setSerialSubtasks(bool flag) {
     }
 }
 
+bool TractorTask::hasSubtasks() const
+{
+    return !m_subtasks.isEmpty();
+}
+
 void TractorTask::addSubtask(TractorTask *task)
 {
     m_subtasks.append(task);
+}
+
+void TractorTask::clearSubtasks()
+{
+    qDeleteAll(m_subtasks);
+    m_subtasks.clear();
 }
 
 QQmlListProperty<TractorCmd> TractorTask::cmds_()
@@ -49,7 +60,6 @@ QQmlListProperty<TractorCmd> TractorTask::cmds_()
 
 void TractorTask::addCmd(TractorCmd *cmd)
 {
-    cmd->setParent(this);
     m_cmds.append(cmd);
 }
 
@@ -58,7 +68,6 @@ void TractorTask::cmds_append(QQmlListProperty<TractorCmd> *prop, TractorCmd *p)
 {
     TractorTask *that = static_cast<TractorTask *>(prop->object);
 
-    p->setParent(that);
     that->m_cmds.append(p);
     emit that->cmdsChanged();
 }
@@ -81,9 +90,6 @@ TractorCmd *TractorTask::cmd_at(QQmlListProperty<TractorCmd> *prop, int i)
 void TractorTask::cmds_clear(QQmlListProperty<TractorCmd> *prop)
 {
     TractorTask *that = static_cast<TractorTask *>(prop->object);
-    foreach (TractorCmd *p, that->m_cmds) {
-        p->setParent(0);
-    }
     that->m_cmds.clear();
     emit that->cmdsChanged();
 }
@@ -101,7 +107,6 @@ void TractorTask::cleanup_append(QQmlListProperty<TractorCmd> *prop, TractorCmd 
 {
     TractorTask *that = static_cast<TractorTask *>(prop->object);
 
-    p->setParent(that);
     that->m_cleanup.append(p);
     emit that->cleanupChanged();
 }
@@ -124,61 +129,62 @@ TractorCmd *TractorTask::cleanup_at(QQmlListProperty<TractorCmd> *prop, int i)
 void TractorTask::cleanup_clear(QQmlListProperty<TractorCmd> *prop)
 {
     TractorTask *that = static_cast<TractorTask *>(prop->object);
-    foreach (TractorCmd *p, that->m_cleanup) {
-        p->setParent(0);
-    }
     that->m_cleanup.clear();
     emit that->cleanupChanged();
 }
 
 void TractorTask::addCleanup(TractorCmd *cmd)
 {
-    cmd->setParent(this);
     m_cleanup.append(cmd);
 }
 
-const QString TractorTask::asString(int indent) const
+const QString TractorTask::asString(int indent, QSet<const TractorBlock *>& visited) const
 {
     QString s;
     QTextStream stream(&s);
 
     QString spaces(indent, ' ');
 
-    stream << spaces << "Task";
-    stream << " -title { " << m_title << " }";
+    if (visited.contains(this)) {
+        stream << spaces << "Instance {" << m_title + ":self" << "}" << endl;
+    } else {
+        visited.insert(this);
 
-    if (m_serialSubtasksFlag)
-        stream << " -serialsubtasks {1}";
+        stream << spaces << "Task";
+        stream << " -title { " << m_title << " }";
 
-    if (!m_subtasks.isEmpty()) {
-        stream << " -subtasks {" << endl;
-        foreach (const TractorTask *subtask, m_subtasks) {
-            stream << subtask->asString(indent + 4) << endl;
-        }
-        stream << spaces << "}";
-    }
+        if (m_serialSubtasksFlag)
+            stream << " -serialsubtasks {1}";
 
-    if (!m_cmds.isEmpty()) {
-        stream << " -cmds {" << endl;
-
-        foreach (const TractorCmd *cmd, m_cmds) {
-            stream << cmd->asString(indent + 4);
+        if (!m_subtasks.isEmpty()) {
+            stream << " -subtasks {" << endl;
+            foreach (const TractorTask *subtask, m_subtasks) {
+                stream << subtask->asString(indent + 4, visited) << endl;
+            }
+            stream << spaces << "}";
         }
 
-        stream << spaces << "}";
-    }
+        if (!m_cmds.isEmpty()) {
+            stream << " -cmds {" << endl;
 
-    if (!m_cleanup.isEmpty()) {
-        stream << " -cleanup {" << endl;
+            foreach (const TractorCmd *cmd, m_cmds) {
+                stream << cmd->asString(indent + 4, visited);
+            }
 
-        foreach (const TractorCmd *cmd, m_cleanup) {
-            stream << cmd->asString(indent + 4);
+            stream << spaces << "}";
         }
 
-        stream << spaces << "}";
+        if (!m_cleanup.isEmpty()) {
+            stream << " -cleanup {" << endl;
+
+            foreach (const TractorCmd *cmd, m_cleanup) {
+                stream << cmd->asString(indent + 4, visited);
+            }
+
+            stream << spaces << "}";
+        }
+
+        stream << endl;
     }
-
-    stream << endl;
-
     return s;
 }

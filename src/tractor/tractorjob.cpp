@@ -65,18 +65,18 @@ void TractorJob::setComment(const QString &comment)
     }
 }
 
-//const QString &TractorJob::metadata() const
-//{
-//    return m_metadata;
-//}
-//
-//void TractorJob::setMetadata(const QString &metadata)
-//{
-//    if (m_metadata != metadata) {
-//        m_metadata = metadata;
-//        emit metadataChanged(metadata);
-//    }
-//}
+const QString &TractorJob::metadata() const
+{
+    return m_metadata;
+}
+
+void TractorJob::setMetadata(const QString &metadata)
+{
+    if (m_metadata != metadata) {
+        m_metadata = metadata;
+        emit metadataChanged(metadata);
+    }
+}
 
 bool TractorJob::hasSerialSubtasks() const
 {
@@ -100,7 +100,6 @@ QQmlListProperty<TractorTask> TractorJob::subtasks_()
 
 void TractorJob::addSubtask(TractorTask *task)
 {
-    task->setParent(this);
     m_subtasks.append(task);
 }
 
@@ -109,7 +108,6 @@ void TractorJob::subtasks_append(QQmlListProperty<TractorTask> *prop, TractorTas
 {
     TractorJob *that = static_cast<TractorJob *>(prop->object);
 
-    p->setParent(that);
     that->m_subtasks.append(p);
     emit that->subtasksChanged();
 }
@@ -132,15 +130,17 @@ TractorTask *TractorJob::subtask_at(QQmlListProperty<TractorTask> *prop, int i)
 void TractorJob::subtasks_clear(QQmlListProperty<TractorTask> *prop)
 {
     TractorJob *that = static_cast<TractorJob *>(prop->object);
-    foreach (TractorTask *p, that->m_subtasks) {
-        p->setParent(0);
-    }
     that->m_subtasks.clear();
     emit that->subtasksChanged();
 }
 
-const QString TractorJob::asString(int indent) const
+const QString TractorJob::asString(int indent, QSet<const TractorBlock *>& visited) const
 {
+    if (visited.contains(this))
+        return QString();
+    else
+        visited.insert(this);
+
     QString s = "";
     QTextStream stream(&s);
 
@@ -162,8 +162,8 @@ const QString TractorJob::asString(int indent) const
     if (m_comment.length() > 0)
         stream << " -comment {" << m_comment << "}";
 
-    //if (m_metadata.length() > 0)
-    //    stream << " -metadata {" << m_metadata << "}";
+    if (m_metadata.length() > 0)
+        stream << " -metadata {" << m_metadata << "}";
 
     if (m_serialSubtasksFlag)
         stream << " -serialsubtasks {1}";
@@ -172,7 +172,7 @@ const QString TractorJob::asString(int indent) const
         stream << " -subtasks {" << endl;
 
         foreach (const TractorTask *subtask, m_subtasks) {
-            stream << subtask->asString(indent + 4);
+            stream << subtask->asString(indent + 4, visited);
         }
 
         stream << spaces << "}" << endl;
@@ -186,8 +186,10 @@ void TractorJob::submit()
     QTemporaryFile jobFile("tractorXXXXXX.job");
     if (jobFile.open()) {
         QTextStream stream(&jobFile);
-        stream << this->asString();
-        qDebug() << this->asString();
+        QSet<const TractorBlock *> visited;
+        QString job = this->asString(0, visited);
+        stream << job;
+        qDebug() << job;
         jobFile.close();
         QStringList args;
         args << jobFile.fileName();

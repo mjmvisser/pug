@@ -3,7 +3,8 @@
 #include "tractorcmd.h"
 
 TractorCmd::TractorCmd(QObject *parent) :
-    TractorBlock(parent)
+    TractorBlock(parent),
+    m_expandFlag(false)
 {
     setType("Cmd");
 }
@@ -66,8 +67,13 @@ void TractorCmd::setType(const QString &type)
     m_type = type;
 }
 
-const QString TractorCmd::asString(int indent) const
+const QString TractorCmd::asString(int indent, QSet<const TractorBlock *>& visited) const
 {
+    if (visited.contains(this))
+        return QString();
+    else
+        visited.insert(this);
+
     QString s;
     QTextStream stream(&s);
 

@@ -16,7 +16,7 @@ class TractorJob : public TractorBlock
     Q_PROPERTY(QString service READ service WRITE setService NOTIFY serviceChanged)
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
     Q_PROPERTY(QString comment READ comment WRITE setComment NOTIFY commentChanged)
-    //Q_PROPERTY(QString metadata READ metadata WRITE metadata NOTIFY metadataChanged)
+    Q_PROPERTY(QString metadata READ metadata WRITE setMetadata NOTIFY metadataChanged)
     Q_PROPERTY(bool serialSubtasks READ hasSerialSubtasks WRITE setSerialSubtasks NOTIFY serialSubtasksChanged)
     Q_PROPERTY(QQmlListProperty<TractorTask> subtasks READ subtasks_ NOTIFY subtasksChanged)
 public:
@@ -34,8 +34,8 @@ public:
     const QString &comment() const;
     void setComment(const QString &);
 
-    //const QString &metadata() const;
-    //void setMetadata(const QString &);
+    const QString &metadata() const;
+    void setMetadata(const QString &);
 
     bool hasSerialSubtasks() const;
     void setSerialSubtasks(bool);
@@ -43,7 +43,7 @@ public:
     QQmlListProperty<TractorTask> subtasks_();
     void addSubtask(TractorTask *);
 
-    Q_INVOKABLE virtual const QString asString(int indent = 0) const;
+    Q_INVOKABLE virtual const QString asString(int indent, QSet<const TractorBlock *>&) const;
 
     Q_INVOKABLE void submit();
 
@@ -52,7 +52,7 @@ signals:
     void serviceChanged(const QString &service);
     void titleChanged(const QString &title);
     void commentChanged(const QString &comment);
-    //void metadataChanged(const QString &metadata);
+    void metadataChanged(const QString &metadata);
     void serialSubtasksChanged(bool serialSubtasks);
     void subtasksChanged();
 
@@ -67,7 +67,7 @@ private:
     QString m_service;
     QString m_title;
     QString m_comment;
-    //QString m_metadata;
+    QString m_metadata;
     bool m_serialSubtasksFlag;
     QList<TractorTask *> m_subtasks;
 };

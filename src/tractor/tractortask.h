@@ -25,7 +25,9 @@ public:
     bool hasSerialSubtasks() const;
     void setSerialSubtasks(bool);
 
+    bool hasSubtasks() const;
     void addSubtask(TractorTask *);
+    void clearSubtasks();
 
     QQmlListProperty<TractorCmd> cmds_();
     void addCmd(TractorCmd *);
@@ -33,7 +35,7 @@ public:
     QQmlListProperty<TractorCmd> cleanup_();
     void addCleanup(TractorCmd *);
 
-    Q_INVOKABLE virtual const QString asString(int indent = 0) const;
+    Q_INVOKABLE virtual const QString asString(int indent, QSet<const TractorBlock *>& visited) const;
 
 signals:
     void titleChanged(const QString &title);

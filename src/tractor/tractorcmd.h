@@ -27,7 +27,7 @@ public:
     const QString &cmd() const;
     void setCmd(const QString &);
 
-    Q_INVOKABLE virtual const QString asString(int indent = 0) const;
+    Q_INVOKABLE virtual const QString asString(int indent, QSet<const TractorBlock *>& visited) const;
 
 signals:
     void serviceChanged(const QString &service);

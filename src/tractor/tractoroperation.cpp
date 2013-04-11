@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QThread>
 
 #include "tractoroperation.h"
 #include "tractortask.h"
@@ -19,7 +20,7 @@
 TractorOperationAttached::TractorOperationAttached(QObject *parent) :
         OperationAttached(parent),
         m_serialSubtasksFlag(false),
-        m_tractorTask()
+        m_task(new TractorTask(this))
 {
     setObjectName("tractor");
 }
@@ -32,7 +33,7 @@ TractorOperationAttached *TractorOperationAttached::parentAttached()
 
 TractorTask *TractorOperationAttached::tractorTask()
 {
-    return m_tractorTask;
+    return m_task;
 }
 
 const QString &TractorOperationAttached::serviceKey() const
@@ -45,6 +46,19 @@ void TractorOperationAttached::setServiceKey(const QString &key)
     if (m_serviceKey != key) {
         m_serviceKey = key;
         emit serviceKeyChanged(key);
+    }
+}
+
+const QString &TractorOperationAttached::tags() const
+{
+    return m_tags;
+}
+
+void TractorOperationAttached::setTags(const QString &t)
+{
+    if (m_tags != t) {
+        m_tags = t;
+        emit tagsChanged(t);
     }
 }
 
@@ -79,46 +93,86 @@ void TractorOperationAttached::run()
         break;
     }
 
-    continueRunning();
 }
 
 void TractorOperationAttached::generateTask()
 {
     trace() << node() << ".generateTask()";
 
+    m_task->clearSubtasks();
+
     // build the task
-    // connect it up to our parent (which we can safely assume is complete)
-    if (m_tractorTask)
-        m_tractorTask->deleteLater();
+    m_task->setTitle(node()->path());
+    m_task->setSerialSubtasks(true);
 
-    m_tractorTask = new TractorTask(parentAttached() ? parentAttached()->m_tractorTask : 0);
-    error() << m_tractorTask->QObject::parent();
-    m_tractorTask->setTitle(node()->objectName());
+    TractorTask *childrenSubtask = new TractorTask(m_task);
+    childrenSubtask->setTitle(node()->path() + ":children");
 
-    // find the first folder parent and get the context
-    Folder *branch = node()->firstParent<Folder>();
-    if (!branch) {
-        setStatus(OperationAttached::Finished);
-        return;
+    TractorTask *selfSubtask = new TractorTask(m_task);
+    selfSubtask->setTitle(node()->path() + ":self");
+
+    TractorTask *inputsSubtask = new TractorTask(m_task);
+    inputsSubtask->setTitle(node()->path() + ":inputs");
+
+    // populate input subtasks
+    foreach (Node *input, node()->upstream()) {
+        TractorOperationAttached *inputAttached = input->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject());
+        inputsSubtask->addSubtask(inputAttached->tractorTask());
     }
 
-    const QString tractorDataDirPattern = context()["TRACTOR_DATA_DIR"].toString();
-    if (branch->fieldsComplete(tractorDataDirPattern, context())) {
-        // build a unique path for this tractor job and node (%j is replaced by tractor with job id)
-        QString tractorDataDir = QDir(branch->formatFields(tractorDataDirPattern, context())).filePath("%j");
-
-        // get the executable path
-        QString pugExecutable = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("pug");
-
-        TractorRemoteCmd *cmd = new TractorRemoteCmd(m_tractorTask);
-        cmd->setCmd(QString("%1 %2 -properties mode=Execute -context TRACTOR_DATA_DIR=%4 %3").arg(pugExecutable).arg(operation()->objectName()).arg(node()->path()).arg(tractorDataDir));
-        m_tractorTask->addCmd(cmd);
-
-        setStatus(OperationAttached::Finished);
-    } else {
-        error() << node() << "Can't map TRACTOR_DATA_DIR=" << tractorDataDirPattern << "with" << context();
-        setStatus(OperationAttached::Error);
+    // populate children subtasks
+    foreach (QObject* obj, node()->children()) {
+        Node *child = qobject_cast<Node *>(obj);
+        if (child && child->isOutput()) {
+            TractorOperationAttached *childAttached = child->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject());
+            childrenSubtask->addSubtask(childAttached->tractorTask());
+        }
     }
+
+    switch (node()->dependencyOrder()) {
+    case Node::InputsChildrenSelf:
+        m_task->addSubtask(inputsSubtask);
+        m_task->addSubtask(childrenSubtask);
+        m_task->addSubtask(selfSubtask);
+        break;
+    case Node::InputsSelfChildren:
+        m_task->addSubtask(inputsSubtask);
+        m_task->addSubtask(selfSubtask);
+        m_task->addSubtask(childrenSubtask);
+        break;
+    default:
+        Q_ASSERT(false);
+        break;
+    }
+
+    // get the executable path
+    QString pugExecutable = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("pug");
+
+    TractorRemoteCmd *cmd = new TractorRemoteCmd(m_task);
+    cmd->setCmd(QString("%1 %2 -properties mode=Execute -context %3 -- %4")
+            .arg(pugExecutable).arg(operation()->objectName())
+            .arg(contextString())
+            .arg(node()->path()));
+    cmd->setTags(m_tags);
+    selfSubtask->addCmd(cmd);
+
+    setStatus(OperationAttached::Finished);
+    continueRunning();
+}
+
+const QString TractorOperationAttached::contextString() const
+{
+    QString s;
+    QTextStream stream(&s);
+
+    QMapIterator<QString, QVariant> i(context());
+    while (i.hasNext()) {
+        i.next();
+        stream << i.key() << '=' << i.value().toString();
+        if (i.hasNext())
+            stream << " ";
+    }
+    return s;
 }
 
 void TractorOperationAttached::executeTask()
@@ -126,20 +180,32 @@ void TractorOperationAttached::executeTask()
     trace() << node() << ".executeTask()";
 
     Operation *targetOperation = operation<TractorOperation>()->target();
-    OperationAttached *targetAttached = node()->attachedPropertiesObject<OperationAttached>(targetOperation->metaObject());
 
     if (node() == operation()->node()) {
         Q_ASSERT(targetOperation);
 
+        info() << "node path is" << node()->path();
+
+        QObject *p = node();
+        while (p) {
+            info() << p;
+            p = p->parent();
+        }
+
         connect(targetOperation, SIGNAL(finished(OperationAttached::Status)),
                 this, SLOT(onTargetFinished(OperationAttached::Status)));
 
-        targetOperation->run(node(), context(), false);
-    } else {
-        // we're an input of the run node
-        readTractorData(tractorDataPath());
+        info() << "Running target:" << targetOperation << "on" << node();
 
-        setStatus(targetAttached->status());
+        OperationAttached::Targets targets = OperationAttached::Inputs;
+        if (node()->dependencyOrder() == Node::InputsChildrenSelf)
+            targets |= OperationAttached::Children;
+
+        targetOperation->run(node(), context(), false, targets);
+    } else {
+        // we're an input or child of the run node
+        readTractorData(tractorDataPath());
+        continueRunning();
     }
 }
 
@@ -151,6 +217,7 @@ void TractorOperationAttached::cleanupTask()
     if (!success)
         warning() << node() << "Unable to remove file:" << tractorDataPath();
     setStatus(OperationAttached::Finished);
+    continueRunning();
 }
 
 void TractorOperationAttached::onTargetFinished(OperationAttached::Status status)
@@ -186,15 +253,19 @@ void TractorOperationAttached::writeTractorData(const QString &dataPath) const
 
     QJsonObject obj;
     obj.insert("details", QJsonArray::fromVariantList(node()->details().toVariant().toList()));
-    obj.insert("statuses", QJsonArray::fromVariantList(tractorAttachedStatuses(targetOperation)));
+    obj.insert("count", QJsonValue(node()->count()));
+    obj.insert("statuses", QJsonObject::fromVariantMap(tractorAttachedStatuses(targetOperation)));
 
     // write details and statuses to data dir
     file.write(QJsonDocument(obj).toJson());
+
+    file.close();
+    info() << "wrote" << dataPath;
 }
 
-const QVariantList TractorOperationAttached::tractorAttachedStatuses(const Operation *operation, const QVariantList statuses) const
+const QVariantMap TractorOperationAttached::tractorAttachedStatuses(const Operation *operation, const QVariantMap statuses) const
 {
-    QVariantList result = statuses;
+    QVariantMap result = statuses;
 
     // write dependency statuses
     foreach(const Operation *dep, operation->dependencies()) {
@@ -203,8 +274,11 @@ const QVariantList TractorOperationAttached::tractorAttachedStatuses(const Opera
 
     // write own status
     const OperationAttached *attached = node()->attachedPropertiesObject<OperationAttached>(operation->metaObject());
+    Q_ASSERT(attached);
     Q_ASSERT(attached->status() != OperationAttached::Invalid);
-    result << static_cast<int>(attached->status());
+    Q_ASSERT(attached->operation());
+    Q_ASSERT(!attached->operation()->name().isEmpty());
+    result.insert(attached->operation()->name(), static_cast<int>(attached->status()));
 
     // write trigger statuses
     foreach(const Operation *trig, operation->triggers()) {
@@ -224,7 +298,7 @@ void TractorOperationAttached::readTractorData(const QString &dataPath)
 
     QFile file(dataPath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        error() << "can't open file" << tractorDataPath() << "for reading";
+        error() << dataPath << "doesn't exist";
         setStatus(OperationAttached::Error);
         return;
     }
@@ -232,17 +306,24 @@ void TractorOperationAttached::readTractorData(const QString &dataPath)
     QJsonObject obj = QJsonDocument::fromJson(file.readAll()).object();
 
     node()->setDetails(toScriptValue(obj["details"].toArray().toVariantList()));
+    node()->setCount(obj["count"].toDouble());
 
     // TODO: error handling
 
-    QVariantList leftovers = setTractorAttachedStatuses(targetOperation, obj["statuses"].toArray().toVariantList());
+    QVariantMap leftovers = setTractorAttachedStatuses(targetOperation, obj["statuses"].toObject().toVariantMap());
+
+    // we inherit the result of the target operation on the node
+    OperationAttached *targetAttached = node()->attachedPropertiesObject<OperationAttached>(targetOperation->metaObject());
+    setStatus(targetAttached->status());
+
+    info() << "read" << dataPath;
 
     Q_ASSERT(leftovers.isEmpty());
 }
 
-const QVariantList TractorOperationAttached::setTractorAttachedStatuses(Operation *operation, const QVariantList statuses)
+const QVariantMap TractorOperationAttached::setTractorAttachedStatuses(Operation *operation, const QVariantMap statuses)
 {
-    QVariantList result = statuses;
+    QVariantMap result = statuses;
 
     // read dependency statuses
     foreach(Operation *dep, operation->dependencies()) {
@@ -252,9 +333,12 @@ const QVariantList TractorOperationAttached::setTractorAttachedStatuses(Operatio
     // read own status
     OperationAttached *attached = node()->attachedPropertiesObject<OperationAttached>(operation->metaObject());
 
-    int status = result.takeFirst().toInt();
+    Q_ASSERT(!operation->name().isEmpty());
+    int status = result.take(operation->name()).toInt();
     attached->setStatus(static_cast<OperationAttached::Status>(status));
     Q_ASSERT(static_cast<OperationAttached::Status>(status) != OperationAttached::Invalid);
+
+    //info() << "set" << operation->name() << "status on" << attached->node() << "to" << attached->status();
 
     // read trigger statuses
     foreach(Operation *trig, operation->triggers()) {
@@ -280,8 +364,7 @@ const QMetaObject *TractorOperationAttached::operationMetaObject() const
 TractorOperation::TractorOperation(QObject *parent) :
         Operation(parent),
         m_mode(TractorOperation::Submit),
-        m_target(),
-        m_tractorJob()
+        m_target()
 {
 }
 
@@ -314,11 +397,6 @@ void TractorOperation::setTarget(Operation *target)
         m_target = target;
         emit targetChanged(target);
     }
-}
-
-TractorJob *TractorOperation::tractorJob()
-{
-    return m_tractorJob;
 }
 
 static QStringList SKIP_VARS =
@@ -382,20 +460,36 @@ static QStringList SKIP_VARS =
         << "WINDOWID"
         << "WINDOWPATH"
         << "XCURSOR_THEME"
-        << "UID"
-        << "USER";
+        << "UID";
 
 void TractorOperation::run(Node *node, const QVariant context, bool reset)
 {
+    QThread::sleep(1); // wait for NFS to catch up
+
     trace() << ".run(" << node << "," << context << "," << reset << ")";
+    //
     m_target->resetAll(node, context.toMap());
-    Operation::run(node, context, reset);
+    m_target->resetAllStatus(node);
+
+    QVariantMap context2 = context.toMap();
 
     if (m_mode == TractorOperation::Generate || m_mode == TractorOperation::Submit) {
-        m_tractorJob = buildTractorJob(node, context);
+        QDir dir;
+        dir.mkpath(context.toMap()["TRACTOR_DATA_DIR"].toString());
 
-        QDir tractorDataDir(context.toMap()["TRACTOR_DATA_DIR"].toString());
-        tractorDataDir.mkpath("foo");
+        // build a unique path for this tractor job (%j is replaced by tractor with job id)
+        QString tractorDataDir = QDir(context.toMap()["TRACTOR_DATA_DIR"].toString()).filePath("%j/");
+        context2["TRACTOR_DATA_DIR"] = tractorDataDir;
+
+    } else { // Execute
+        QDir dir;
+        dir.mkpath(context.toMap()["TRACTOR_DATA_DIR"].toString());
+    }
+
+    Operation::run(node, context2, reset);
+
+    if (m_mode == TractorOperation::Generate || m_mode == TractorOperation::Submit) {
+        TractorJob *tractorJob = buildTractorJob(node, context2);
 
         // env dump
         QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
@@ -418,19 +512,19 @@ void TractorOperation::run(Node *node, const QVariant context, bool reset)
 
             envFile.setPermissions(envFile.permissions() | QFile::ReadGroup | QFile::ReadOwner | QFile::ReadUser);
 
-            m_tractorJob->setEnvKey("envdump=" + envFile.fileName());
+            tractorJob->setEnvKey("envdump=" + envFile.fileName());
 
         } else {
             error() << "Can't write environment to" << envFile.fileName();
         }
 
         if (m_mode == TractorOperation::Submit) {
-            m_tractorJob->submit();
+            tractorJob->submit();
         } else {
-            info() << m_tractorJob->asString();
+            QSet<const TractorBlock *> visited;
+            info() << tractorJob->asString(0, visited);
         }
-    } else {
-        m_tractorJob = 0;
+        tractorJob->deleteLater();
     }
 }
 
@@ -442,6 +536,7 @@ TractorJob *TractorOperation::buildTractorJob(Node *node, const QVariant context
     TractorOperationAttached *attached = node->attachedPropertiesObject<TractorOperationAttached>(metaObject());
 
     job->setTitle(context.toMap()["TITLE"].toString());
+    job->setMetadata("retrycount=0");
     job->addSubtask(attached->tractorTask());
 
     return job;

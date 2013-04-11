@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QSet>
 
 class TractorBlock : public QObject
 {
@@ -10,7 +11,7 @@ class TractorBlock : public QObject
 public:
     TractorBlock(QObject *parent = 0);
 
-    Q_INVOKABLE virtual const QString asString(int indent = 0) const = 0;
+    Q_INVOKABLE virtual const QString asString(int indent, QSet<const TractorBlock *>& visited) const = 0;
 };
 
 #endif

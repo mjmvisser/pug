@@ -11,6 +11,7 @@ class TractorOperationAttached : public OperationAttached
 {
     Q_OBJECT
     Q_PROPERTY(QString serviceKey READ serviceKey WRITE setServiceKey NOTIFY serviceKeyChanged)
+    Q_PROPERTY(QString tags READ tags WRITE setTags NOTIFY tagsChanged)
     Q_PROPERTY(bool serialSubtasks READ hasSerialSubtasks WRITE setSerialSubtasks NOTIFY serialSubtasksChanged)
     Q_PROPERTY(TractorTask *tractorTask READ tractorTask NOTIFY tractorTaskChanged)
 public:
@@ -18,6 +19,9 @@ public:
 
     const QString &serviceKey() const;
     void setServiceKey(const QString &);
+
+    const QString &tags() const;
+    void setTags(const QString &);
 
     bool hasSerialSubtasks() const;
     void setSerialSubtasks(bool);
@@ -28,6 +32,7 @@ public:
 
 signals:
     void serviceKeyChanged(const QString &serviceKey);
+    void tagsChanged(const QString &tags);
     void serialSubtasksChanged(bool serialSubtasks);
     void tractorTaskChanged();
 
@@ -45,16 +50,18 @@ private:
     TractorOperationAttached *parentAttached();
 
     const QString tractorDataPath() const;
+    const QString contextString() const;
 
     void writeTractorData(const QString &dataPath) const;
-    const QVariantList tractorAttachedStatuses(const Operation *operation, const QVariantList statuses=QVariantList()) const;
+    const QVariantMap tractorAttachedStatuses(const Operation *operation, const QVariantMap statuses=QVariantMap()) const;
 
     void readTractorData(const QString &dataPath);
-    const QVariantList setTractorAttachedStatuses(Operation *operation, const QVariantList statuses);
+    const QVariantMap setTractorAttachedStatuses(Operation *operation, const QVariantMap statuses);
 
     QString m_serviceKey;
+    QString m_tags;
     bool m_serialSubtasksFlag;
-    TractorTask *m_tractorTask;
+    TractorTask *m_task;
 };
 
 class TractorOperation : public Operation
@@ -62,7 +69,6 @@ class TractorOperation : public Operation
     Q_OBJECT
     Q_PROPERTY(Mode mode READ mode WRITE setMode NOTIFY modeChanged)
     Q_PROPERTY(Operation *target READ target WRITE setTarget NOTIFY targetChanged)
-    Q_PROPERTY(TractorJob *tractorJob READ tractorJob NOTIFY tractorJobChanged)
     Q_ENUMS(Mode)
 public:
     enum Mode { Generate, Submit, Execute, Cleanup };
@@ -76,8 +82,6 @@ public:
     const Operation *target() const;
     void setTarget(Operation *);
 
-    TractorJob *tractorJob();
-
     Q_INVOKABLE virtual void run(Node *node, const QVariant context, bool reset=true);
 
     static TractorOperationAttached *qmlAttachedProperties(QObject *);
@@ -85,7 +89,6 @@ public:
 signals:
     void modeChanged(Mode mode);
     void targetChanged(Operation *target);
-    void tractorJobChanged(TractorJob *tractorJob);
 
 protected:
     TractorJob *buildTractorJob(Node *node, const QVariant context);
@@ -93,7 +96,6 @@ protected:
 private:
     Mode m_mode;
     Operation *m_target;
-    TractorJob *m_tractorJob;
 };
 
 QDebug operator<<(QDebug dbg, TractorOperation::Mode mode);
