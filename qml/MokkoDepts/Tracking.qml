@@ -171,7 +171,6 @@ Folder {
         }
         
         LensDistort {
-            logLevel: Log.Info
             id: workFullUndist
             name: "workFullUndist"
             input: node("/plate/sg_currentPlate")
