@@ -7,7 +7,6 @@ ShotgunEntity {
     id: versionEntity
     name: "versionEntity"
     shotgunEntity: "Version"
-    TractorOperation.flatten: true
     shotgunFields: [
         codeField,
         projectField,
@@ -22,7 +21,7 @@ ShotgunEntity {
         createdByField,
         updatedByField,
         userField,
-        publishEvent         
+        publishEventField         
     ]
     
     property Node project: null
