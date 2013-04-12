@@ -4,6 +4,7 @@ ShotgunEntity {
     id: publishEventEntity
     name: "publishEventEntity"
     shotgunEntity: "PublishEvent"
+    TractorOperation.flatten: true
     shotgunFields: [
         projectField,
         codeField,
@@ -16,7 +17,9 @@ ShotgunEntity {
         filmstripField,
         dependenciesField,
         createdByField,
-        updatedByField            
+        updatedByField,
+        categoryField,
+        resolutionField          
     ]
 
     property Node project
@@ -36,6 +39,8 @@ ShotgunEntity {
         Input { name: "user" },
         Input { name: "dependencies" }
     ]
+
+    output: true
 
     count: parent.count
 
@@ -71,6 +76,7 @@ ShotgunEntity {
     ShotgunField {
         id: categoryField
         name: "categoryField"
+        shotgunField: "sg_category"
         type: ShotgunField.String
         value: category
     }
@@ -78,6 +84,7 @@ ShotgunEntity {
     ShotgunField {
         id: resolutionField
         name: "resolutionField"
+        shotgunField: "sg_res"
         type: ShotgunField.String
         value: resolution
     }

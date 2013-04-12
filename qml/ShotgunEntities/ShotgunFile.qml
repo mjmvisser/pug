@@ -4,6 +4,7 @@ ShotgunEntity {
     id: fileEntity
     name: "fileEntity"
     shotgunEntity: "Attachment"
+    TractorOperation.flatten: true
     shotgunFields: [
         thisFileField,
         projectField,

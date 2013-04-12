@@ -4,6 +4,7 @@ ShotgunEntity {
     id: publishEventEntity
     name: "publishEventEntity"
     shotgunEntity: "PublishEvent"
+    TractorOperation.flatten: true
     shotgunFields: [
         projectField,
         versionField,

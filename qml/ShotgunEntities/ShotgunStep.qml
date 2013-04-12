@@ -4,6 +4,7 @@ ShotgunEntity {
     id: stepEntity
     name: "stepEntity"
     shotgunEntity: "Step"
+    TractorOperation.flatten: true
     shotgunFields: [
         codeField
     ]

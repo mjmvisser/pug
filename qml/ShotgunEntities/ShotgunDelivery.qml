@@ -5,6 +5,7 @@ ShotgunEntity {
     id: deliveryEntity
     name: "deliveryEntity"
     shotgunEntity: "Delivery"
+    TractorOperation.flatten: true
     shotgunFields: [
         titleField,
         projectField

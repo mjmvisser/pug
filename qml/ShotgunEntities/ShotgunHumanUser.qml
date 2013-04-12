@@ -4,11 +4,12 @@ ShotgunEntity {
     id: userEntity
     name: "userEntity"
     shotgunEntity: "HumanUser"
+    TractorOperation.flatten: true
     shotgunFields: [
         loginField
     ]
 
-    count: parent.count
+    count: 1
 
     ShotgunField {
         id: loginField
@@ -16,6 +17,5 @@ ShotgunEntity {
         shotgunField: "login"
         required: true
         field: "USER"
-        source: userEntity.parent
     }
 }
