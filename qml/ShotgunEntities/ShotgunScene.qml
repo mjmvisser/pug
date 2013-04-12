@@ -4,7 +4,6 @@ ShotgunEntity {
     id: sceneEntity
     name: "sceneEntity"
     shotgunEntity: "Scene"
-    TractorOperation.flatten: true
     shotgunFields: [
         codeField,
         projectField

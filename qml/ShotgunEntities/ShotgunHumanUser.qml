@@ -4,7 +4,6 @@ ShotgunEntity {
     id: userEntity
     name: "userEntity"
     shotgunEntity: "HumanUser"
-    TractorOperation.flatten: true
     shotgunFields: [
         loginField
     ]

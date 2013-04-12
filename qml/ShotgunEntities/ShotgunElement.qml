@@ -7,7 +7,6 @@ ShotgunEntity {
     id: elementEntity
     name: "elementEntity"
     shotgunEntity: "Element"
-    TractorOperation.flatten: true
     shotgunFields: [
         codeField,
         startFrameField,
