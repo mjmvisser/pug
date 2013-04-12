@@ -7,7 +7,6 @@
 Root::Root(QObject *parent) :
         Branch(parent)
 {
-    setLogLevel(Log::Warning);
 }
 
 const QVariant Root::parse(const QString nodeName, const QString path)

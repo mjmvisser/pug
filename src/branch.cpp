@@ -70,7 +70,8 @@ Branch::Branch(QObject *parent) :
     Node(parent),
     m_root()
 {
-    addInput(this, "root");
+    // TODO: is this only required so that release nodes can find their version? there must be a better way...
+    //addInput(this, "root");
 
     addParam(this, "pattern");
 
@@ -218,6 +219,9 @@ const Branch *Branch::parentBranch() const
 
 Field *Branch::findField(const QString name)
 {
+    if (name.isEmpty())
+        return 0;
+
     // check our fields first
     foreach (Field *field, m_fields) {
         if (field->name() == name) {

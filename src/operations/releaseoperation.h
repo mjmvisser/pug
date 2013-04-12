@@ -6,6 +6,7 @@
 #include <QJSValue>
 
 #include "operation.h"
+#include "branch.h"
 #include "node.h"
 #include "field.h"
 #include "fileopqueue.h"
@@ -15,6 +16,7 @@ class ReleaseOperationAttached : public OperationAttached
     Q_OBJECT
     Q_ENUMS(Mode)
     Q_PROPERTY(Node *source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(Branch *versionBranch READ versionBranch WRITE setVersionBranch NOTIFY versionBranchChanged)
     Q_PROPERTY(QString versionField READ versionFieldName WRITE setVersionFieldName NOTIFY versionFieldChanged)
     Q_PROPERTY(Mode mode READ mode WRITE setMode NOTIFY modeChanged)
 public:
@@ -26,6 +28,10 @@ public:
     const Node *source() const;
     void setSource(Node *);
 
+    Branch *versionBranch();
+    const Branch *versionBranch() const;
+    void setVersionBranch(Branch *);
+
     const QString versionFieldName() const;
     void setVersionFieldName(const QString);
 
@@ -34,7 +40,6 @@ public:
 
     Sudo *sudo();
 
-    Q_INVOKABLE virtual void reset();
     Q_INVOKABLE virtual void run();
 
     Q_INVOKABLE const QString findVersionFieldName() const;
@@ -42,6 +47,7 @@ public:
 
 signals:
     void sourceChanged(Node *source);
+    void versionBranchChanged(Branch *branch);
     void versionFieldChanged(const QString versionField);
     void modeChanged(Mode mode);
 
@@ -50,16 +56,14 @@ signals:
 protected:
     virtual const QMetaObject *operationMetaObject() const;
 
-    void resetVersion();
-
 private slots:
     void onReleaseFinished(int);
 
 private:
     bool m_releasable;
     Node *m_source;
+    Branch *m_versionBranch;
     QString m_versionFieldName;
-    int m_version;
     Mode m_mode;
 };
 

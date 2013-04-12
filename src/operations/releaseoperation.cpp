@@ -10,7 +10,7 @@ ReleaseOperationAttached::ReleaseOperationAttached(QObject *parent) :
     OperationAttached(parent),
     m_releasable(false),
     m_source(),
-    m_version(-1),
+    m_versionBranch(),
     m_mode(ReleaseOperationAttached::Copy)
 {
     setObjectName("release");
@@ -18,6 +18,7 @@ ReleaseOperationAttached::ReleaseOperationAttached(QObject *parent) :
     File *file = qobject_cast<File *>(node());
     if (file) {
         file->addInput(this, "source");
+        file->addInput(this, "versionBranch");
     }
 
     bool haveReleaseSignal = node()->hasSignal(SIGNAL(release(const QVariant)));
@@ -58,6 +59,24 @@ void ReleaseOperationAttached::setSource(Node *n)
     }
 }
 
+const Branch *ReleaseOperationAttached::versionBranch() const
+{
+    return m_versionBranch;
+}
+
+Branch *ReleaseOperationAttached::versionBranch()
+{
+    return m_versionBranch;
+}
+
+void ReleaseOperationAttached::setVersionBranch(Branch *branch)
+{
+    if (m_versionBranch != branch) {
+        m_versionBranch = branch;
+        emit versionBranchChanged(branch);
+    }
+}
+
 const QString ReleaseOperationAttached::versionFieldName() const
 {
     return m_versionFieldName;
@@ -89,94 +108,55 @@ Sudo *ReleaseOperationAttached::sudo()
     return operation<ReleaseOperation>()->sudo();
 }
 
-void ReleaseOperationAttached::reset()
+const QString ReleaseOperationAttached::findVersionFieldName() const
 {
-    OperationAttached::reset();
-    m_version = -1;
-    //if (m_source) {
-        // we hook here to calculate the current version
-        resetVersion();
-    //}
-}
+    if (m_versionBranch) {
+        const ReleaseOperationAttached *versionBranchAttached = m_versionBranch->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
+        Q_ASSERT(versionBranchAttached);
 
-void ReleaseOperationAttached::resetVersion()
-{
-    trace() << node() << ".resetVersion()";
-
-    Branch *branch = qobject_cast<Branch *>(node());
-    if (branch && !m_versionFieldName.isEmpty()) {
-        // we're attached to a file with a version field name specified
-        m_version = findLastVersion(context()) + 1;
-        debug() << branch << "next version is" << m_version;
-    } else if (branch && branch->root()) {
-        // recurse
-        ReleaseOperationAttached *rootAttached = branch->root()->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
-        Q_ASSERT(rootAttached);
-        //rootAttached->resetVersion();
-        m_version = rootAttached->m_version;
-        debug() << branch << "next version is" << m_version;
-    } else if (node()->parent<Node>()) {
-        ReleaseOperationAttached *parentAttached = node()->parent<Node>()->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
-        //parentAttached->resetVersion();
-        m_version = parentAttached->m_version;
-        debug() << branch << "next version is" << m_version;
+        return versionBranchAttached->m_versionFieldName;
+    } else if (!m_versionFieldName.isEmpty()) {
+        return m_versionFieldName;
     }
+
+    return QString();
 }
 
 int ReleaseOperationAttached::findLastVersion(const QVariantMap context) const
 {
     trace() << node() << ".findLastVersion()";
 
-    Q_ASSERT(!m_versionFieldName.isEmpty());
+    const Branch *versionBranch;
+    QString versionFieldName;
+    if (m_versionBranch) {
+        // releasing a File with versionBranch set
+        const ReleaseOperationAttached *versionBranchAttached = m_versionBranch->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
+        Q_ASSERT(versionBranchAttached);
+        versionFieldName = versionBranchAttached->m_versionFieldName;
+        versionBranch = m_versionBranch;
+    } else if (!m_versionFieldName.isEmpty()) {
+        // releasing a Folder with versionField set
+        versionFieldName = m_versionFieldName;
+        versionBranch = qobject_cast<const Branch *>(node());
+    }
 
-    const Branch *branch = qobject_cast<const Branch *>(node());
-    Q_ASSERT(branch);
-
-    const Field *versionField = branch->findField(m_versionFieldName);
-
-    if (versionField) {
-        QMap<QString, QSet<QFileInfo> > released = branch->listMatchingPatterns(context);
+    if (versionBranch && !versionFieldName.isEmpty()) {
+        const Field *versionField = versionBranch->findField(versionFieldName);
         int lastVersion = 0;
-
-        foreach (QString path, released.keys()) {
-            QVariant releaseContext = branch->parse(path);
-            if (releaseContext.isValid() && releaseContext.toMap().contains(versionField->name()))
-            {
-                int version = versionField->get(releaseContext.toMap()).toInt();
-                if (version > lastVersion) {
-                    lastVersion = version;
-                }
-            } else {
-                error() << branch << "can't parse" << path;
+        for (int index = 0; index < versionBranch->details().property("length").toInt(); index++) {
+            QVariantMap versionContext = Node::mergeContexts(context,
+                    versionBranch->details().property(index).property("context").toVariant().toMap());
+            QVariant version = versionField->get(versionContext);
+            if (version.isValid() && version.canConvert<int>() && version.toInt() > lastVersion) {
+                lastVersion = version.toInt();
             }
         }
 
-        debug() << branch << "findLastVersion got version" << lastVersion;
-
+        debug() << versionBranch << "findLastVersion got version" << lastVersion;
         return lastVersion;
     } else {
-        error() << "versionField" << m_versionFieldName << "on" << branch << "is not valid";
+        error() << "can't find last version";
         return -1;
-    }
-}
-
-const QString ReleaseOperationAttached::findVersionFieldName() const
-{
-    const Branch *branch = qobject_cast<const Branch *>(node());
-    if (branch) {
-        if (!m_versionFieldName.isEmpty()) {
-            // we're attached to a branch with a version field name specified
-            return m_versionFieldName;
-        } else if (branch->root()) {
-            // recurse
-            const ReleaseOperationAttached *rootAttached = branch->root()->attachedPropertiesObject<ReleaseOperationAttached>(operationMetaObject());
-            Q_ASSERT(rootAttached);
-            return rootAttached->findVersionFieldName();
-        } else {
-            return QString();
-        }
-    } else {
-        return QString();
     }
 }
 
@@ -188,15 +168,27 @@ void ReleaseOperationAttached::run()
         Q_ASSERT(operation());
         Q_ASSERT(node());
 
-        QString versionFieldName = findVersionFieldName();
-
         QVariantMap releaseContext = context();
 
-        if (!versionFieldName.isEmpty() && m_version >= 0) {
-            debug() << node() << "setting" << versionFieldName << "to" << m_version;
-            releaseContext.insert(versionFieldName, m_version);
-        } else {
-            debug() << node() << "can't set version: field name is" << versionFieldName << ", version is" << m_version;
+        if  ((m_source && m_versionBranch) || !m_versionFieldName.isEmpty()) {
+            int version = findLastVersion(releaseContext);
+            if (version >= 0) {
+                const QString versionFieldName = findVersionFieldName();
+
+                // TODO: logic here is ugly
+                // what happens is that Folder::onRelease is called first, which creates a new version
+                // then the File::onRelease uses that version
+                // so we need to incremented the version ONLY if we're creating the next version folder
+                if (!m_versionBranch)
+                    version++;  // version will be created
+
+                debug() << node() << "setting" << versionFieldName << "to" << version;
+                releaseContext.insert(versionFieldName, version);
+            } else {
+                error() << node() << "Can't find last version";
+                setStatus(OperationAttached::Error);
+                continueRunning();
+            }
         }
 
         Q_ASSERT(receivers(SIGNAL(release(QVariant))) > 0);

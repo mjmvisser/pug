@@ -208,13 +208,13 @@ void File::onCook(const QVariant context)
             ElementView *element = elementsView->elementAt(index);
             Q_ASSERT(element);
 
-            const QVariantMap inputContext = mergeContexts(context.toMap(),
+            const QVariantMap elementContext = mergeContexts(context.toMap(),
                     m_input->details().property(index).property("context").toVariant().toMap());
 
-            setContext(index, inputContext);
+            setContext(index, elementContext);
 
-            if (fieldsComplete(inputContext)) {
-                const FilePattern destPattern(map(inputContext));
+            if (fieldsComplete(elementContext)) {
+                const FilePattern destPattern(map(elementContext));
 
                 element->setPattern(destPattern.pattern());
 
@@ -273,7 +273,7 @@ void File::onCook(const QVariant context)
                     }
                 }
             } else {
-                error() << "fields incomplete for input context" << inputContext;
+                error() << "fields incomplete for input context" << elementContext;
                 emit cookFinished(OperationAttached::Error);
                 return;
             }
@@ -334,7 +334,7 @@ void File::onRelease(const QVariant context)
     ReleaseOperationAttached *attached = attachedPropertiesObject<ReleaseOperationAttached>(&ReleaseOperation::staticMetaObject);
 
     if (attached->source()) {
-        Q_ASSERT(context.toMap().contains("VERSION"));
+        clearDetails();
 
         OperationAttached::Status status = OperationAttached::Running;
 
@@ -343,8 +343,8 @@ void File::onRelease(const QVariant context)
         QScopedPointer<ElementsView> elementsView(new ElementsView(this));
         QScopedPointer<ElementsView> sourceElementsView(new ElementsView(attached->source()));
 
-        int index = elementsView->elementCount();
-        setCount(index + sourceElementsView->elementCount());
+        int index = 0;
+        setCount(sourceElementsView->elementCount());
 
         for (int sourceIndex = 0; sourceIndex < sourceElementsView->elementCount(); sourceIndex++) {
             ElementView *sourceElement = sourceElementsView->elementAt(sourceIndex);
