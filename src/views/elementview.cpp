@@ -100,7 +100,21 @@ int ElementView::frameCount() const
 
 void ElementView::setFrameCount(int count)
 {
-    node()->details().property(m_index).property("element").property("frames").setProperty("length", count);
+    // tricky... we need to make sure the frames array is created (or removed, in the case of a count of 0) and
+    // resized appropriately, hence the assertions
+    Q_ASSERT(!node()->details().property(m_index).isUndefined());
+    Q_ASSERT(!node()->details().property(m_index).property("element").isUndefined());
+    if (count == 0) {
+        node()->details().property(m_index).property("element").deleteProperty("frames");
+        Q_ASSERT(node()->details().property(m_index).property("element").property("frames").isUndefined());
+    } else {
+        if (node()->details().property(m_index).property("element").property("frames").isUndefined())
+            node()->details().property(m_index).property("element").setProperty("frames", node()->newArray(count));
+        else
+            node()->details().property(m_index).property("element").property("frames").setProperty("length", count);
+        Q_ASSERT(!node()->details().property(m_index).property("element").property("frames").isUndefined());
+        Q_ASSERT(node()->details().property(m_index).property("element").property("frames").property("length").toInt() == count);
+    }
     emit node()->detailsChanged();
 }
 
