@@ -15,7 +15,6 @@
 #include "root.h"
 #include "process.h"
 #include "operation.h"
-#include "testoperation.h"
 #include "cookoperation.h"
 #include "listoperation.h"
 #include "releaseoperation.h"
@@ -69,7 +68,6 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<Root>(uri, 1, 0, "Root");
     qmlRegisterType<Process>(uri, 1, 0, "Process");
     qmlRegisterType<Operation>(uri, 1, 0, "Operation");
-    qmlRegisterType<TestOperation>(uri, 1, 0, "TestOperation");
     qmlRegisterType<CookOperation>(uri, 1, 0, "CookOperation");
     qmlRegisterType<ListOperation>(uri, 1, 0, "ListOperation");
     qmlRegisterType<ReleaseOperation>(uri, 1, 0, "ReleaseOperation");
