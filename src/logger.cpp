@@ -4,12 +4,54 @@
 #include <QJSValueIterator>
 
 #include "logger.h"
+#include "pugitem.h"
 
 Log::Log(QObject *parent) :
     QObject(parent),
     m_level(Log::Warning)
 {
 }
+
+const QString Log::Message::format()
+{
+    QString buffer;
+    QTextStream ts(&buffer);
+    QString typeString;
+    switch (type) {
+    case Trace:
+        typeString = "TRACE";
+        break;
+    case Debug:
+        typeString = "DEBUG";
+        break;
+    case Info:
+        typeString = "INFO";
+        break;
+    case Warning:
+        typeString = "WARNING";
+        break;
+    case Error:
+        typeString = "ERROR";
+        break;
+    case Invalid:
+        Q_ASSERT(false);
+        break;
+    }
+
+    QString objInfo;
+    {
+        QDebug dbg(&objInfo);
+        PugItem *item = qobject_cast<PugItem *>(object);
+        if (item)
+            dbg.nospace() << item;
+        else
+            dbg.nospace() << object;
+    }
+
+    ts << time.toString() << " " << objInfo << endl << "    [" << typeString << "] " << message;
+    return buffer;
+}
+
 
 Log::MessageType Log::level() const
 {

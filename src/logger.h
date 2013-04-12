@@ -55,41 +55,7 @@ private:
         MessageType type;
         QString message;
 
-        const QString format()
-        {
-            QString buffer;
-            QTextStream ts(&buffer);
-            QString typeString;
-            switch (type) {
-            case Trace:
-                typeString = "TRACE";
-                break;
-            case Debug:
-                typeString = "DEBUG";
-                break;
-            case Info:
-                typeString = "INFO";
-                break;
-            case Warning:
-                typeString = "WARNING";
-                break;
-            case Error:
-                typeString = "ERROR";
-                break;
-            case Invalid:
-                Q_ASSERT(false);
-                break;
-            }
-
-            QString objInfo;
-            {
-                QDebug dbg(&objInfo);
-                dbg.nospace() << object;
-            }
-
-            ts << time.toString() << " " << objInfo << "[" << typeString << "] " << message;
-            return buffer;
-        }
+        const QString format();
     };
 
     QList<Message> m_messages;
