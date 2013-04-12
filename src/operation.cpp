@@ -563,11 +563,6 @@ QQmlListProperty<Operation> Operation::dependencies_()
     return QQmlListProperty<Operation>(this, m_dependencies);
 }
 
-QQmlListProperty<Operation> Operation::triggers_()
-{
-    return QQmlListProperty<Operation>(this, m_triggers);
-}
-
 const QList<const Operation *>& Operation::dependencies() const
 {
     return reinterpret_cast<QList<const Operation *> const&>(m_dependencies);
@@ -576,16 +571,6 @@ const QList<const Operation *>& Operation::dependencies() const
 const QList<Operation *>& Operation::dependencies()
 {
     return m_dependencies;
-}
-
-const QList<const Operation *>& Operation::triggers() const
-{
-    return reinterpret_cast<QList<const Operation *> const&>(m_triggers);
-}
-
-const QList<Operation *>& Operation::triggers()
-{
-    return m_triggers;
 }
 
 // data property
@@ -648,11 +633,6 @@ void Operation::resetAll(Node *node, const QVariantMap context)
     OperationAttached *attached = node->attachedPropertiesObject<OperationAttached>(metaObject());
     Q_ASSERT(attached);
     attached->resetAll(context, visited);
-
-    // reset triggers
-    foreach (Operation *op, m_triggers) {
-        op->resetAll(node, context);
-    }
 }
 
 void Operation::resetAllStatus(Node *node)
@@ -670,11 +650,6 @@ void Operation::resetAllStatus(Node *node)
     Q_ASSERT(attached);
     attached->resetAllStatus();
     setStatus(OperationAttached::None);
-
-    // reset triggers
-    foreach (Operation *op, m_triggers) {
-        op->resetAllStatus(node);
-    }
 }
 
 void Operation::run(Node *node, const QVariant context, bool reset, OperationAttached::Targets targets)
@@ -730,7 +705,7 @@ OperationAttached::Status Operation::dependenciesStatus() const
 void Operation::runDependencies()
 {
     trace() << ".runDependencies()";
-    // TODO: check for cycles in triggers and dependencies
+    // TODO: check for cycles in dependencies
 
     foreach (Operation * op, m_dependencies)
     {
@@ -747,39 +722,6 @@ void Operation::runDependencies()
     }
 }
 
-OperationAttached::Status Operation::triggersStatus() const
-{
-    OperationAttached::Status status = OperationAttached::Invalid;
-
-    foreach (Operation * op, m_triggers)
-    {
-        OperationAttached::Status triggerStatus = op->status();
-
-        if (triggerStatus > status)
-            status = triggerStatus;
-    }
-
-    return status;
-}
-
-void Operation::runTriggers()
-{
-    trace() << ".runTriggers()";
-    // TODO: check for cycles in triggers and dependencies
-
-    foreach (Operation * op, m_triggers)
-    {
-        if (op->status() == OperationAttached::None
-                || op->status() == OperationAttached::Running) {
-            connect(op, &Operation::finished,
-                    this, &Operation::onTriggerFinished);
-        }
-
-        if (op->status() == OperationAttached::None)
-            op->startRunning(m_node, m_targets);
-    }
-}
-
 void Operation::continueRunning()
 {
     trace() << ".continueRunning()";
@@ -787,10 +729,7 @@ void Operation::continueRunning()
 
     debug() << "-- depStatus" << depStatus;
 
-    OperationAttached *attached = m_node->attachedPropertiesObject<
-            OperationAttached>(metaObject());
-
-    OperationAttached::Status trigStatus = triggersStatus();
+    OperationAttached *attached = m_node->attachedPropertiesObject<OperationAttached>(metaObject());
 
     switch (depStatus) {
     case OperationAttached::None:
@@ -850,40 +789,10 @@ void Operation::continueRunning()
             break;
 
         case OperationAttached::Finished:
-            debug() << "-- trigStatus" << trigStatus;
-            switch (trigStatus) {
-            case OperationAttached::None:
-                // run any pending triggers
-                runTriggers();
-                break;
-
-            case OperationAttached::Idle:
-                // we should never get here
-                Q_ASSERT(false);
-                break;
-
-            case OperationAttached::Running:
-                // nothing to do
-                break;
-
-            case OperationAttached::Error:
-                // failed!
-                m_node = 0;
-                m_context.clear();
-                debug() << "trigStatus is error, emitting finished";
-                emit finished(OperationAttached::Error);
-                break;
-
-            case OperationAttached::Invalid:
-            case OperationAttached::Finished:
-                // no triggers or triggers finished
-                m_node = 0;
-                m_context.clear();
-                debug() << "trigStatus is" << trigStatus << "emitting finished";
-                setStatus(OperationAttached::Finished);
-                emit finished(OperationAttached::Finished);
-                break;
-            }
+            m_node = 0;
+            m_context.clear();
+            setStatus(OperationAttached::Finished);
+            emit finished(OperationAttached::Finished);
             break;
         }
         break;

@@ -150,7 +150,6 @@ class Operation : public PugItem
     Q_OBJECT
     Q_PROPERTY(QQmlListProperty<PugItem> data READ data_ NOTIFY dataChanged)
     Q_PROPERTY(QQmlListProperty<Operation> dependencies READ dependencies_ NOTIFY dependenciesChanged)
-    Q_PROPERTY(QQmlListProperty<Operation> triggers READ triggers_ NOTIFY triggersChanged)
     Q_PROPERTY(OperationAttached::Status status READ status WRITE setStatus NOTIFY statusChanged)
     Q_ENUMS(OperationAttached::Status)
     Q_CLASSINFO("DefaultProperty", "data")
@@ -159,12 +158,9 @@ public:
 
     QQmlListProperty<PugItem> data_();
     QQmlListProperty<Operation> dependencies_();
-    QQmlListProperty<Operation> triggers_();
 
     const QList<const Operation *>& dependencies() const;
     const QList<Operation *>& dependencies();
-    const QList<const Operation *>& triggers() const;
-    const QList<Operation *>& triggers();
 
     OperationAttached::Status status() const;
     void setStatus(OperationAttached::Status);
@@ -183,7 +179,6 @@ public:
 signals:
     void dataChanged();
     void dependenciesChanged();
-    void triggersChanged();
     void statusChanged(OperationAttached::Status status);
     void finished(OperationAttached::Status status);
 
@@ -199,7 +194,6 @@ protected:
     OperationAttached::Status dependenciesStatus() const;
     void runDependencies();
 
-    OperationAttached::Status triggersStatus() const;
     void runTriggers();
 
     void failOperation();
@@ -212,7 +206,6 @@ private:
     static void data_clear(QQmlListProperty<PugItem> *);
 
     QList<Operation *> m_dependencies;
-    QList<Operation *> m_triggers;
 
     Node *m_node;
     QVariantMap m_context;
