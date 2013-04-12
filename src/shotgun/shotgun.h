@@ -49,8 +49,6 @@ class Shotgun : public PugItem
     Q_PROPERTY(bool convertDateTimesToUtc READ isConvertDateTimesToUtc WRITE setConvertDateTimesToUtc NOTIFY convertDateTimesToUtcChanged)
     Q_OBJECT
 public:
-    Shotgun(QObject *parent = 0);
-
     const QUrl baseUrl() const;
     void setBaseUrl(const QUrl url);
 
@@ -121,6 +119,8 @@ signals:
     void convertDateTimesToUtcChanged(bool convertDateTimesToUtc);
 
 private:
+    Shotgun(QObject *parent = 0);
+
     struct Config {
         Config() :
             maxRpcAttempts(3),
