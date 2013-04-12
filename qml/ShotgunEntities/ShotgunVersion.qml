@@ -7,6 +7,7 @@ ShotgunEntity {
     id: versionEntity
     name: "versionEntity"
     shotgunEntity: "Version"
+    TractorOperation.flatten: true
     shotgunFields: [
         codeField,
         projectField,
@@ -19,7 +20,9 @@ ShotgunEntity {
         imageField,
         filmstripField,
         createdByField,
-        updatedByField         
+        updatedByField,
+        userField,
+        publishEvent         
     ]
     
     property Node project: null
@@ -28,6 +31,8 @@ ShotgunEntity {
     property Node thumbnail: null
     property Node filmstrip: null
     property Node user: null
+    property Node frames: null
+    property Node publishEvent: null
 
     inputs: [
         Input { name: "project" },
@@ -35,8 +40,12 @@ ShotgunEntity {
         Input { name: "step" },
         Input { name: "thumbnail" },
         Input { name: "filmstrip" },
-        Input { name: "user" }
+        Input { name: "user" },
+        Input { name: "frames" },
+        Input { name: "publishEvent" }
     ]
+
+    output: true
 
     count: parent.count
 
@@ -92,7 +101,7 @@ ShotgunEntity {
         name: "pathField"
         shotgunField: "sg_path_to_frames"
         type: ShotgunField.Path
-        source: versionEntity.parent
+        source: frames
     }
 
     function _firstFrame(index) {
@@ -163,5 +172,21 @@ ShotgunEntity {
         shotgunField: "updated_by"
         type: ShotgunField.Link
         link: user
+    }
+    
+    ShotgunField {
+        id: userField
+        name: "userField"
+        shotgunField: "user"
+        type: ShotgunField.Link
+        link: user
+    }
+    
+    ShotgunField {
+        id: publishEventField
+        name: "publishEventField"
+        shotgunField: "sg_publish_event"
+        type: ShotgunField.Link
+        link: publishEvent
     }
 }
