@@ -15,7 +15,7 @@ Folder {
     Folder {
         id: release
         name: "release"
-        pattern: "release/{VARIATION}/v{VERSION}"
+        pattern: "release/{VARIATION}/v{VERSION}/"
         ReleaseOperation.versionField: "VERSION"
 
         ShotgunVersion {
@@ -29,14 +29,18 @@ Folder {
             code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
             thumbnail: workUndistThumbnail
             filmstrip: workUndistFilmstrip
+            frames: releaseFullUndist
+            publishEvent: sg_releaseFullUndist
         }
 
         File {
             id: release3deScene
             root: release
             name: "release3deScene"
-            pattern: "3de/{SEQUENCE}_{SHOT}.3de"
+            pattern: "3de/{SEQUENCE}_{SHOT}_{VARIATION}_v{VERSION}.3de"
             ReleaseOperation.source: work3deScene
+            ReleaseOperation.versionBranch: release
+            output: true
 
             ShotgunPublishEvent {
                 id: sg_release3deScene
@@ -47,7 +51,7 @@ Folder {
                 step: sg_step
                 user: node("/sg_user")
                 category: "source"
-                code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
+                code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_3de"
             }
         }
         
@@ -55,11 +59,14 @@ Folder {
             id: releaseNukeScript
             name: "releaseNukeScript"
             root: release
-            pattern: "nk/{SEQUENCE}_{SHOT}_cam.nk"
+            pattern: "nk/{SEQUENCE}_{SHOT}_{VARIATION}_v{VERSION}_cam.nk"
             ReleaseOperation.source: workNukeScript
+            ReleaseOperation.versionBranch: release
+            output: true
 
             ShotgunPublishEvent {
                 id: sg_releaseNukeScript
+                action: ShotgunEntity.Create
                 name: "sg_releaseNukeScript"
                 project: node("/project/sg_project")
                 link: node("/shot/sg_shot")
@@ -67,6 +74,7 @@ Folder {
                 user: node("/sg_user")
                 category: "nk"
                 dependencies: sg_release3deScene
+                code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_nk"
             }
         }
 
@@ -74,11 +82,14 @@ Folder {
             id: releaseMelScript
             name: "releaseMelScript"
             root: release
-            pattern: "mel/{SEQUENCE}_{SHOT}_cam.mel"
+            pattern: "mel/{SEQUENCE}_{SHOT}_{VARIATION}_v{VERSION}_cam.mel"
             ReleaseOperation.source: workMelScript
+            ReleaseOperation.versionBranch: release
+            output: true
 
             ShotgunPublishEvent {
                 id: sg_releaseMelScript
+                action: ShotgunEntity.Create
                 name: "sg_releaseMelScript"
                 project: node("/project/sg_project")
                 link: node("/shot/sg_shot")
@@ -86,6 +97,7 @@ Folder {
                 user: node("/sg_user")
                 category: "mel"
                 dependencies: sg_release3deScene
+                code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_mel"
             }
         }
 
@@ -93,11 +105,14 @@ Folder {
             id: releaseLowUndist
             name: "releaseLowUndist"
             root: release
-            pattern: "render/1120x630/jpg/{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_{VERSION}_1120x630.%04d.jpg"
+            pattern: "render/1120x630/jpg/{SEQUENCE}_{SHOT}_tracking_{VARIATION}_{VERSION}_1120x630.%04d.jpg"
             ReleaseOperation.source: workLowUndist
+            ReleaseOperation.versionBranch: release
+            output: true
 
             ShotgunPublishEvent {
                 id: sg_releaseLowUndist
+                action: ShotgunEntity.Create
                 name: "sg_releaseLowUndist"
                 project: node("/project/sg_project")
                 link: node("/shot/sg_shot")
@@ -108,6 +123,7 @@ Folder {
                 thumbnail: workUndistThumbnail
                 filmstrip: workUndistFilmstrip
                 dependencies: [sg_releaseNukeScript, workLowUndist.input]
+                code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_1120x630"
             }
         }
 
@@ -115,11 +131,14 @@ Folder {
             id: releaseFullUndist
             name: "releaseFullUndist"
             root: release
-            pattern: "render/2240x1260/jpg/{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_{VERSION}_2240x1260.%04d.jpg"
+            pattern: "render/2240x1260/jpg/{SEQUENCE}_{SHOT}_tracking_{VARIATION}_{VERSION}_2240x1260.%04d.jpg"
             ReleaseOperation.source: workFullUndist
+            ReleaseOperation.versionBranch: release
+            output: true
 
             ShotgunPublishEvent {
                 id: sg_releaseFullUndist
+                action: ShotgunEntity.Create
                 name: "sg_releaseFullUndist"
                 project: node("/project/sg_project")
                 link: node("/shot/sg_shot")
@@ -130,6 +149,7 @@ Folder {
                 thumbnail: workUndistThumbnail
                 filmstrip: workUndistFilmstrip
                 dependencies: [sg_releaseNukeScript, workLowUndist.input]
+                code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_2240x1260"
             }
         }
     }
@@ -143,7 +163,7 @@ Folder {
             id: work3deScene
             name: "work3deScene"
             root: work
-            pattern: "3de/{SEQUENCE}_{SHOT}.3de"
+            pattern: "scenes/{SEQUENCE}_{SHOT}.3de"
         }
         
         File {
