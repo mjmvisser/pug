@@ -6,7 +6,8 @@ from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("", "--inputPath", dest="input_path", metavar="FILE")
 parser.add_option("", "--outputPath", dest="output_path", metavar="FILE")
-parser.add_option("", "--filmstrip", dest="film_strip", action="store_true", default=False)
+parser.add_option("", "--thumbnail", dest="filmstrip", action="store_false", default=False)
+parser.add_option("", "--filmstrip", dest="filmstrip", action="store_true", default=False)
 parser.add_option("", "--firstFrame", dest="first_frame", type="int")
 parser.add_option("", "--lastFrame", dest="last_frame", type="int")
 
@@ -22,7 +23,7 @@ try:
 except os.error:
     parser.error("unable to create directories for %s" % options.output_path)
 
-if options.film_strip:
+if options.filmstrip:
     if options.first_frame is None or options.last_frame is None:
         parser.error("--firstFrame and --lastFrame must be specified for --filmstrip")
 
@@ -45,18 +46,16 @@ if options.film_strip:
     result = subprocess.call(args)
     
 else:
-    try:
-        first_frame_path = options.input_path % options.first_frame
-    except TypeError:
-        first_frame_path = options.input_path
+    if options.first_frame and options.last_frame:
+        # halfway through sequence
+        image_path = options.input_path % ((options.first_frame + options.last_frame)/2)
+    elif options.first_frame:
+        image_path = options.input_path % options.first_frame
+    elif options.last_frame:
+        image_path = options.input_path % options.last_frame
+    else:
+        image_path = options.input_path
     
-    result = subprocess.call(['convert', first_frame_path, "-resize", "240x240", "-quality", "80", options.output_path])
-
-details = [{"element": {"path": options.output_path}}]
-
-# pass output back
-print "begin-json details"
-print json.dumps(details, indent=4)
-print "===="
+    result = subprocess.call(['convert', image_path, "-resize", "240x240", "-quality", "80", options.output_path])
 
 sys.exit(result)
