@@ -13,6 +13,7 @@ class TractorOperationAttached : public OperationAttached
     Q_PROPERTY(QString serviceKey READ serviceKey WRITE setServiceKey NOTIFY serviceKeyChanged)
     Q_PROPERTY(QString tags READ tags WRITE setTags NOTIFY tagsChanged)
     Q_PROPERTY(bool serialSubtasks READ hasSerialSubtasks WRITE setSerialSubtasks NOTIFY serialSubtasksChanged)
+    Q_PROPERTY(bool flatten READ isFlatten WRITE setFlatten NOTIFY flattenChanged)
     Q_PROPERTY(TractorTask *tractorTask READ tractorTask NOTIFY tractorTaskChanged)
 public:
     explicit TractorOperationAttached(QObject *parent = 0);
@@ -26,6 +27,9 @@ public:
     bool hasSerialSubtasks() const;
     void setSerialSubtasks(bool);
 
+    bool isFlatten() const;
+    void setFlatten(bool);
+
     Q_INVOKABLE virtual void run();
 
     TractorTask *tractorTask();
@@ -34,6 +38,7 @@ signals:
     void serviceKeyChanged(const QString &serviceKey);
     void tagsChanged(const QString &tags);
     void serialSubtasksChanged(bool serialSubtasks);
+    void flattenChanged(bool flatten);
     void tractorTaskChanged();
 
 protected slots:
@@ -61,6 +66,7 @@ private:
     QString m_serviceKey;
     QString m_tags;
     bool m_serialSubtasksFlag;
+    bool m_flattenFlag;
     TractorTask *m_task;
 };
 

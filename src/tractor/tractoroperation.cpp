@@ -20,6 +20,7 @@
 TractorOperationAttached::TractorOperationAttached(QObject *parent) :
         OperationAttached(parent),
         m_serialSubtasksFlag(false),
+        m_flattenFlag(false),
         m_task(new TractorTask(this))
 {
     setObjectName("tractor");
@@ -75,9 +76,22 @@ void TractorOperationAttached::setSerialSubtasks(bool flag)
     }
 }
 
+bool TractorOperationAttached::isFlatten() const
+{
+    return m_flattenFlag;
+}
+
+void TractorOperationAttached::setFlatten(bool flag)
+{
+    if (m_flattenFlag != flag) {
+        m_flattenFlag = flag;
+        emit flattenChanged(flag);
+    }
+}
+
 void TractorOperationAttached::run()
 {
-    info() << "Tractor" << operation<TractorOperation>()->mode() << "on" << node();
+    //info() << "Tractor" << operation<TractorOperation>()->mode() << "on" << node();
     trace() << node() << ".run() [mode is" << operation<TractorOperation>()->mode() << "on" << node() << "]";
 
     switch(operation<TractorOperation>()->mode()) {
@@ -114,10 +128,12 @@ void TractorOperationAttached::generateTask()
     TractorTask *inputsSubtask = new TractorTask(m_task);
     inputsSubtask->setTitle(node()->path() + ":inputs");
 
-    // populate input subtasks
-    foreach (Node *input, node()->upstream()) {
-        TractorOperationAttached *inputAttached = input->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject());
-        inputsSubtask->addSubtask(inputAttached->tractorTask());
+    if (!m_flattenFlag) {
+        // populate input subtasks
+        foreach (Node *input, node()->upstream()) {
+            TractorOperationAttached *inputAttached = input->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject());
+            inputsSubtask->addSubtask(inputAttached->tractorTask());
+        }
     }
 
     // populate children subtasks
@@ -179,6 +195,12 @@ void TractorOperationAttached::executeTask()
 {
     trace() << node() << ".executeTask()";
 
+    if (node()->isRoot()) {
+        setStatus(OperationAttached::Finished);
+        continueRunning();
+        return;
+    }
+
     Operation *targetOperation = operation<TractorOperation>()->target();
 
     if (node() == operation()->node()) {
@@ -197,7 +219,7 @@ void TractorOperationAttached::executeTask()
 
         info() << "Running target:" << targetOperation << "on" << node();
 
-        OperationAttached::Targets targets = OperationAttached::Inputs;
+        OperationAttached::Targets targets = OperationAttached::Self|OperationAttached::Inputs;
         if (node()->dependencyOrder() == Node::InputsChildrenSelf)
             targets |= OperationAttached::Children;
 
@@ -230,13 +252,18 @@ void TractorOperationAttached::onTargetFinished(OperationAttached::Status status
     disconnect(targetOperation, SIGNAL(finished(OperationAttached::Status)),
                this, SLOT(onTargetFinished(OperationAttached::Status)));
 
-    // write this node's data
-    writeTractorData(tractorDataPath());
+    if (status == OperationAttached::Finished) {
+        // write this node's data
+        writeTractorData(tractorDataPath());
 
-    setStatus(targetAttached->status());
+        setStatus(targetAttached->status());
 
-    // continue cooking
-    continueRunning();
+        // continue cooking
+        continueRunning();
+    } else {
+        setStatus(OperationAttached::Error);
+        continueRunning();
+    }
 }
 
 void TractorOperationAttached::writeTractorData(const QString &dataPath) const
@@ -260,7 +287,7 @@ void TractorOperationAttached::writeTractorData(const QString &dataPath) const
     file.write(QJsonDocument(obj).toJson());
 
     file.close();
-    info() << "wrote" << dataPath;
+    info() << "Wrote" << dataPath;
 }
 
 const QVariantMap TractorOperationAttached::tractorAttachedStatuses(const Operation *operation, const QVariantMap statuses) const
@@ -280,11 +307,6 @@ const QVariantMap TractorOperationAttached::tractorAttachedStatuses(const Operat
     Q_ASSERT(!attached->operation()->name().isEmpty());
     result.insert(attached->operation()->name(), static_cast<int>(attached->status()));
 
-    // write trigger statuses
-    foreach(const Operation *trig, operation->triggers()) {
-        tractorAttachedStatuses(trig, result);
-    }
-
     return result;
 }
 
@@ -298,8 +320,8 @@ void TractorOperationAttached::readTractorData(const QString &dataPath)
 
     QFile file(dataPath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        error() << dataPath << "doesn't exist";
-        setStatus(OperationAttached::Error);
+        //error() << dataPath << "doesn't exist";   // not necessarily an error
+        setStatus(OperationAttached::Finished);
         return;
     }
 
@@ -316,7 +338,7 @@ void TractorOperationAttached::readTractorData(const QString &dataPath)
     OperationAttached *targetAttached = node()->attachedPropertiesObject<OperationAttached>(targetOperation->metaObject());
     setStatus(targetAttached->status());
 
-    info() << "read" << dataPath;
+    info() << "Read" << dataPath;
 
     Q_ASSERT(leftovers.isEmpty());
 }
@@ -339,11 +361,6 @@ const QVariantMap TractorOperationAttached::setTractorAttachedStatuses(Operation
     Q_ASSERT(static_cast<OperationAttached::Status>(status) != OperationAttached::Invalid);
 
     //info() << "set" << operation->name() << "status on" << attached->node() << "to" << attached->status();
-
-    // read trigger statuses
-    foreach(Operation *trig, operation->triggers()) {
-        result = setTractorAttachedStatuses(trig, result);
-    }
 
     return result;
 }
