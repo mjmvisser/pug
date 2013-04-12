@@ -26,7 +26,7 @@ Folder {
             link: node("/shot/sg_shot")
             step: sg_step
             user: node("/sg_user")
-            code: "{SEQUENCE}_{SHOT}_{STEP}_{VARIATION}_v{VERSION}"
+            code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}"
             thumbnail: workUndistThumbnail
             filmstrip: workUndistFilmstrip
             frames: releaseFullUndist
