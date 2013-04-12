@@ -40,7 +40,7 @@ Root {
             id: tractor
             name: "tractor"
             mode: TractorOperation.Submit
-            target: cook
+            target: release
         }
     ]
 
@@ -54,7 +54,7 @@ Root {
         Field { name: "USER"; env: "USER" },
         Field { name: "VARIATION"; env: "MOKKO_VARIATION" },
         FrameSpecField { name: "FRAME" },
-        Field { name: "VERSION"; type: Field.Integer; width: 3 },
+        Field { name: "VERSION"; type: Field.Integer; width: 3; regexp: "[0-9]{3}" },
         Field { name: "FORMAT" },
         Field { name: "EXT" }
     ]
