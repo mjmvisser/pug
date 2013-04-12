@@ -231,8 +231,10 @@ const QVariant ShotgunEntity::data() const
     QList<int> sgfIndex;
     QList<int> sgfCount;
     foreach (const ShotgunField *sgf, m_shotgunFields) {
-        sgfCount << sgf->count();
-        sgfIndex << 0;
+        if (sgf) {
+            sgfCount << sgf->count();
+            sgfIndex << 0;
+        }
     }
 
     QVariantList result;
@@ -244,22 +246,24 @@ const QVariant ShotgunEntity::data() const
         // build data for this entity from the entity's fields
         int i = 0;
         foreach (const ShotgunField *sgf, m_shotgunFields) {
-            // name: value pairs
-            QJSValue jsValue = sgf->details().property(sgfIndex[i]).property("value");
-            QVariant value;
-            if (jsValue.isNull())
-                value = QVariant(); // invalid QVariant
-            else
-                value = qjsvalue_cast<QVariant>(jsValue);
+            if (sgf) {
+                // name: value pairs
+                QJSValue jsValue = sgf->details().property(sgfIndex[i]).property("value");
+                QVariant value;
+                if (jsValue.isNull())
+                    value = QVariant(); // invalid QVariant
+                else
+                    value = qjsvalue_cast<QVariant>(jsValue);
 
-            if (value.isNull() && sgf->isRequired()) {
-                error() << sgf << "is marked required but is null";
-                return QVariant();
+                if (value.isNull() && sgf->isRequired()) {
+                    error() << sgf << "is marked required but is null";
+                    return QVariant();
+                }
+
+                d.insert(sgf->shotgunFieldName(), value);
+
+                i++;
             }
-
-            d.insert(sgf->shotgunFieldName(), value);
-
-            i++;
         }
         result << d;
 
@@ -308,40 +312,42 @@ const QVariant ShotgunEntity::allFilters()
 
     // build filters for this entity from the entity's shotgun fields
     foreach (ShotgunField *sgf, m_shotgunFields) {
-        if (sgf->type() != ShotgunField::Url) {
-            // we skip Url fields, since they can't be filtered against
-            // ["<shotgun field name>", "is", <value for field name>]
-            if (sgf->count() == 1) {
-                QVariant value = jsValueToVariant(sgf->details().property(0).property("value"));
-                sgf->setIndex(0);
-                Q_ASSERT(value.isValid() || value.isNull());
-                // we skip null fields... TODO: what if we want to match against a null field?
-                if (!value.isNull()) {
-                    QVariantList filter;
-                    filter << sgf->shotgunFieldName() << "is" << value;
-                    result << QVariant(filter); // have to wrap filter in a QVariant, otherwise it concatenates the lists!
-                }
-            } else if (sgf->count() > 0) {
-                QVariantList filters;
-                for (int i = 0; i < sgf->count(); i++) {
-                    sgf->setIndex(i);
-                    QVariant value = jsValueToVariant(sgf->details().property(i).property("value"));
-                    Q_ASSERT(value.isValid());
+        if (sgf) {
+            if (sgf->type() != ShotgunField::Url) {
+                // we skip Url fields, since they can't be filtered against
+                // ["<shotgun field name>", "is", <value for field name>]
+                if (sgf->count() == 1) {
+                    QVariant value = jsValueToVariant(sgf->details().property(0).property("value"));
+                    sgf->setIndex(0);
+                    Q_ASSERT(value.isValid() || value.isNull());
+                    // we skip null fields... TODO: what if we want to match against a null field?
+                    if (!value.isNull()) {
+                        QVariantList filter;
+                        filter << sgf->shotgunFieldName() << "is" << value;
+                        result << QVariant(filter); // have to wrap filter in a QVariant, otherwise it concatenates the lists!
+                    }
+                } else if (sgf->count() > 0) {
+                    QVariantList filters;
+                    for (int i = 0; i < sgf->count(); i++) {
+                        sgf->setIndex(i);
+                        QVariant value = jsValueToVariant(sgf->details().property(i).property("value"));
+                        Q_ASSERT(value.isValid());
 
-                    QVariantList filter;
-                    filter << sgf->shotgunFieldName() << "is" << value;
-                    filters << QVariant(filter);
-                }
+                        QVariantList filter;
+                        filter << sgf->shotgunFieldName() << "is" << value;
+                        filters << QVariant(filter);
+                    }
 
-                QVariantMap complexFilter;
-                complexFilter.insert("filter_operator", "any");
-                complexFilter.insert("filters", filters);
-                result << complexFilter;
-            } else {
-                // count is 0
-                if (sgf->isRequired()) {
-                    debug() << "field" << sgf << "is marked required, but has no data";
-                    return QVariant();
+                    QVariantMap complexFilter;
+                    complexFilter.insert("filter_operator", "any");
+                    complexFilter.insert("filters", filters);
+                    result << complexFilter;
+                } else {
+                    // count is 0
+                    if (sgf->isRequired()) {
+                        debug() << "field" << sgf << "is marked required, but has no data";
+                        return QVariant();
+                    }
                 }
             }
         }
@@ -365,7 +371,9 @@ const QStringList ShotgunEntity::fields() const
 
     // build a list of Shotgun fields
     foreach (const ShotgunField *sgf, m_shotgunFields) {
-        result << sgf->shotgunFieldName();
+        if (sgf) {
+            result << sgf->shotgunFieldName();
+        }
     }
 
     trace() << "    ->" << result;
@@ -385,10 +393,12 @@ void ShotgunEntity::onFindFinished(const QVariant results)
 
         // path fields become elements
         foreach (const ShotgunField *sgf, m_shotgunFields) {
-            const QString shotgunFieldName = sgf->shotgunFieldName();
-            if (sgf->type() == ShotgunField::Path && !shotgunFieldName.isEmpty()) {
-                elementsView->elementAt(i)->setPattern(result.toMap()[shotgunFieldName].toString());
-                elementsView->elementAt(i)->scan();
+            if (sgf) {
+                const QString shotgunFieldName = sgf->shotgunFieldName();
+                if (sgf->type() == ShotgunField::Path && !shotgunFieldName.isEmpty()) {
+                    elementsView->elementAt(i)->setPattern(result.toMap()[shotgunFieldName].toString());
+                    elementsView->elementAt(i)->scan();
+                }
             }
         }
 
