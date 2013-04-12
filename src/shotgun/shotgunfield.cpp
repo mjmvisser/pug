@@ -347,27 +347,32 @@ const Field *ShotgunField::field() const
         const Branch *branch = qobject_cast<const Branch *>(source());
         if (branch) {
             return branch->findField(m_fieldName);
+        } else {
+            error() << "Source" << source() << "is not a branch";
         }
     } else {
-        error() << "Source" << source() << "is not a branch";
+        const Branch *branch = firstParent<Branch>();
+        return branch->findField(m_fieldName);
     }
+
     return 0;
 }
 
 const QVariantMap ShotgunField::valueContext(int index, const QVariantMap context) const
 {
-    Q_ASSERT(source());
-
     QVariantMap result = context;
-    if (index < source()->count()) {
-        result = mergeContexts(context,
-                source()->details().property(index).property("context").toVariant().toMap());
-        debug() << "merge with" << source() << "index" << index;
-        debug() << "merging" << context << "with" << source()->details().property(index).property("context").toVariant().toMap();
+    if (source()) {
+        if (index < source()->count()) {
+            result = mergeContexts(context,
+                    source()->details().property(index).property("context").toVariant().toMap());
+            debug() << "merge with" << source() << "index" << index;
+            debug() << "merging" << context << "with" << source()->details().property(index).property("context").toVariant().toMap();
+        } else {
+            error() << source() << "index" << index << "doesn't exist";
+        }
     } else {
-        error() << source() << "index" << index << "doesn't exist";
+        return context;
     }
-
     return result;
 }
 
@@ -525,7 +530,7 @@ const QVariant ShotgunField::buildMultiLinkValue(int index, const QVariantMap co
     QVariantList result;
     for (int i = 0; i < m_links.length(); i++) {
         if (m_links[i]) {
-            const QVariantMap sg_entity = link()->details().property(index).property("entity").toVariant().toMap();
+            const QVariantMap sg_entity = m_links[i]->details().property(index).property("entity").toVariant().toMap();
 
             debug() << "building multilink value at index" << index << "with entity" << sg_entity;
 
