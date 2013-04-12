@@ -261,6 +261,8 @@ const Node *Node::node(const QString n) const
     } else if (n == "..") {
         // found it!
         return parent<Node>();
+    } else if (n == "/") {
+        return rootBranch();
     } else if (n[0] == '/') {
         const Node *r = rootBranch();
         return r ? r->nodeInChildren(n.mid(1)) : 0;
@@ -288,19 +290,6 @@ Node *Node::node(const QString n)
 {
     Node *result = const_cast<Node *>(static_cast<const Node &>( *this ).node(n));
     return result;
-}
-
-const QString Node::path() const
-{
-    QString path = objectName();
-
-    const Node *p = parent<Node>();
-    if (p) {
-        path.prepend("/");
-        path.prepend(p->path());
-    }
-
-    return path;
 }
 
 const Node *Node::nodeInChildren(const QString n) const
@@ -435,11 +424,6 @@ bool Node::isDownstream(const Node *other)
             return true;
     }
 
-    return false;
-}
-
-bool Node::isRoot() const
-{
     return false;
 }
 

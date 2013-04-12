@@ -72,6 +72,11 @@ const PugItem *PugItem::parentItem() const
     return qobject_cast<PugItem*>(QObject::parent());
 }
 
+bool PugItem::isRoot() const
+{
+    return false;
+}
+
 const QString PugItem::name() const
 {
     return objectName();
@@ -93,6 +98,27 @@ bool PugItem::inherits(const QString className) const
 const QString PugItem::className() const
 {
     return metaObject()->className();
+}
+
+
+const QString PugItem::path() const
+{
+    if (isRoot())
+        return "/";
+
+    QString path = objectName();
+
+    const PugItem *p = parent<PugItem>();
+
+    if (!p)
+        return path;
+
+    path.prepend("/");
+    if (!p->isRoot()) {
+        path.prepend(p->path());
+    }
+
+    return path;
 }
 
 Log::MessageType PugItem::logLevel() const

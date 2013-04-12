@@ -47,8 +47,6 @@ public:
     Q_INVOKABLE Node *node(const QString node);
     const Node *node(const QString node) const;
 
-    Q_INVOKABLE const QString path() const;
-
     const QList<const Node *> upstream() const;
     const QList<Node *> upstream();
     Q_INVOKABLE const QVariantList upstreamNodes();
@@ -62,9 +60,6 @@ public:
 
     Q_INVOKABLE bool isUpstream(const Node *other);
     Q_INVOKABLE bool isDownstream(const Node *other);
-
-    // TODO: not sure if this is the best way
-    virtual bool isRoot() const;
 
     int count() const;
     void setCount(int);
@@ -109,21 +104,6 @@ public:
 
     bool cycleCheck(const QList<const Node *>& visited = QList<const Node *>()) const;
 
-signals:
-    void dependencyOrderChanged(DependencyOrder dependencyOrder);
-    void paramsChanged();
-    void nodesChanged();
-    void inputsChanged();
-    void outputChanged(bool output);
-    void detailsChanged();
-    void countChanged(int count);
-    void indexChanged(int index);
-    void xChanged(qreal x);
-    void yChanged(qreal y);
-
-protected:
-    virtual void classBegin();
-
     template <typename T>
     QJSValue toScriptValue(T value) const
     {
@@ -156,6 +136,21 @@ protected:
 
         return context->engine()->newQObject(object);
     }
+
+signals:
+    void dependencyOrderChanged(DependencyOrder dependencyOrder);
+    void paramsChanged();
+    void nodesChanged();
+    void inputsChanged();
+    void outputChanged(bool output);
+    void detailsChanged();
+    void countChanged(int count);
+    void indexChanged(int index);
+    void xChanged(qreal x);
+    void yChanged(qreal y);
+
+protected:
+    virtual void classBegin();
 
 private:
     const Node *nodeInChildren(const QString n) const;

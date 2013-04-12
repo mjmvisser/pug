@@ -35,10 +35,15 @@ public:
     const PugItem *parentItem() const;
     PugItem *parentItem();
 
+    // TODO: not sure if this is the best way
+    virtual bool isRoot() const;
+
     const QString name() const;
     void setName(const QString);
 
     const QString className() const;
+
+    Q_INVOKABLE const QString path() const;
 
     Log::MessageType logLevel() const;
     void setLogLevel(Log::MessageType);
@@ -137,6 +142,14 @@ private:
     mutable Log *m_log;
     Log::MessageType m_logLevel;
 };
+
+inline QDebug operator<<(QDebug dbg, const PugItem *item)
+{
+    if (!item)
+        return dbg << "PugItem(0x0) ";
+    dbg.nospace() << item->metaObject()->className() << '(' << (void *)item << ", path = " << item->path() << ')';
+    return dbg.space();
+}
 
 // http://stackoverflow.com/questions/123758/how-do-i-remove-code-duplication-between-similar-const-and-non-const-member-func
 // http://stackoverflow.com/questions/6483422/qt-qlist-const-correctness
