@@ -96,6 +96,7 @@ PugTestCase {
                     name: "releaseFile"
                     pattern: "{BAR}.txt"
                     ReleaseOperation.source: workFile
+                    ReleaseOperation.versionBranch: releaseBranch
 
                 }
                 File {
@@ -103,7 +104,8 @@ PugTestCase {
                     name: "releaseSeq"
                     pattern: "{DAG}.{FRAME}.txt"
                     ReleaseOperation.source: workSeq
-                }
+                    ReleaseOperation.versionBranch: releaseBranch
+            }
             }
             
             Folder {
@@ -141,7 +143,9 @@ PugTestCase {
 
     function test_lastVersion() {
         var context = {ROOT: tmpDir, FOO: "foo", BAR: "bar"};
-        compare(releaseBranch.ReleaseOperation.findLastVersion(context), 2);
+        update.run(releaseFile, context);
+        updateSpy.wait(500);
+        compare(releaseFile.ReleaseOperation.findLastVersion(context), 2);
     }
 
     function test_updateRelease() {
@@ -185,9 +189,9 @@ PugTestCase {
         compare(release.status, Operation.Finished);
         compare(workFile.ReleaseOperation.status, Operation.Finished);
         compare(workFile.details.length, 1);
-        compare(releaseFile.details.length, 2);
-        compare(releaseFileElementsView.elements.length, 2);
-        compare(releaseFileElementsView.elements[1].path(), releasePath_v004);
+        compare(releaseFile.details.length, 1);
+        compare(releaseFileElementsView.elements.length, 1);
+        compare(releaseFileElementsView.elements[0].path(), releasePath_v004);
         verify(Util.exists(releasePath_v004));
         
         update.run(releaseFile, context);

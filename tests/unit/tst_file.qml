@@ -105,8 +105,6 @@ PugTestCase {
         var branchElementsView = Util.elementsView(branch);
         
         compare(file.UpdateOperation.status, Operation.Finished);
-        compare(branch.details.length, 1);
-        compare(branchElementsView.elements[0].path(), tmpDir + "filetests/");
         compare(fileElementsView.elements[0].pattern, tmpDir + "filetests/abc/foo.%04d.baz");
         verify(fileElementsView.elements[0].frames[0]);
         compare(fileElementsView.elements[0].frames[0].frame, 1);

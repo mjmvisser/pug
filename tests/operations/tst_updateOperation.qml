@@ -77,14 +77,8 @@ PugTestCase {
         var branch2ElementsView = Util.elementsView(branch2);
         var file1ElementsView = Util.elementsView(file1);
         
-        compare(branch1.UpdateOperation.status, Operation.Finished);
-        compare(branch2.UpdateOperation.status, Operation.Finished);
         compare(file1.UpdateOperation.status, Operation.Finished);
-        compare(branch1ElementsView.elements.length, 1);
-        compare(branch2ElementsView.elements.length, 1);
         compare(file1ElementsView.elements.length, 1);
-        compare(branch1ElementsView.elements[0].path(), tmpDir + "updatetests/abc/foo/def/bar/");
-        compare(branch2ElementsView.elements[0].path(), tmpDir + "updatetests/abc/foo/def/bar/ghi/18/");
         compare(file1ElementsView.elements[0].pattern, tmpDir + "updatetests/abc/foo/def/bar/ghi/18/somefile.%04d.ext");
     }
 }

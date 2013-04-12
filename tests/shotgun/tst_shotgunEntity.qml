@@ -19,9 +19,9 @@ PugTestCase {
         
         Util.mkpath(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/work/mvisser");
         Util.touch(tmpDir + "shotguntests/projects/888_test/delivery/from_client/20121018/work/mvisser/somefile.txt");
-        Util.mkpath(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images");
+        Util.mkpath(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/work/mvisser/images");
         for (var frame=1; frame <= 100; frame++) {
-            var framePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images/somefile.%04d.jpg", frame);
+            var framePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/work/mvisser/images/somefile.%04d.jpg", frame);
             Util.copy(testImage, framePath);
         }
         updateSpy.clear();
@@ -40,22 +40,22 @@ PugTestCase {
         Util.rmdir(tmpDir + "shotguntests/projects/888_test/delivery/from_client");
         Util.rmdir(tmpDir + "shotguntests/projects/888_test/delivery");
         for (var frame=1; frame <= 100; frame++) {
-            var workFramePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images/somefile.%04d.jpg", frame);
+            var workFramePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/work/mvisser/images/somefile.%04d.jpg", frame);
             Util.remove(workFramePath);
-            var releaseFramePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release/main/v001/render/jpg/DEV_001_comp.%04d.jpg", frame);
+            var releaseFramePath = Sprintf.sprintf(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/release/main/v001/render/jpg/test_001_comp.%04d.jpg", frame);
             Util.remove(releaseFramePath);
         }
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release/main/v001/render/jpg");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release/main/v001/render");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release/main/v001");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release/main");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV/001");
-        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/DEV");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/work/mvisser/images");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/work/mvisser");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/work");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/release/main/v001/render/jpg");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/release/main/v001/render");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/release/main/v001");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/release/main");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/release");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/test/001/comp");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/test/001");
+        Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots/test");
         Util.rmdir(tmpDir + "shotguntests/projects/888_test/shots");
         Util.rmdir(tmpDir + "shotguntests/projects/888_test");
         Util.rmdir(tmpDir + "shotguntests/projects/888_test");
@@ -70,6 +70,7 @@ PugTestCase {
         operations: [
             UpdateOperation {
                 id: update
+                name: "update"
             },
             CookOperation {
                 id: cook
@@ -78,8 +79,8 @@ PugTestCase {
             },
             ReleaseOperation {
                 id: release
+                name: "release"
                 dependencies: cook
-                triggers: cook
             }
         ]
     
@@ -157,10 +158,11 @@ PugTestCase {
                     name: "releaseFile"
                     pattern: "{FILENAME}.{EXT}"
                     ReleaseOperation.source: workFile
+                    ReleaseOperation.versionBranch: deliveryRelease
 
                     ShotgunPublishEvent {
                         id: sg_releaseFile
-                        name: "sg_releaseSeqFile"
+                        name: "sg_releaseFile"
                         action: ShotgunEntity.Create
                         project: sg_project
                         user: sg_user
@@ -189,7 +191,6 @@ PugTestCase {
                 project: sg_project
                 link: sg_delivery
                 step: sg_deliveryStep
-                code: "from_client_{TRANSFER}_v{VERSION}"
             }
             
         }
@@ -200,8 +201,9 @@ PugTestCase {
             pattern: "shots/{SEQUENCE}/"
             root: project
             
-            ShotgunScene {
+            ShotgunSequence {
                 id: sg_seq
+                name: "sg_sequence"
                 project: sg_project
             }
         }
@@ -215,7 +217,7 @@ PugTestCase {
             ShotgunShot {
                 id: sg_shot
                 project: sg_project
-                scene: sg_seq
+                sequence: sg_seq
             }
         }
         
@@ -253,6 +255,7 @@ PugTestCase {
                     name: "releaseSeq"
                     pattern: "render/jpg/{SEQUENCE}_{SHOT}_{STEP}.{FRAME}.{EXT}"
                     ReleaseOperation.source: workSeq
+                    ReleaseOperation.versionBranch: compRelease
                 
                     ShotgunPublishEvent {
                         id: sg_releaseSeqFile
@@ -268,12 +271,12 @@ PugTestCase {
             }
 
             LatestShotgunPublishEvent {
+                logLevel: Log.Info
                 id: latestReleaseSeq
                 name: "latestReleaseSeq"
                 project: sg_project
                 link: sg_shot
                 step: sg_compStep
-                code: "{SEQUENCE}_{SHOT}_comp_v{VERSION}"
             }
             
             Folder {
@@ -362,20 +365,24 @@ PugTestCase {
         compare(sg_project.ReleaseOperation.status, Operation.Finished);
         compare(sg_delivery.UpdateOperation.status, Operation.Finished);
         compare(sg_delivery.ReleaseOperation.status, Operation.Finished);
-        compare(sg_deliveryVersion.UpdateOperation.status, Operation.Finished);
-        compare(sg_deliveryVersion.ReleaseOperation.status, Operation.Finished);
+        // compare(sg_deliveryVersion.UpdateOperation.status, Operation.Finished);
+        // compare(sg_deliveryVersion.ReleaseOperation.status, Operation.Finished);
         compare(sg_releaseFile.UpdateOperation.status, Operation.Finished);
         compare(sg_releaseFile.ReleaseOperation.status, Operation.Finished);
 
         verify(Util.exists(releasePath));
         
         compare(sg_project.details.length, 1);
+        verify(sg_project.details[0].entity);
         compare(sg_project.details[0].entity.type, "Project");
         compare(sg_delivery.details.length, 1);
+        verify(sg_delivery.details[0].entity);
         compare(sg_delivery.details[0].entity.type, "Delivery");
-        compare(sg_deliveryVersion.details.length, 1);
-        compare(sg_deliveryVersion.details[0].entity.type, "Version");
+        // compare(sg_deliveryVersion.details.length, 1);
+        // verify(sg_deliveryVersion.details[0].entity);
+        // compare(sg_deliveryVersion.details[0].entity.type, "Version");
         compare(sg_releaseFile.details.length, 1);
+        verify(sg_releaseFile.details[0].entity);
         compare(sg_releaseFile.details[0].entity.type, "PublishEvent");
 
         compare(workFile.details.length, 1);
@@ -395,17 +402,17 @@ PugTestCase {
     function test_releaseSeq() {
         var context = {ROOT: tmpDir + "shotguntests",
                        PROJECT: "888_test",
-                       SEQUENCE: "DEV",
+                       SEQUENCE: "test",
                        SHOT: "001",
                        STEP: "comp",
                        USER: "mvisser",
                        FILENAME: "somefile",
                        EXT: "jpg",
-                       PUGWORK: tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/pugtemp/"};
+                       PUGWORK: tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/work/mvisser/pugtemp/"};
         var startFrame = 1;
         var endFrame = 100;
-        var workPath = tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/work/mvisser/images/somefile.%04d.jpg";
-        var releasePath = tmpDir + "shotguntests/projects/888_test/shots/DEV/001/comp/release/main/v001/render/jpg/DEV_001_comp.%04d.jpg";
+        var workPath = tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/work/mvisser/images/somefile.%04d.jpg";
+        var releasePath = tmpDir + "shotguntests/projects/888_test/shots/test/001/comp/release/main/v001/render/jpg/test_001_comp.%04d.jpg";
 
         for (var frame = startFrame; frame <= endFrame; frame++) {
             var framePath = Sprintf.sprintf(workPath, frame);
@@ -451,7 +458,7 @@ PugTestCase {
     function skip_test_pullFields() {
         var context = {ROOT: tmpDir + "shotguntests",
                        PROJECT: "888_test",
-                       SEQUENCE: "DEV",
+                       SEQUENCE: "test",
                        SHOT: "001",
                        USER: "mvisser"};
         update.run(shot, context);
