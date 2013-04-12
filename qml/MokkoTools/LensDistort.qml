@@ -3,7 +3,6 @@ import Pug 1.0
 
 Process {
     id: self
-    logLevel: Log.Info
     TractorOperation.tags: "nuke"
 
     // inputs
