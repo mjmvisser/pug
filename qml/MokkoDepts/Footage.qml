@@ -4,7 +4,7 @@ import MokkoTools 1.0
 
 Folder {
     name: "footage"
-    pattern: "2d/assets/footage"
+    pattern: "dept/assets/footage"
 
     ShotgunStep {
         id: sg_step
