@@ -363,14 +363,16 @@ void File::onRelease(const QVariant context)
                 if (destPattern.isSequence()) {
                     // source and destination are both sequences
                     if (!frames() || sourceElement->frameList() == frames()->list()) {
-                        element->setFrameCount(element->frameCount());
+                        element->setFrameCount(sourceElement->frameCount());
 
                         for (int frameIndex = 0; frameIndex < sourceElement->frameCount(); frameIndex++) {
                             int frame = sourceElement->frameAt(frameIndex)->frame();
+                            element->frameAt(frameIndex)->setFrame(frame);
 
                             const QString srcPath = srcPattern.path(frame);
                             const QString destPath = destPattern.path(frame);
 
+                            // TODO: preserve timestamps?
                             releaseFile(srcPath, destPath, attached->mode());
                         }
                     } else {
