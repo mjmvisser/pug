@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Pug 1.0
+import MokkoTools 1.0
 
 import "js/shotgunutils.js" as ShotgunUtils
     
@@ -21,14 +22,15 @@ ShotgunEntity {
         createdByField,
         updatedByField,
         userField,
-        publishEventField         
+        publishEventField,
+        uploadedMovieField
+        //uploadedMovieMp4Field,
+        //uploadedMovieWebmField     
     ]
     
     property Node project: null
     property Node link: null
     property Node step: null
-    property Node thumbnail: null
-    property Node filmstrip: null
     property Node user: null
     property Node frames: null
     property Node publishEvent: null
@@ -37,8 +39,6 @@ ShotgunEntity {
         Input { name: "project" },
         Input { name: "link" },
         Input { name: "step" },
-        Input { name: "thumbnail" },
-        Input { name: "filmstrip" },
         Input { name: "user" },
         Input { name: "frames" },
         Input { name: "publishEvent" }
@@ -104,7 +104,7 @@ ShotgunEntity {
     }
 
     function _firstFrame(index) {
-        var elementsView = Util.elementsView(parent);
+        var elementsView = Util.elementsView(frames);
 
         try {        
             return elementsView.elements[index].frameStart();
@@ -114,7 +114,7 @@ ShotgunEntity {
     }
 
     function _lastFrame(index) {
-        var elementsView = Util.elementsView(parent);
+        var elementsView = Util.elementsView(frames);
         
         try {        
             return elementsView.elements[index].frameEnd();
@@ -128,8 +128,8 @@ ShotgunEntity {
         name: "firstFrameField"
         shotgunField: "sg_first_frame"
         type: ShotgunField.Number
-        value: _firstFrame(index)                         
-        source: versionEntity.parent
+        value: frames ? _firstFrame(index) : 0                         
+        source: frames
     }
 
     ShotgunField {
@@ -137,16 +137,29 @@ ShotgunEntity {
         name: "lastFrameField"
         shotgunField: "sg_last_frame"
         type: ShotgunField.Number
-        value: _lastFrame(index)                         
-        source: versionEntity.parent
+        value: frames ? _lastFrame(index) : 0                         
+        source: frames
     }
     
+    ShotgunThumbnail {
+        id: thumbnail
+        name: "thumbnail"
+        input: frames
+    }
+
     ShotgunField {
         id: imageField
         name: "imageField"
         shotgunField: "image"
         type: ShotgunField.Path
         source: thumbnail
+    }
+
+    ShotgunThumbnail {
+        id: filmstrip
+        name: "filmstrip"
+        input: frames
+        filmstrip: true
     }
 
     ShotgunField {
@@ -188,4 +201,44 @@ ShotgunEntity {
         type: ShotgunField.Link
         link: publishEvent
     }
+    
+    ShotgunQuicktime {
+        id: movieMp4
+        name: "movieMp4"
+        input: frames
+        format: "mp4"
+        fps: (((project || {}).details[0] || {}).entity || {}).sg_frame_rate || 24
+    }
+
+    ShotgunField {
+        id: uploadedMovieField
+        name: "uploadedMovieField"
+        shotgunField: "sg_uploaded_movie"
+        type: ShotgunField.Path
+        source: movieMp4
+    }
+    
+    // ShotgunField {
+        // id: uploadedMovieMp4Field
+        // name: "uploadedMovieMp4Field"
+        // shotgunField: "sg_uploaded_movie_mp4"
+        // type: ShotgunField.Path
+        // source: movieMp4
+    // }
+// 
+    // ShotgunQuicktime {
+        // id: movieWebm
+        // name: "movieWebm"
+        // input: frames
+        // format: "webm"
+        // fps: (((project || {}).details[0] || {}).entity || {}).sg_frame_rate || 24
+    // }
+// 
+    // ShotgunField {
+        // id: uploadedMovieWebmField
+        // name: "uploadedMovieWebmField"
+        // shotgunField: "sg_uploaded_movie_webm"
+        // type: ShotgunField.Path
+        // source: movieWebm
+    // }
 }
