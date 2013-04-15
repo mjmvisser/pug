@@ -24,15 +24,15 @@ TestCase {
             pattern: testSequencePath
         }
 
-        MakeThumbnail {
-            name: "makeThumbnail"
-            id: makeThumbnail
+        ShotgunThumbnail {
+            name: "shotgunThumbnail"
+            id: shotgunThumbnail
             input: seq
         }
         
-        MakeThumbnail {
-            name: "makeFilmstrip"
-            id: makeFilmstrip
+        ShotgunThumbnail {
+            name: "shotgunFilmstrip"
+            id: shotgunFilmstrip
             input: seq
             filmstrip: true
         }
@@ -53,29 +53,29 @@ TestCase {
         compare(elementsView.elements[0].frames.length, 10);
     }
     
-    function test_makeThumbnail() {
+    function test_shotgunThumbnail() {
         spy.clear();
-        cook.run(makeThumbnail, {"PUGWORK": "/usr/tmp/mokkotoolstests/"});
+        cook.run(shotgunThumbnail, {"PUGWORK": "/usr/tmp/mokkotoolstests/"});
         spy.wait(5000);
 
         compare(cook.status, Operation.Finished)        
         compare(seq.details.length, 1);
-        compare(makeThumbnail.details.length, 1);
+        compare(shotgunThumbnail.details.length, 1);
         
-        var elementsView = Util.elementsView(makeThumbnail);
+        var elementsView = Util.elementsView(shotgunThumbnail);
         verify(Util.exists(elementsView.elements[0].path()));
     }
     
-    function test_makeFilmstrip() {
+    function test_shotgunFilmstrip() {
         spy.clear();
-        cook.run(makeFilmstrip, {"PUGWORK": "/usr/tmp/mokkotoolstests/"});
+        cook.run(shotgunFilmstrip, {"PUGWORK": "/usr/tmp/mokkotoolstests/"});
         spy.wait(5000);
 
         compare(cook.status, Operation.Finished)        
         compare(seq.details.length, 1);
-        compare(makeFilmstrip.details.length, 1);
+        compare(shotgunFilmstrip.details.length, 1);
         
-        var elementsView = Util.elementsView(makeFilmstrip);
+        var elementsView = Util.elementsView(shotgunFilmstrip);
         verify(Util.exists(elementsView.elements[0].path()));
     }
     

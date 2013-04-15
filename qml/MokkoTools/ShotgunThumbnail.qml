@@ -15,10 +15,7 @@ Process {
     property var elementsView: Util.elementsView(self)
 
     function __outputPath(index) {
-        var directory = input.details[index].context["PUGWORK"] + (self.name ? self.name + "/" : "");
-        var baseName = inputElementsView.elements[index].baseName();
-        var ext = self.filmstrip ? "_filmstrip.jpg" : "_thumbnail.jpg";
-        return directory + baseName + ext;
+        return input.details[index].context["PUGWORK"] + self.path() + ".jpg";
     }
 
     updatable: true
@@ -28,7 +25,7 @@ Process {
               if (updating) {
                   ["true"]    
               } else if (cooking) {
-                  [Qt.resolvedUrl("scripts/makeThumbnail.py").replace("file://", ""),
+                  [Qt.resolvedUrl("scripts/shotgunThumbnail.py").replace("file://", ""),
                    "--inputPath", inputElementsView.elements[index].pattern,
                    "--outputPath", __outputPath(index),
                    "--firstFrame", inputElementsView.elements[index].frameStart(),

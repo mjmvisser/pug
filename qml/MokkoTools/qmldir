@@ -1,4 +1,5 @@
 module MokkoTools
-MakeThumbnail 1.0 MakeThumbnail.qml
+ShotgunThumbnail 1.0 ShotgunThumbnail.qml
+ShotgunQuicktime 1.0 ShotgunQuicktime.qml
 Identify 1.0 Identify.qml
 LensDistort 1.0 LensDistort.qml
