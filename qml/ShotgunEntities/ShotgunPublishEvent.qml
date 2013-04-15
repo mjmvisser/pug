@@ -1,4 +1,5 @@
 import Pug 1.0
+import MokkoTools 1.0
 
 ShotgunEntity {
     id: publishEventEntity
@@ -24,19 +25,17 @@ ShotgunEntity {
     property Node project
     property Node link
     property Node step
-    property Node thumbnail: null
-    property Node filmstrip: null
     property Node user
     property list<Node> dependencies
+    property Node frames
 
     inputs: [
         Input { name: "project" },
         Input { name: "link" },
         Input { name: "step" },
-        Input { name: "thumbnail" },
-        Input { name: "filmstrip" },
         Input { name: "user" },
-        Input { name: "dependencies" }
+        Input { name: "dependencies" },
+        Input { name: "frames" }
     ]
 
     output: true
@@ -129,12 +128,25 @@ ShotgunEntity {
         link: step
     }
     
+    ShotgunThumbnail {
+        id: thumbnail
+        name: "thumbnail"
+        input: frames
+    }
+
     ShotgunField {
         id: imageField
         name: "imageField"
         shotgunField: "image"
         type: ShotgunField.Path
-        source: thumbnail
+        source: frames ? thumbnail : null
+    }
+
+    ShotgunThumbnail {
+        id: filmstrip
+        name: "filmstrip"
+        input: frames
+        filmstrip: true
     }
 
     ShotgunField {
@@ -142,7 +154,7 @@ ShotgunEntity {
         name: "filmstripField"
         shotgunField: "filmstrip_image"
         type: ShotgunField.Path
-        source: filmstrip
+        source: frames ? filmstrip : null
     }
 
     ShotgunField {
