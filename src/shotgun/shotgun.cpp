@@ -324,6 +324,18 @@ Q_INVOKABLE ShotgunReply *Shotgun::create(const QString entityType,
     if (createData.contains("filmstrip_image"))
         uploadFilmStripImage = createData.take("filmstrip_image").toString();
 
+    QString uploadMovie;
+    if (createData.contains("sg_uploaded_movie"))
+        uploadMovie = createData.take("sg_uploaded_movie").toString();
+
+    QString uploadMovieMp4;
+    if (createData.contains("sg_uploaded_movie_mp4"))
+        uploadMovieMp4 = createData.take("sg_uploaded_movie_mp4").toString();
+
+    QString uploadMovieWebm;
+    if (createData.contains("sg_uploaded_movie_webm"))
+        uploadMovieMp4 = createData.take("sg_uploaded_movie_webm").toString();
+
     QVariantMap params;
     params["type"] = entityType;
     params["fields"] = mapToList(createData);
@@ -348,6 +360,33 @@ Q_INVOKABLE ShotgunReply *Shotgun::create(const QString entityType,
             ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
             upload->setFieldName("filmstrip_thumb_image");
             upload->setPath(uploadFilmStripImage);
+
+            reply->uploadLater(upload);
+        }
+
+        if (!uploadMovie.isEmpty()) {
+            debug() << "requesting upload of" << uploadMovie;
+            ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
+            upload->setFieldName("sg_uploaded_movie");
+            upload->setPath(uploadMovie);
+
+            reply->uploadLater(upload);
+        }
+
+        if (!uploadMovieMp4.isEmpty()) {
+            debug() << "requesting upload of" << uploadMovieMp4;
+            ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
+            upload->setFieldName("sg_uploaded_movie_mp4");
+            upload->setPath(uploadMovieMp4);
+
+            reply->uploadLater(upload);
+        }
+
+        if (!uploadMovieWebm.isEmpty()) {
+            debug() << "requesting upload of" << uploadMovieWebm;
+            ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
+            upload->setFieldName("sg_uploaded_movie_webm");
+            upload->setPath(uploadMovieWebm);
 
             reply->uploadLater(upload);
         }
