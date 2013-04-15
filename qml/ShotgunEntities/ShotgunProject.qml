@@ -5,7 +5,8 @@ ShotgunEntity {
     name: "projectEntity"
     shotgunEntity: "Project"
     shotgunFields: [
-        nameField
+        nameField,
+        frameRateField
     ]    
 
     count: parent.count
@@ -17,5 +18,11 @@ ShotgunEntity {
         required: true
         field: "PROJECT"
         source: projectEntity.parent
+    }
+    
+    ShotgunField {
+        id: frameRateField
+        name: "frameRateField"
+        shotgunField: "sg_frame_rate"
     }
 }
