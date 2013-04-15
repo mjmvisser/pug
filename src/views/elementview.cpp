@@ -116,6 +116,7 @@ void ElementView::setFrameCount(int count)
         Q_ASSERT(node()->details().property(m_index).property("element").property("frames").property("length").toInt() == count);
     }
     emit node()->detailsChanged();
+    Q_ASSERT(m_frames.length() == count);
 }
 
 const QDateTime ElementView::timestamp() const
