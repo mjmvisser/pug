@@ -27,8 +27,6 @@ Folder {
             step: sg_step
             user: node("/sg_user")
             code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}"
-            thumbnail: workUndistThumbnail
-            filmstrip: workUndistFilmstrip
             frames: releaseFullUndist
             publishEvent: sg_releaseFullUndist
         }
@@ -72,7 +70,7 @@ Folder {
                 link: node("/shot/sg_shot")
                 step: sg_step
                 user: node("/sg_user")
-                category: "nk"
+                category: "export"
                 dependencies: sg_release3deScene
                 code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_nk"
             }
@@ -95,7 +93,7 @@ Folder {
                 link: node("/shot/sg_shot")
                 step: sg_step
                 user: node("/sg_user")
-                category: "mel"
+                category: "export"
                 dependencies: sg_release3deScene
                 code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_mel"
             }
@@ -120,10 +118,9 @@ Folder {
                 user: node("/sg_user")
                 resolution: "1120x630"
                 category: "render"
-                thumbnail: workUndistThumbnail
-                filmstrip: workUndistFilmstrip
                 dependencies: [sg_releaseNukeScript, workLowUndist.input]
                 code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_1120x630"
+                frames: releaseLowUndist
             }
         }
 
@@ -146,10 +143,9 @@ Folder {
                 user: node("/sg_user")
                 resolution: "2240x1260"
                 category: "render"
-                thumbnail: workUndistThumbnail
-                filmstrip: workUndistFilmstrip
                 dependencies: [sg_releaseNukeScript, workLowUndist.input]
                 code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_2240x1260"
+                frames: releaseFullUndist
             }
         }
     }
@@ -197,21 +193,6 @@ Folder {
             nukeScript: workNukeScript
             format: "full"
             mode: "undistort"
-            output: true
-        }
-        
-        MakeThumbnail {
-            id: workUndistThumbnail
-            name: "workUndistThumbnail"
-            input: workLowUndist
-            output: true
-        }
-        
-        MakeThumbnail {
-            id: workUndistFilmstrip
-            name: "workUndistFilmstrip"
-            input: workLowUndist
-            filmstrip: true
             output: true
         }
     }
