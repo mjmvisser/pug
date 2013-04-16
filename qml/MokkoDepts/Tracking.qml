@@ -103,8 +103,8 @@ Folder {
             id: releaseLowUndist
             name: "releaseLowUndist"
             root: release
-            pattern: "render/1120x630/jpg/{SEQUENCE}_{SHOT}_tracking_{VARIATION}_{VERSION}_1120x630.%04d.jpg"
-            ReleaseOperation.source: workLowUndist
+            pattern: "render/{RESOLUTION}/jpg/{SEQUENCE}_{SHOT}_tracking_{VARIATION}_{VERSION}_{RESOLUTION}.%04d.jpg"
+            ReleaseOperation.source: workLowUndistInfo
             ReleaseOperation.versionBranch: release
             output: true
 
@@ -116,10 +116,9 @@ Folder {
                 link: node("/shot/sg_shot")
                 step: sg_step
                 user: node("/sg_user")
-                resolution: "1120x630"
                 category: "render"
-                dependencies: [sg_releaseNukeScript, workLowUndist.input]
-                code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_1120x630"
+                dependencies: [sg_releaseNukeScript, node("/plate/sg_currentPlate")]
+                code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_{RESOLUTION}"
                 frames: releaseLowUndist
             }
         }
@@ -128,8 +127,8 @@ Folder {
             id: releaseFullUndist
             name: "releaseFullUndist"
             root: release
-            pattern: "render/2240x1260/jpg/{SEQUENCE}_{SHOT}_tracking_{VARIATION}_{VERSION}_2240x1260.%04d.jpg"
-            ReleaseOperation.source: workFullUndist
+            pattern: "render/{RESOLUTION}/jpg/{SEQUENCE}_{SHOT}_tracking_{VARIATION}_{VERSION}_{RESOLUTION}.%04d.jpg"
+            ReleaseOperation.source: workFullUndistInfo
             ReleaseOperation.versionBranch: release
             output: true
 
@@ -141,10 +140,9 @@ Folder {
                 link: node("/shot/sg_shot")
                 step: sg_step
                 user: node("/sg_user")
-                resolution: "2240x1260"
                 category: "render"
-                dependencies: [sg_releaseNukeScript, workLowUndist.input]
-                code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_2240x1260"
+                dependencies: [sg_releaseNukeScript, node("/plate/sg_currentPlate")]
+                code: "{SEQUENCE}_{SHOT}_tracking_{VARIATION}_v{VERSION}_{RESOLUTION}"
                 frames: releaseFullUndist
             }
         }
@@ -183,6 +181,12 @@ Folder {
             nukeScript: workNukeScript
             format: "low"
             mode: "undistort"
+        }
+        
+        ImageInfo {
+            id: workLowUndistInfo
+            input: workLowUndist
+            name: "workLowUndistInfo"
             output: true
         }
         
@@ -193,6 +197,12 @@ Folder {
             nukeScript: workNukeScript
             format: "full"
             mode: "undistort"
+        }
+        
+        ImageInfo {
+            id: workFullUndistInfo
+            input: workFullUndist
+            name: "workFullUndistInfo"
             output: true
         }
     }
