@@ -5,7 +5,7 @@ import MokkoTools 1.0
 
 TestCase {
     id: self
-    name: "IdentifyTests"
+    name: "ImageInfoTests"
 
     property string testImagePath: Qt.resolvedUrl("data/test.png").replace("file://", "")
     
@@ -25,10 +25,9 @@ TestCase {
             pattern: testImagePath
         }
         
-        Identify {
-            id: identify
+        ImageInfo {
+            id: info
             input: file
-            metadata: {"FORMAT": "%[w]x%[h]"}
         }
     }
     
@@ -38,13 +37,17 @@ TestCase {
         signalName: "finished"
     }
     
-    function test_Identify() {
-        cook.run(identify, {});
+    function test_ImageInfo() {
+        cook.run(info, {});
         spy.wait(500);
         
         compare(file.details.length, 1);
-        compare(identify.CookOperation.status, Operation.Finished);
-        compare(identify.details.length, 1);
-        compare(identify.details[0].identify.FORMAT, "82x104");
+        compare(info.CookOperation.status, Operation.Finished);
+        compare(info.details.length, 1);
+        compare(info.details[0].element, file.details[0].element);
+        compare(info.details[0].context.RESOLUTION, "82x104");
+        compare(info.details[0].context.CODEC, "PNG");
+        compare(info.details[0].context.DEPTH, "8");
+        compare(info.details[0].context.COLORSPACE, "sRGB");
     }
 }

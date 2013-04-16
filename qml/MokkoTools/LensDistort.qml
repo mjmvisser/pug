@@ -58,6 +58,7 @@ Process {
     function __setDetails(index) {
         // merge the input context
         details[index].context = Util.mergeContexts(input.details[index].context, details[index].context);
+        details[index].context["FORMAT"] = format;
 
         // set the pattern and scan for file info
         elementsView.elements[index].pattern = __outputPath(index, details[index].context);
