@@ -2,9 +2,10 @@ import Pug 1.0
 
 Node {
     id: self
-    property list<Node> sources
+    property Node source
+    property bool select: true
     
-    inputs: Input { name: "sources" }
+    inputs: Input { name: "source" }
 
     signal update(var context)
     signal updateFinished(int status)
@@ -12,12 +13,10 @@ Node {
     signal cook(var context)
     signal cookFinished(int status)
     
-    function merge() {
-        for (var j = 0; j < sources.length; j++) {
-            if (sources[j]) {
-                for (var index = 0; index < sources[j].details.length; index++) {
-                    details.push(sources[j].details[index]);
-                }
+    function filter() {
+        for (index = 0; index < source.details.length; index++) {
+            if (select) {
+                details.push(source.details[index]);
             }
         }
         count = details.length;
@@ -25,12 +24,12 @@ Node {
     }
     
     onUpdate: {
-        merge();
+        filter();
         updateFinished(Operation.Finished);
     }
     
     onCook: {
-        merge();
+        filter();
         cookFinished(Operation.Finished);
     }
 }
