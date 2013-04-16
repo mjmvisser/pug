@@ -56,7 +56,8 @@ Root {
         FrameSpecField { name: "FRAME" },
         Field { name: "VERSION"; type: Field.Integer; width: 3; regexp: "[0-9]{3}" },
         Field { name: "FORMAT" },
-        Field { name: "EXT" }
+        Field { name: "EXT" },
+        Field { name: "RESOLUTION"; regexp: "[0-9]+x[0-9]+" }
     ]
     
     ShotgunHumanUser {
