@@ -109,68 +109,104 @@ void TractorOperationAttached::run()
 
 }
 
-void TractorOperationAttached::generateTask()
+void TractorOperationAttached::setupTask(TractorTask *task)
 {
-    trace() << node() << ".generateTask()";
-
-    m_task->clearSubtasks();
-
-    // build the task
-    m_task->setTitle(node()->path());
-    m_task->setSerialSubtasks(true);
-
-    TractorTask *childrenSubtask = new TractorTask(m_task);
-    childrenSubtask->setTitle(node()->path() + ":children");
-
-    TractorTask *selfSubtask = new TractorTask(m_task);
-    selfSubtask->setTitle(node()->path() + ":self");
-
-    TractorTask *inputsSubtask = new TractorTask(m_task);
-    inputsSubtask->setTitle(node()->path() + ":inputs");
-
-    if (!m_flattenFlag) {
-        // populate input subtasks
-        foreach (Node *input, node()->upstream()) {
-            TractorOperationAttached *inputAttached = input->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject());
-            inputsSubtask->addSubtask(inputAttached->tractorTask());
-        }
-    }
-
-    // populate children subtasks
-    foreach (QObject* obj, node()->children()) {
-        Node *child = qobject_cast<Node *>(obj);
-        if (child && child->isOutput()) {
-            TractorOperationAttached *childAttached = child->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject());
-            childrenSubtask->addSubtask(childAttached->tractorTask());
-        }
-    }
-
-    switch (node()->dependencyOrder()) {
-    case Node::InputsChildrenSelf:
-        m_task->addSubtask(inputsSubtask);
-        m_task->addSubtask(childrenSubtask);
-        m_task->addSubtask(selfSubtask);
-        break;
-    case Node::InputsSelfChildren:
-        m_task->addSubtask(inputsSubtask);
-        m_task->addSubtask(selfSubtask);
-        m_task->addSubtask(childrenSubtask);
-        break;
-    default:
-        Q_ASSERT(false);
-        break;
-    }
 
     // get the executable path
     QString pugExecutable = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("pug");
 
-    TractorRemoteCmd *cmd = new TractorRemoteCmd(m_task);
+    TractorRemoteCmd *cmd = new TractorRemoteCmd(task);
     cmd->setCmd(QString("%1 %2 -properties mode=Execute -context %3 -- %4")
             .arg(pugExecutable).arg(operation()->objectName())
             .arg(contextString())
             .arg(node()->path()));
     cmd->setTags(m_tags);
-    selfSubtask->addCmd(cmd);
+    task->addCmd(cmd);
+    task->setTitle(node()->path() + ":self");
+}
+
+void TractorOperationAttached::generateTask()
+{
+    trace() << node() << ".generateTask()";
+
+    QList<TractorTask *> inputSubtasks;
+
+    if (!m_flattenFlag) {
+        foreach (Node *input, node()->upstream()) {
+            TractorOperationAttached *inputAttached = input->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject());
+            inputSubtasks << inputAttached->tractorTask();
+        }
+    }
+
+    QList<TractorTask *> childSubtasks;
+
+    foreach (QObject* obj, node()->children()) {
+        Node *child = qobject_cast<Node *>(obj);
+        if (child && child->isOutput()) {
+            TractorOperationAttached *childAttached = child->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject());
+            childSubtasks << childAttached->tractorTask();
+        }
+    }
+
+    if (inputSubtasks.isEmpty() && childSubtasks.isEmpty()) {
+        // simplest case: no children or inputs
+        setupTask(m_task);
+    } else {
+        // we need an empty node to organize the tree
+        m_task->setTitle(node()->path());
+        m_task->setSerialSubtasks(true);
+
+        TractorTask *task = new TractorTask(this);
+        setupTask(task);
+
+        TractorTask *inputsSubtask = 0;
+
+        if (!inputSubtasks.isEmpty()) {
+            if (inputSubtasks.length() == 1) {
+                inputsSubtask = inputSubtasks.first();
+            } else {
+                inputsSubtask = new TractorTask(m_task);
+                inputsSubtask->setTitle(node()->path() + ":inputs");
+                foreach (TractorTask *subtask, inputSubtasks) {
+                    inputsSubtask->addSubtask(subtask);
+                }
+            }
+        }
+
+        TractorTask *childrenSubtask = 0;
+
+        if (!childSubtasks.isEmpty()) {
+            if (childSubtasks.length() == 1) {
+                childrenSubtask = childSubtasks.first();
+            } else {
+                childrenSubtask = new TractorTask(m_task);
+                childrenSubtask->setTitle(node()->path() + ":children");
+                foreach (TractorTask *subtask, childSubtasks) {
+                    childrenSubtask->addSubtask(subtask);
+                }
+            }
+        }
+
+        switch (node()->dependencyOrder()) {
+        case Node::InputsChildrenSelf:
+            if (inputsSubtask)
+                m_task->addSubtask(inputsSubtask);
+            if (childrenSubtask)
+                m_task->addSubtask(childrenSubtask);
+            m_task->addSubtask(task);
+            break;
+        case Node::InputsSelfChildren:
+            if (inputsSubtask)
+                m_task->addSubtask(inputsSubtask);
+            m_task->addSubtask(task);
+            if (childrenSubtask)
+                m_task->addSubtask(childrenSubtask);
+            break;
+        default:
+            Q_ASSERT(false);
+            break;
+        }
+    }
 
     setStatus(OperationAttached::Finished);
     continueRunning();

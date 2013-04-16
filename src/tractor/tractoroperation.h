@@ -52,6 +52,8 @@ private:
     void executeTask();
     void cleanupTask();
 
+    void setupTask(TractorTask *task);
+
     TractorOperationAttached *parentAttached();
 
     const QString tractorDataPath() const;
