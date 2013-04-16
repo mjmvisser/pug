@@ -44,12 +44,10 @@ ShotgunEntity {
 
     property string code
     property string category
-    property string resolution
 
     params: [
         Param { name: "code" },
-        Param { name: "category" },
-        Param { name: "resolution" }
+        Param { name: "category" }
     ]
 
     ShotgunField {
@@ -84,7 +82,8 @@ ShotgunEntity {
         name: "resolutionField"
         shotgunField: "sg_res"
         type: ShotgunField.String
-        value: resolution
+        field: "RESOLUTION"
+        source: publishEventEntity.parent
     }
 
     ShotgunField {
