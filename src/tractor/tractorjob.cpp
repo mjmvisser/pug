@@ -172,6 +172,7 @@ const QString TractorJob::asString(int indent, QSet<const TractorBlock *>& visit
         stream << " -subtasks {" << endl;
 
         foreach (const TractorTask *subtask, m_subtasks) {
+            Q_ASSERT(subtask);
             stream << subtask->asString(indent + 4, visited);
         }
 

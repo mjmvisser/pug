@@ -159,6 +159,7 @@ const QString TractorTask::asString(int indent, QSet<const TractorBlock *>& visi
         if (!m_subtasks.isEmpty()) {
             stream << " -subtasks {" << endl;
             foreach (const TractorTask *subtask, m_subtasks) {
+                Q_ASSERT(subtask);
                 stream << subtask->asString(indent + 4, visited) << endl;
             }
             stream << spaces << "}";
@@ -178,6 +179,7 @@ const QString TractorTask::asString(int indent, QSet<const TractorBlock *>& visi
             stream << " -cleanup {" << endl;
 
             foreach (const TractorCmd *cmd, m_cleanup) {
+                Q_ASSERT(cmd);
                 stream << cmd->asString(indent + 4, visited);
             }
 
