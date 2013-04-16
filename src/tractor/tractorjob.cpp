@@ -189,7 +189,6 @@ void TractorJob::submit()
         QSet<const TractorBlock *> visited;
         QString job = this->asString(0, visited);
         stream << job;
-        qDebug() << job;
         jobFile.close();
         QStringList args;
         args << jobFile.fileName();
