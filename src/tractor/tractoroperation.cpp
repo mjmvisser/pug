@@ -513,7 +513,8 @@ static QStringList SKIP_VARS =
         << "WINDOWID"
         << "WINDOWPATH"
         << "XCURSOR_THEME"
-        << "UID";
+        << "UID"
+        << "module";
 
 void TractorOperation::run(Node *node, const QVariant context, bool reset)
 {

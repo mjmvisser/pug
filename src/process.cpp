@@ -206,6 +206,8 @@ void Process::executeForIndex(int index, const QVariant context)
 
     debug() << "process argv:" << m_argv;
 
+    setDetail(index, "process", "argv", toScriptValue(m_argv));
+
     QStringList args = m_argv;
 
     QString program;

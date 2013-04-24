@@ -20,7 +20,7 @@ ShotgunEntity {
         id: titleField
         name: "titleField"
         shotgunField: "title"
-        field: "TRANSFER"
+        field: "DELIVERY"
         source: deliveryEntity.parent
     }
 

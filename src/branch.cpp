@@ -488,7 +488,7 @@ const QVariant Branch::parse(const QString path, bool partial) const
     return QVariant();
 }
 
-bool Branch::fieldsComplete(const QString pattern, const QVariantMap fields) const
+bool Branch::fieldsComplete(const QString pattern, const QVariantMap context) const
 {
     foreach (const QString fieldName, fieldNames(pattern)) {
         const Field *field = findField(fieldName);
@@ -497,7 +497,7 @@ bool Branch::fieldsComplete(const QString pattern, const QVariantMap fields) con
             return false;
         }
 
-        QVariant value = field->get(fields);
+        QVariant value = field->get(context);
         if (!value.isValid()) {
             debug() << "field is not valid" << fieldName;
             return false;
@@ -509,6 +509,7 @@ bool Branch::fieldsComplete(const QString pattern, const QVariantMap fields) con
 
 bool Branch::fieldsComplete(const QVariantMap context) const
 {
+    trace() << ".fieldsComplete(" << context << ")";
     return fieldsComplete(m_pattern, context) && (!root() || root()->fieldsComplete(context));
 }
 

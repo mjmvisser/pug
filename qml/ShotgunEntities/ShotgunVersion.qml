@@ -1,8 +1,6 @@
 import QtQuick 2.0
 import Pug 1.0
 import MokkoTools 1.0
-
-import "js/shotgunutils.js" as ShotgunUtils
     
 ShotgunEntity {
     id: versionEntity

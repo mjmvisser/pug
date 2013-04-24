@@ -88,6 +88,12 @@ Root {
         // name: "transfer"
         // root: project
     // }
+
+    Delivery {
+        id: delivery
+        name: "delivery"
+        root: project 
+    }
     
     Folder {
         id: sequence

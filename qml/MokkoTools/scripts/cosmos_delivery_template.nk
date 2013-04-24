@@ -1,0 +1,768 @@
+#! /usr/local/Nuke7.0v5/Nuke7.0 -nx
+version 7.0 v5
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="22" w="1688" h="1053" screen="0">
+        <splitter orientation="1">
+            <split size="1062"/>
+            <splitter orientation="1">
+                <split size="40"/>
+                <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                    <page id="Toolbar.1"/>
+                </dock>
+                <split size="1018"/>
+                <splitter orientation="2">
+                    <split size="585"/>
+                    <dock id="" activePageId="Viewer.1">
+                        <page id="Script Editor.1"/>
+                        <page id="Viewer.1"/>
+                    </dock>
+                    <split size="411"/>
+                    <dock id="" activePageId="DAG.1">
+                        <page id="DAG.1"/>
+                        <page id="Curve Editor.1"/>
+                        <page id="DopeSheet.1"/>
+                    </dock>
+                </splitter>
+            </splitter>
+            <split size="614"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name /home/mvisser/workspace/pug/qml/MokkoTools/scripts/cosmos_delivery_template.nk
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ addUserKnob {20 Extra}
+ addUserKnob {6 chk l "Multi Edit Status" -STARTLINE +HIDDEN}
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode1
+ tile_color 0x8e8e3800
+ label QT
+ note_font_size 42
+ xpos -261
+ ypos -235
+ bdwidth 723
+ bdheight 287
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode2
+ tile_color 0x7171c600
+ note_font_size 42
+ xpos -289
+ ypos -563
+ bdwidth 728
+ bdheight 265
+}
+Text {
+ inputs 0
+ message ""
+ font /prod/projects/100_mokko/io/fonts/HelveticaNeueLTStd-BdCn.otf
+ size {{parent.project_text.size}}
+ yjustify center
+ Transform 1
+ box {480 270 1440 810}
+ translate {{parent.project_text.translate.x} 192}
+ center {960 540}
+ color {0.1142308414 0.1186092198 0.123183772 1}
+ name lut_text
+ xpos -56
+ ypos -1269
+}
+Transform {
+ translate {0 -110}
+ center {481 524}
+ name Transform5
+ xpos -56
+ ypos -1245
+}
+Dot {
+ name Dot4
+ xpos -22
+ ypos -1168
+}
+Text {
+ inputs 0
+ message ""
+ font /prod/projects/100_mokko/io/fonts/HelveticaNeueLTStd-BdCn.otf
+ size {{parent.project_text.size}}
+ yjustify center
+ Transform 1
+ box {480 270 1440 810}
+ translate {{parent.project_text.translate.x} 137}
+ center {960 540}
+ color {0.1142308414 0.1186092198 0.123183772 1}
+ name mask_text
+ xpos 43
+ ypos -1272
+}
+Transform {
+ translate {0 -110}
+ center {481 524}
+ name Transform6
+ xpos 43
+ ypos -1248
+}
+Dot {
+ name Dot5
+ xpos 77
+ ypos -1168
+}
+push 0
+Read {
+ inputs 0
+ file /prod/projects/100_mokko/io/media/Mokko_LogoHorizontal_blanc.png
+ format "1045 236 0 0 1045 236 1 "
+ origset true
+ name Read3
+ xpos 410
+ ypos -1435
+ addUserKnob {20 Extras}
+ addUserKnob {2 FilePath l "File Path" +DISABLED}
+ addUserKnob {26 layerName l "" +STARTLINE T "Layer Name"}
+ addUserKnob {26 layerStep l "" +STARTLINE T "Layer Step"}
+ addUserKnob {26 variation l "" +STARTLINE T Variation}
+ addUserKnob {26 ID l "" +STARTLINE T ID}
+ addUserKnob {26 shot l "" +STARTLINE T Shot}
+ addUserKnob {1 frameRange l "Frame Range" +DISABLED}
+ addUserKnob {1 latestVersion l "Shotgun Latest Version" +DISABLED}
+ latestVersion N/A
+ addUserKnob {4 versions l "Current Version" -STARTLINE +DISABLED M {}}
+ addUserKnob {26 status l "" +STARTLINE T Status}
+ addUserKnob {6 Ignore t "Ignore Version Verification" +STARTLINE}
+ addUserKnob {6 IgnoreStereo l "Ignore Stereo" t "Ignore Stereo Verification" +STARTLINE}
+}
+Premult {
+ name Premult3
+ xpos 410
+ ypos -1282
+}
+Constant {
+ inputs 0
+ color {0.1142308414 0.1186092198 0.123183772 1}
+ name Constant4
+ xpos 300
+ ypos -1282
+}
+Merge2 {
+ inputs 2
+ operation multiply
+ name Merge11
+ xpos 410
+ ypos -1258
+}
+Crop {
+ box {285 0 1045 236}
+ reformat true
+ crop false
+ name Crop9
+ xpos 410
+ ypos -1234
+}
+Transform {
+ translate {270.7999878 75}
+ scale 0.19
+ center {414 116}
+ name Transform2
+ xpos 410
+ ypos -1210
+}
+Dot {
+ name Dot25
+ xpos 444
+ ypos -1168
+}
+Text {
+ inputs 0
+ message "\[value input_project.message]"
+ font /prod/projects/100_mokko/io/fonts/HelveticaNeueLTStd-BdCn.otf
+ size 40
+ yjustify center
+ Transform 1
+ box {480 270 1440 810}
+ translate {125 62}
+ center {960 540}
+ color {0.1142308414 0.1186092198 0.123183772 1}
+ name project_text
+ note_font Verdana
+ xpos -610
+ ypos -1282
+}
+Transform {
+ translate {0 296}
+ center {960 540}
+ name Transform1
+ xpos -610
+ ypos -1256
+}
+Dot {
+ name Dot10
+ xpos -576
+ ypos -1168
+}
+Text {
+ inputs 0
+ message "\[value input_date.message]"
+ font /prod/projects/100_mokko/io/fonts/HelveticaNeueLTStd-BdCn.otf
+ size {{parent.project_text.size}}
+ yjustify center
+ Transform 1
+ box {480 270 1440 810}
+ translate {{parent.project_text.translate.x} -149}
+ center {960 540}
+ color {0.1142308414 0.1186092198 0.123183772 1}
+ name Date1
+ xpos 520
+ ypos -1240
+}
+Transform {
+ translate {0 -264}
+ center {481 524}
+ name Transform10
+ xpos 617
+ ypos -1240
+}
+Text {
+ inputs 0
+ message "\[value input_notes.message]"
+ font /prod/projects/100_mokko/io/fonts/HelveticaNeueLTStd-BdCn.otf
+ size {{parent.project_text.size}}
+ yjustify center
+ Transform 1
+ box {480 270 1440 810}
+ translate {{parent.project_text.translate.x} 27}
+ center {960 540}
+ color {0.1142308414 0.1186092198 0.123183772 1}
+ name notes_text
+ xpos 155
+ ypos -1267
+}
+Transform {
+ translate {0 -110}
+ center {481 524}
+ name Transform11
+ xpos 155
+ ypos -1243
+}
+Dot {
+ name Dot12
+ xpos 189
+ ypos -1168
+}
+Text {
+ inputs 0
+ message "\[value input_sequence.message]_\[value input_scene.message]_\[value input_shot.message]"
+ font /prod/projects/100_mokko/io/fonts/HelveticaNeueLTStd-BdCn.otf
+ size {{parent.project_text.size}}
+ yjustify center
+ Transform 1
+ box {480 270 1492 810}
+ translate {{parent.project_text.translate.x} 64}
+ center {960 540}
+ color {0.1142308414 0.1186092198 0.123183772 1}
+ name code_text
+ note_font Verdana
+ xpos -390
+ ypos -1270
+}
+Transform {
+ translate {0 185}
+ center {481 524}
+ name Transform14
+ note_font Verdana
+ xpos -390
+ ypos -1244
+}
+Dot {
+ name Dot13
+ xpos -356
+ ypos -1168
+}
+Text {
+ inputs 0
+ message "\[value input_version.message]"
+ font /prod/projects/100_mokko/io/fonts/HelveticaNeueLTStd-BdCn.otf
+ size {{parent.project_text.size}}
+ yjustify center
+ Transform 1
+ box {480 270 1440 810}
+ translate {{parent.project_text.translate.x} 73}
+ center {960 540}
+ color {0.1142308414 0.1186092198 0.123183772 1}
+ name version_text
+ note_font Verdana
+ xpos -272
+ ypos -1270
+}
+Transform {
+ translate {0 120}
+ center {481 524}
+ name Transform13
+ note_font Verdana
+ xpos -272
+ ypos -1244
+}
+Dot {
+ name Dot14
+ xpos -238
+ ypos -1168
+}
+push 0
+Text {
+ inputs 0
+ message "\[expr \[value input_frames.last] - \[value input_frames.first] + 1]"
+ font /prod/projects/100_mokko/io/fonts/HelveticaNeueLTStd-BdCn.otf
+ size {{parent.project_text.size}}
+ yjustify center
+ Transform 1
+ box {480 270 1440 810}
+ translate {{parent.project_text.translate.x} 98}
+ center {960 540}
+ color {0.1142308414 0.1186092198 0.123183772 1}
+ name length_text
+ note_font Verdana
+ xpos -162
+ ypos -1270
+}
+Transform {
+ translate {0 40}
+ center {481 524}
+ name Transform12
+ note_font Verdana
+ xpos -162
+ ypos -1244
+}
+Dot {
+ name Dot15
+ xpos -128
+ ypos -1168
+}
+Read {
+ inputs 0
+ file /prod/projects/100_mokko/io/media/slate_general.psd
+ format "2048 1080 0 0 2048 1080 1 Serena"
+ origset true
+ version 10
+ name Slate
+ note_font Verdana
+ xpos 947
+ ypos -1339
+ addUserKnob {20 Extras}
+ addUserKnob {2 FilePath l "File Path" +DISABLED}
+ addUserKnob {26 layerName l "" +STARTLINE T "Layer Name"}
+ addUserKnob {26 layerStep l "" +STARTLINE T "Layer Step"}
+ addUserKnob {26 variation l "" +STARTLINE T Variation}
+ addUserKnob {26 ID l "" +STARTLINE T ID}
+ addUserKnob {26 shot l "" +STARTLINE T Shot}
+ addUserKnob {1 frameRange l "Frame Range" +DISABLED}
+ addUserKnob {1 latestVersion l "Shotgun Latest Version" +DISABLED}
+ latestVersion N/A
+ addUserKnob {4 versions l "Current Version" -STARTLINE +DISABLED M {}}
+ addUserKnob {26 status l "" +STARTLINE T Status}
+ addUserKnob {6 Ignore t "Ignore Version Verification" +STARTLINE}
+ addUserKnob {6 IgnoreStereo l "Ignore Stereo" t "Ignore Stereo Verification" +STARTLINE}
+}
+Premult {
+ name Premult1
+ note_font Verdana
+ xpos 947
+ ypos -1172
+}
+Merge2 {
+ inputs 10+1
+ name Merge6
+ note_font Verdana
+ xpos 617
+ ypos -1172
+}
+Dot {
+ name Dot1
+ xpos 651
+ ypos -1130
+}
+Reformat {
+ format {{{output_format.format}}}
+ box_width 2048
+ box_height 1080
+ box_fixed true
+ name Reformat2
+ xpos 617
+ ypos -290
+}
+Read {
+ inputs 0
+ file /prod/projects/368_cos/shots/dim/DIM_MP_001/2d/comp/release/main/v001/render/bty/dpx/dim_DIM_MP_001_comp_main_v001_bty.####.dpx
+ format "2048 1152 0 0 2048 1152 1 R2"
+ last 240
+ origlast 240
+ origset true
+ timecode ff:ff:ff:ff
+ name input_frames
+ xpos -1411
+ ypos -215
+ addUserKnob {20 Extras}
+ addUserKnob {2 FilePath l "File Path" +DISABLED}
+ addUserKnob {26 layerName l "" +STARTLINE T "Layer Name"}
+ addUserKnob {26 layerStep l "" +STARTLINE T "Layer Step"}
+ addUserKnob {26 variation l "" +STARTLINE T Variation}
+ addUserKnob {26 ID l "" +STARTLINE T ID}
+ addUserKnob {26 shot l "" +STARTLINE T Shot}
+ addUserKnob {1 frameRange l "Frame Range" +DISABLED}
+ addUserKnob {1 latestVersion l "Shotgun Latest Version" +DISABLED}
+ latestVersion N/A
+ addUserKnob {4 versions l "Current Version" -STARTLINE +DISABLED M {}}
+ addUserKnob {26 status l "" +STARTLINE T Status}
+ addUserKnob {6 Ignore t "Ignore Version Verification" +STARTLINE}
+ addUserKnob {6 IgnoreStereo l "Ignore Stereo" t "Ignore Stereo Verification" +STARTLINE}
+}
+Reformat {
+ format {{{output_format.format}}}
+ name Reformat7
+ xpos -469
+ ypos -184
+}
+Reformat {
+ format "1920 1080 0 0 1920 1080 1 HD"
+ name Reformat1
+ xpos -469
+ ypos -146
+}
+Dot {
+ name Dot3
+ xpos -435
+ ypos -107
+}
+Dot {
+ name Dot16
+ xpos 203
+ ypos -107
+}
+set N7573260 [stack 0]
+FrameHold {
+ first_frame 1
+ name FrameHold1
+ xpos 169
+ ypos -43
+}
+Dot {
+ name Dot17
+ xpos 530
+ ypos -35
+}
+Transform {
+ translate {480 210}
+ scale 0.35
+ center {960 540}
+ name Transform3
+ xpos 496
+ ypos -182
+}
+Merge2 {
+ inputs 2
+ name Merge7
+ xpos 617
+ ypos -182
+}
+Read {
+ inputs 0
+ file /prod/projects/100_mokko/io/media/Mokko_LogoHorizontal_blanc.png
+ format "1045 236 0 0 1045 236 1 "
+ origset true
+ name Read2
+ xpos -18
+ ypos -534
+ addUserKnob {20 Extras}
+ addUserKnob {2 FilePath l "File Path" +DISABLED}
+ addUserKnob {26 layerName l "" +STARTLINE T "Layer Name"}
+ addUserKnob {26 layerStep l "" +STARTLINE T "Layer Step"}
+ addUserKnob {26 variation l "" +STARTLINE T Variation}
+ addUserKnob {26 ID l "" +STARTLINE T ID}
+ addUserKnob {26 shot l "" +STARTLINE T Shot}
+ addUserKnob {1 frameRange l "Frame Range" +DISABLED}
+ addUserKnob {1 latestVersion l "Shotgun Latest Version" +DISABLED}
+ latestVersion N/A
+ addUserKnob {4 versions l "Current Version" -STARTLINE +DISABLED M {}}
+ addUserKnob {26 status l "" +STARTLINE T Status}
+ addUserKnob {6 Ignore t "Ignore Version Verification" +STARTLINE}
+ addUserKnob {6 IgnoreStereo l "Ignore Stereo" t "Ignore Stereo Verification" +STARTLINE}
+}
+Premult {
+ name Premult2
+ xpos -18
+ ypos -452
+}
+Crop {
+ box {285 0 1045 236}
+ reformat true
+ crop false
+ name Crop7
+ xpos -18
+ ypos -428
+}
+Transform {
+ translate {130 600}
+ scale 0.2
+ center {1024 540}
+ name Transform4
+ xpos -18
+ ypos -404
+}
+Dot {
+ name Dot11
+ xpos 16
+ ypos -372
+}
+Text {
+ inputs 0
+ message "\[value input_filename.message]"
+ font /prod/projects/100_mokko/io/fonts/Arial.ttf
+ size 42
+ yjustify bottom
+ Transform 1
+ box {512 270 1536 810}
+ translate {-500 -260}
+ center {1024 540}
+ name Bas_gauche
+ xpos 77
+ ypos -396
+}
+Dot {
+ name Dot2
+ xpos 111
+ ypos -372
+}
+Text {
+ inputs 0
+ message "\[value input_sequence.message]_mk_\[value input_scene.message]_\[value input_shot.message]_\[value input_dept.message]_\[value input_version.message]"
+ font /prod/projects/100_mokko/io/fonts/Arial.ttf
+ size 42
+ yjustify top
+ Transform 1
+ box {512 270 1536 810}
+ translate {-500 260}
+ center {1024 540}
+ name Haut_Gauche
+ xpos -162
+ ypos -396
+}
+Dot {
+ name Dot6
+ xpos -128
+ ypos -372
+}
+push 0
+Text {
+ inputs 0
+ message "\[value input_date.message]"
+ font /prod/projects/100_mokko/io/fonts/Arial.ttf
+ size 42
+ xjustify right
+ yjustify top
+ Transform 1
+ box {512 270 1536 810}
+ translate {500 260}
+ center {1024 540}
+ name Haut_Droit
+ xpos -272
+ ypos -396
+}
+Dot {
+ name Dot18
+ xpos -238
+ ypos -372
+}
+Text {
+ inputs 0
+ message "\[expr \[frame] - \[value input_frames.first] + 1] /\[expr \[value input_frames.last] - \[value input_frames.first] + 1]"
+ font /prod/projects/100_mokko/io/fonts/Arial.ttf
+ size 42
+ xjustify right
+ yjustify bottom
+ Transform 1
+ box {512 270 1536 810}
+ translate {500 -260}
+ center {1024 540}
+ name Bas_Droit
+ xpos 193
+ ypos -396
+}
+Dot {
+ name Dot9
+ xpos 227
+ ypos -372
+}
+Merge2 {
+ inputs 5+1
+ name Merge8
+ xpos 294
+ ypos -376
+}
+Reformat {
+ format {{{output_format.format}}}
+ name Reformat5
+ xpos 294
+ ypos -236
+}
+Transform {
+ translate {0 227}
+ center {960 540}
+ name Transform7
+ xpos 294
+ ypos -202
+}
+Dot {
+ name Dot20
+ xpos 404
+ ypos -199
+}
+push $N7573260
+Merge2 {
+ inputs 2
+ name Merge4
+ xpos 370
+ ypos -111
+}
+Switch {
+ inputs 2
+ which {{curve i 1 0}}
+ name Switch1
+ xpos 617
+ ypos -111
+}
+set N68f0140 [stack 0]
+Viewer {
+ input_process false
+ name Viewer1
+ xpos 617
+ ypos -24
+}
+Text {
+ inputs 0
+ message Cosmos
+ font /prod/projects/100_mokko/io/fonts/Arial.ttf
+ yjustify center
+ box {512 389 1536 1167}
+ center {1024 778}
+ name input_project
+ xpos -1396
+ ypos -659
+}
+Text {
+ inputs 0
+ message 00
+ font /prod/projects/100_mokko/io/fonts/Arial.ttf
+ yjustify center
+ box {512 389 1536 1167}
+ center {1024 778}
+ name input_scene
+ xpos -1397
+ ypos -571
+}
+Text {
+ inputs 0
+ message 000
+ font /prod/projects/100_mokko/io/fonts/Arial.ttf
+ yjustify center
+ box {512 389 1536 1167}
+ center {1024 778}
+ name input_shot
+ xpos -1397
+ ypos -532
+}
+Text {
+ inputs 0
+ message comp
+ font /prod/projects/100_mokko/io/fonts/Arial.ttf
+ yjustify center
+ box {512 389 1536 1167}
+ center {1024 778}
+ name input_notes
+ xpos -1401
+ ypos -481
+}
+Text {
+ inputs 0
+ message v001
+ font /prod/projects/100_mokko/io/fonts/Arial.ttf
+ yjustify center
+ box {512 389 1536 1167}
+ center {1024 778}
+ name input_version
+ xpos -1402
+ ypos -432
+}
+Text {
+ inputs 0
+ message 2013-04-05
+ font /prod/projects/100_mokko/io/fonts/HelveticaNeueLTStd-BdCn.otf
+ size 40
+ yjustify center
+ Transform 1
+ box {480 270 1440 810}
+ translate {125 -149}
+ center {960 540}
+ color {0.1142308414 0.1186092198 0.123183772 1}
+ name input_date
+ xpos -1404
+ ypos -386
+}
+Text {
+ inputs 0
+ message comp
+ font /prod/projects/100_mokko/io/fonts/Arial.ttf
+ yjustify center
+ box {512 389 1536 1167}
+ center {1024 778}
+ name input_dept
+ xpos -1407
+ ypos -343
+}
+Text {
+ inputs 0
+ message dim_DIM_MP_001_comp_main_v001_bty
+ font /prod/projects/100_mokko/io/fonts/Arial.ttf
+ yjustify center
+ box {512 389 1536 1167}
+ center {1024 778}
+ name input_filename
+ xpos -1401
+ ypos -303
+}
+Reformat {
+ inputs 0
+ format "1920 1080 0 0 1920 1080 1 HD"
+ name output_format
+ xpos -1415
+ ypos -95
+}
+Text {
+ inputs 0
+ message 000
+ font /prod/projects/100_mokko/io/fonts/Arial.ttf
+ yjustify center
+ box {512 389 1536 1167}
+ center {1024 778}
+ name input_sequence
+ xpos -1398
+ ypos -620
+}
+push $N68f0140
+Write {
+ file /prod/projects/368_cos/dailies/dailies_submission/000_mk_000_001_comp_v001.mov
+ colorspace Gamma2.2
+ file_type exr
+ version 25
+ name output_movie
+ selected true
+ xpos 1192
+ ypos -123
+}

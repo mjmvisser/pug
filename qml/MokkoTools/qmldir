@@ -3,3 +3,5 @@ ShotgunThumbnail 1.0 ShotgunThumbnail.qml
 ShotgunQuicktime 1.0 ShotgunQuicktime.qml
 ImageInfo 1.0 ImageInfo.qml
 LensDistort 1.0 LensDistort.qml
+NukeSlate 1.0 NukeSlate.qml
+ClientQuicktime 1.0 ClientQuicktime.qml
