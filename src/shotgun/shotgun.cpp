@@ -177,7 +177,13 @@ const QVariantMap Shotgun::constructReadParameters(const QString entityType, con
     trace() << ".constructReadParameters(" << entityType << "," << fields << "," << filters << "," << retiredOnly << "," << order << ")";
     QVariantMap params;
     params["type"] = entityType;
-    params["return_fields"] = fields;
+    if (!fields.isEmpty()) {
+        params["return_fields"] = fields;
+    } else {
+        QStringList defaultFields;
+        defaultFields << "id";
+        params["return_fields"] = defaultFields;
+    }
     params["filters"] = filters;
     params["return_only"] = retiredOnly ? "retired" : "active";
     params["return_paging_info"] = true;
