@@ -108,11 +108,11 @@ public:
         return qobject_cast<TA *>(qmlAttachedPropertiesObject(&idx, this, &T::staticMetaObject, create));
     }
 
-    Q_INVOKABLE void trace(const QString message) const;
-    Q_INVOKABLE void debug(const QString message) const;
-    Q_INVOKABLE void info(const QString message) const;
-    Q_INVOKABLE void warning(const QString message) const;
-    Q_INVOKABLE void error(const QString message) const;
+    Q_INVOKABLE void addTrace(const QString message) const;
+    Q_INVOKABLE void addDebug(const QString message) const;
+    Q_INVOKABLE void addInfo(const QString message) const;
+    Q_INVOKABLE void addWarning(const QString message) const;
+    Q_INVOKABLE void addError(const QString message) const;
 
     Q_INVOKABLE QObject *sender();
 

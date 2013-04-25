@@ -213,27 +213,27 @@ Logger PugItem::error() const
     return Logger(m_log, Log::Error);
 }
 
-void PugItem::trace(const QString message) const
+void PugItem::addTrace(const QString message) const
 {
     trace() << message.toUtf8().constData();
 }
 
-void PugItem::debug(const QString message) const
+void PugItem::addDebug(const QString message) const
 {
     debug() << message.toUtf8().constData();
 }
 
-void PugItem::info(const QString message) const
+void PugItem::addInfo(const QString message) const
 {
     info() << message.toUtf8().constData();
 }
 
-void PugItem::warning(const QString message) const
+void PugItem::addWarning(const QString message) const
 {
     warning() << message.toUtf8().constData();
 }
 
-void PugItem::error(const QString message) const
+void PugItem::addError(const QString message) const
 {
     error() << message.toUtf8().constData();
 }
