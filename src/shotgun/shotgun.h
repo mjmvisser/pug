@@ -85,6 +85,9 @@ public:
             const QVariantMap data,
             const QStringList returnFields = QStringList());
 
+    Q_INVOKABLE ShotgunReply *update(const QString entityType,
+            int entityId, const QVariantMap data);
+
     Q_INVOKABLE ShotgunReply *batch(const QVariantList requests);
 
     Q_INVOKABLE ShotgunReply *schemaRead();

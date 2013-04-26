@@ -4,4 +4,6 @@ Merge 1.0 Merge.qml
 Filter 1.0 Filter.qml
 ShotgunFind 1.0 ShotgunFind.qml
 ShotgunCreate 1.0 ShotgunCreate.qml
+ShotgunUpdate 1.0 ShotgunUpdate.qml
+ShotgunBatch 1.0 ShotgunBatch.qml
 plugin pugplugin

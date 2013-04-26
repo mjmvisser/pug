@@ -401,6 +401,91 @@ Q_INVOKABLE ShotgunReply *Shotgun::create(const QString entityType,
     return reply;
 }
 
+Q_INVOKABLE ShotgunReply *Shotgun::update(const QString entityType,
+        int entityId, const QVariantMap data)
+{
+    QVariantMap updateData = data;
+
+    QString uploadImage;
+    if (updateData.contains("image"))
+        uploadImage = updateData.take("image").toString();
+
+    QString uploadFilmStripImage;
+    if (updateData.contains("filmstrip_image"))
+        uploadFilmStripImage = updateData.take("filmstrip_image").toString();
+
+    QString uploadMovie;
+    if (updateData.contains("sg_uploaded_movie"))
+        uploadMovie = updateData.take("sg_uploaded_movie").toString();
+
+    QString uploadMovieMp4;
+    if (updateData.contains("sg_uploaded_movie_mp4"))
+        uploadMovieMp4 = updateData.take("sg_uploaded_movie_mp4").toString();
+
+    QString uploadMovieWebm;
+    if (updateData.contains("sg_uploaded_movie_webm"))
+        uploadMovieMp4 = updateData.take("sg_uploaded_movie_webm").toString();
+
+    QVariantMap params;
+    params["type"] = entityType;
+    params["id"] = entityId;
+    params["fields"] = mapToList(updateData);
+
+    ShotgunReply *reply = callRpc("update", params);
+
+    if (reply) {
+        reply->setFirst(true);
+
+        if (!uploadImage.isEmpty()) {
+            debug() << "requesting upload of" << uploadImage;
+            ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
+            upload->setFieldName("thumb_image");
+            upload->setPath(uploadImage);
+
+            reply->uploadLater(upload);
+        }
+
+        if (!uploadFilmStripImage.isEmpty()) {
+            debug() << "requesting upload of" << uploadFilmStripImage;
+            ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
+            upload->setFieldName("filmstrip_thumb_image");
+            upload->setPath(uploadFilmStripImage);
+
+            reply->uploadLater(upload);
+        }
+
+        if (!uploadMovie.isEmpty()) {
+            debug() << "requesting upload of" << uploadMovie;
+            ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
+            upload->setFieldName("sg_uploaded_movie");
+            upload->setPath(uploadMovie);
+
+            reply->uploadLater(upload);
+        }
+
+        if (!uploadMovieMp4.isEmpty()) {
+            debug() << "requesting upload of" << uploadMovieMp4;
+            ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
+            upload->setFieldName("sg_uploaded_movie_mp4");
+            upload->setPath(uploadMovieMp4);
+
+            reply->uploadLater(upload);
+        }
+
+        if (!uploadMovieWebm.isEmpty()) {
+            debug() << "requesting upload of" << uploadMovieWebm;
+            ShotgunUploadRequest *upload = new ShotgunUploadRequest(this);
+            upload->setFieldName("sg_uploaded_movie_webm");
+            upload->setPath(uploadMovieWebm);
+
+            reply->uploadLater(upload);
+        }
+    }
+
+    return reply;
+}
+
+
 ShotgunReply *Shotgun::batch(const QVariantList requests)
 {
     trace() << ".batch(" << requests << ")";
@@ -421,6 +506,7 @@ ShotgunReply *Shotgun::batch(const QVariantList requests)
         requestParams["type"] = req["entity_type"];
 
         if (req["request_type"] == "create") {
+            // TODO: check required keys
             QStringList returnFields;
             if (req.contains("return_fields") && req["return_fields"].toList().length() > 0)
                 returnFields = req["return_fields"].toStringList();
@@ -440,6 +526,24 @@ ShotgunReply *Shotgun::batch(const QVariantList requests)
                 uploadFilmstripImages.append(QString());
 
             requestParams["fields"] = mapToList(requestData);
+        } else if (req["request_type"] == "update") {
+            // TODO: check required keys
+            requestParams["id"] = req["entity_id"];
+            requestParams["fields"] = mapToList(req["data"].toMap());
+
+            QVariantMap requestData = req["data"].toMap();
+            if (requestData.contains("image"))
+                uploadImages.append(requestData.take("image").toString());
+            else
+                uploadImages.append(QString());
+
+            if (requestData.contains("filmstrip_image"))
+                uploadFilmstripImages.append(requestData.take("filmstrip_image").toString());
+            else
+                uploadFilmstripImages.append(QString());
+        } else if (req["request_type"] == "delete") {
+            // TODO: check required keys
+            requestParams["id"] = req["entityId"];
         } else {
             error() << "skipping unsupported batch request_type" << req["request_type"];
         }
