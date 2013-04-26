@@ -54,8 +54,6 @@ public:
     void scan(const QFileInfoList &);
     void scan(const QFileInfoList &, const FramePattern &);
 
-    Node::Status status() const;
-
 public slots:
     void sync();
 

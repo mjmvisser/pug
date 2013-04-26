@@ -24,8 +24,6 @@ public:
 
     Q_INVOKABLE const QString path() const;
 
-    Node::Status status() const;
-
 public slots:
     void sync();
 

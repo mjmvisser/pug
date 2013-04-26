@@ -335,55 +335,6 @@ QVariant ElementView::frameBy() const
     return fp.by();
 }
 
-Node::Status ElementView::status() const
-{
-    Node::Status result = Node::Invalid;
-
-    foreach (const Input *in, node()->inputs()) {
-        foreach (const Node *upn, node()->upstream(in)) {
-            const QScopedPointer<const ElementsView> inputView(new ElementsView(const_cast<Node*>(upn)));
-
-            Node::Status inputStatus = Node::Invalid;
-
-            switch (in->dependency()) {
-            case Input::None:
-                inputStatus = Node::UpToDate;
-                break;
-
-            case Input::Node:
-                if (inputView->timestamp() > timestamp())
-                    inputStatus = Node::OutOfDate;
-                else
-                    inputStatus = Node::UpToDate;
-                break;
-
-            case Input::Element:
-            case Input::Frame: {
-                const ElementView *inputElementView = inputView->elementAt(m_index);
-
-                if (inputElementView) {
-                    if (inputElementView->timestamp() > timestamp())
-                        inputStatus = Node::OutOfDate;
-                    else
-                        inputStatus = Node::UpToDate;
-                } else {
-                    inputStatus = Node::Missing;
-                }
-                break;
-            }
-
-            default:
-                break;
-            }
-
-            if (inputStatus > result)
-                result = inputStatus;
-        }
-    }
-
-    return result;
-}
-
 void ElementView::sync()
 {
     int frameCount = node()->details().property(m_index).property("element").property("frames").property("length").toInt();

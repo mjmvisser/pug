@@ -4,11 +4,11 @@
 #include "node.h"
 #include "param.h"
 #include "input.h"
+#include "output.h"
 
 Node::Node(QObject *parent) :
     PugItem(parent),
     m_dependencyOrder(Node::InputsChildrenSelf),
-    m_outputFlag(false),
     m_count(0),
     m_index(-1),
     m_x(0),
@@ -51,6 +51,14 @@ QQmlListProperty<Input> Node::inputs_()
                                         Node::inputs_count,
                                         Node::input_at,
                                         Node::inputs_clear);
+}
+
+QQmlListProperty<Output> Node::outputs_()
+{
+    return QQmlListProperty<Output>(this, 0, Node::outputs_append,
+                                        Node::outputs_count,
+                                        Node::output_at,
+                                        Node::outputs_clear);
 }
 
 // nodes property
@@ -172,17 +180,53 @@ const QList<const Input*> Node::inputs() const
     return constList(m_inputs);
 }
 
-bool Node::isOutput() const
+const QList<Input *> Node::inputs()
 {
-    return m_outputFlag;
+    return m_inputs;
 }
 
-void Node::setOutput(bool f)
+// outputs property
+void Node::outputs_append(QQmlListProperty<Output> *prop, Output *in)
 {
-    if (m_outputFlag != f) {
-        m_outputFlag = f;
-        emit outputChanged(f);
+    Node *that = static_cast<Node *>(prop->object);
+
+    in->setParent(that);
+    that->m_outputs.append(in);
+    emit that->outputsChanged();
+}
+
+int Node::outputs_count(QQmlListProperty<Output> *prop)
+{
+    Node *that = static_cast<Node *>(prop->object);
+    return that->m_outputs.count();
+}
+
+Output *Node::output_at(QQmlListProperty<Output> *prop, int i)
+{
+    Node *that = static_cast<Node *>(prop->object);
+    if (i < that->m_outputs.count())
+        return that->m_outputs[i];
+    else
+        return 0;
+}
+
+void Node::outputs_clear(QQmlListProperty<Output> *prop)
+{
+    Node *that = static_cast<Node *>(prop->object);
+    foreach (Output *out, that->m_outputs) {
+        out->setParent(0);
     }
+    emit that->outputsChanged();
+}
+
+const QList<const Output*> Node::outputs() const
+{
+    return constList(m_outputs);
+}
+
+const QList<Output*> Node::outputs()
+{
+    return m_outputs;
 }
 
 QJSValue Node::details()
@@ -307,125 +351,125 @@ const Node *Node::nodeInChildren(const QString n) const
     return 0;
 }
 
-const QList<const Node *> Node::upstream() const
-{
-    //trace() << ".upstream()";
-    QList<const Node *> result;
-    // loop through inputs and find upstream nodes
-    foreach (const Input *in, m_inputs) {
-        result << upstream(in);
-    }
-    //trace() << "    ->" << result;
-    return result;
-}
-
-const QList<Node *> Node::upstream()
-{
-    return unConstList(static_cast<const Node &>(*this).upstream());
-}
-
-const QVariantList Node::upstreamNodes()
-{
-    trace() << ".upstreamNodes()";
-    QVariantList result;
-    foreach (Node *input, upstream()) {
-        result.append(QVariant::fromValue(input));
-    }
-
-    trace() << "    ->" << result;
-    return result;
-}
-
-const QList<const Node *> Node::upstream(const Input *in) const
-{
-    //trace() << ".upstream(" << in << ")";
-    QList<const Node *> result;
-    const QVariant v = QQmlProperty::read(in->QObject::parent(), in->name());
-    if (v.canConvert<Node *>()) {
-        // single input
-        const Node *input = v.value<Node *>();
-        if (input && !result.contains(input)) {
-            result.append(input);
-        }
-    } else if (v.canConvert<QQmlListReference>()) {
-        // multi-input
-        QQmlListReference l = v.value<QQmlListReference>();
-        for (int i = 0; i < l.count(); i++) {
-            const Node *input = qobject_cast<const Node *>(l.at(i));
-            if (input && !result.contains(input)) {
-                result.append(input);
-            }
-        }
-    } else if (v.isNull()) {
-        // skip
-    } else {
-        error() << "can't interpret input" << in->name() << v;
-    }
-    //trace() << "    ->" << result;
-    return result;
-}
-
-const QList<Node *> Node::upstream(const Input *in)
-{
-    return unConstList(static_cast<const Node &>(*this).upstream(in));
-}
-
-const QList<const Node *> Node::downstream() const
-{
-    trace() << ".downstream()";
-    QList<const Node *> result;
-    if (parent<Node>()) {
-        // loop through siblings params and find inputs
-        foreach (const QObject *o, QObject::parent()->children()) {
-            const Node *n = qobject_cast<const Node*>(o);
-            if (n && n->upstream().contains(this))
-                result.append(n);
-        }
-    }
-
-    trace() << "    ->" << result;
-    return result;
-}
-
-
-const QList<Node *> Node::downstream()
-{
-    // ugly, but correct
-    // http://stackoverflow.com/questions/123758/how-do-i-remove-code-duplication-between-similar-const-and-non-const-member-func
-    return unConstList(static_cast<const Node &>(*this).downstream());
-}
-
-const QVariantList Node::downstreamNodes()
-{
-    trace() << ".downstreamNodes()";
-    QVariantList result;
-    foreach (Node *n, downstream()) {
-        result.append(QVariant::fromValue(n));
-    }
-
-    trace() << "    ->" << result;
-    return result;
-}
-
-bool Node::isUpstream(const Node *other)
-{
-    foreach(const Node *node, upstream()) {
-        if (node == other)
-            return true;
-    }
-
-    return false;
-}
-
-bool Node::isDownstream(const Node *other)
-{
-    foreach(const Node *node, downstream()) {
-        if (node == other)
-            return true;
-    }
-
-    return false;
-}
+//const QList<const Node *> Node::upstream() const
+//{
+//    //trace() << ".upstream()";
+//    QList<const Node *> result;
+//    // loop through inputs and find upstream nodes
+//    foreach (const Input *in, m_inputs) {
+//        result << upstream(in);
+//    }
+//    //trace() << "    ->" << result;
+//    return result;
+//}
+//
+//const QList<Node *> Node::upstream()
+//{
+//    return unConstList(static_cast<const Node &>(*this).upstream());
+//}
+//
+//const QVariantList Node::upstreamNodes()
+//{
+//    trace() << ".upstreamNodes()";
+//    QVariantList result;
+//    foreach (Node *input, upstream()) {
+//        result.append(QVariant::fromValue(input));
+//    }
+//
+//    trace() << "    ->" << result;
+//    return result;
+//}
+//
+//const QList<const Node *> Node::upstream(const Input *in) const
+//{
+//    //trace() << ".upstream(" << in << ")";
+//    QList<const Node *> result;
+//    const QVariant v = QQmlProperty::read(in->QObject::parent(), in->name());
+//    if (v.canConvert<Node *>()) {
+//        // single input
+//        const Node *input = v.value<Node *>();
+//        if (input && !result.contains(input)) {
+//            result.append(input);
+//        }
+//    } else if (v.canConvert<QQmlListReference>()) {
+//        // multi-input
+//        QQmlListReference l = v.value<QQmlListReference>();
+//        for (int i = 0; i < l.count(); i++) {
+//            const Node *input = qobject_cast<const Node *>(l.at(i));
+//            if (input && !result.contains(input)) {
+//                result.append(input);
+//            }
+//        }
+//    } else if (v.isNull()) {
+//        // skip
+//    } else {
+//        error() << "can't interpret input" << in->name() << v;
+//    }
+//    //trace() << "    ->" << result;
+//    return result;
+//}
+//
+//const QList<Node *> Node::upstream(const Input *in)
+//{
+//    return unConstList(static_cast<const Node &>(*this).upstream(in));
+//}
+//
+//const QList<const Node *> Node::downstream() const
+//{
+//    trace() << ".downstream()";
+//    QList<const Node *> result;
+//    if (parent<Node>()) {
+//        // loop through siblings params and find inputs
+//        foreach (const QObject *o, QObject::parent()->children()) {
+//            const Node *n = qobject_cast<const Node*>(o);
+//            if (n && n->upstream().contains(this))
+//                result.append(n);
+//        }
+//    }
+//
+//    trace() << "    ->" << result;
+//    return result;
+//}
+//
+//
+//const QList<Node *> Node::downstream()
+//{
+//    // ugly, but correct
+//    // http://stackoverflow.com/questions/123758/how-do-i-remove-code-duplication-between-similar-const-and-non-const-member-func
+//    return unConstList(static_cast<const Node &>(*this).downstream());
+//}
+//
+//const QVariantList Node::downstreamNodes()
+//{
+//    trace() << ".downstreamNodes()";
+//    QVariantList result;
+//    foreach (Node *n, downstream()) {
+//        result.append(QVariant::fromValue(n));
+//    }
+//
+//    trace() << "    ->" << result;
+//    return result;
+//}
+//
+//bool Node::isUpstream(const Node *other)
+//{
+//    foreach(const Node *node, upstream()) {
+//        if (node == other)
+//            return true;
+//    }
+//
+//    return false;
+//}
+//
+//bool Node::isDownstream(const Node *other)
+//{
+//    foreach(const Node *node, downstream()) {
+//        if (node == other)
+//            return true;
+//    }
+//
+//    return false;
+//}
 
 int Node::count() const
 {
@@ -673,9 +717,11 @@ bool Node::cycleCheck(const QList<const Node *>& visited) const
         return true;
     }
 
-    foreach (const Node *node, upstream()) {
-        if (node->cycleCheck(myVisited))
-            return true;
+    foreach (const Input *input, inputs()) {
+        foreach (const Node *n, input->nodes()) {
+            if (n->cycleCheck(myVisited))
+                return true;
+        }
     }
 
     return false;

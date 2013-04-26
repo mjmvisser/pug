@@ -2,7 +2,6 @@
 #define FILE_H
 
 #include "branch.h"
-#include "node.h"
 #include "framelist.h"
 #include "sudo.h"
 #include "fileopqueue.h"

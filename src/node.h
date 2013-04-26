@@ -9,8 +9,9 @@
 
 #include "pugitem.h"
 #include "param.h"
-#include "input.h"
 #include "operation.h"
+#include "input.h"
+#include "output.h"
 
 class Node : public PugItem
 {
@@ -18,8 +19,8 @@ class Node : public PugItem
     Q_PROPERTY(DependencyOrder dependencyOrder READ dependencyOrder WRITE setDependencyOrder NOTIFY dependencyOrderChanged)
     Q_PROPERTY(QQmlListProperty<Param> params READ params_ NOTIFY paramsChanged)
     Q_PROPERTY(QQmlListProperty<Input> inputs READ inputs_ NOTIFY inputsChanged)
+    Q_PROPERTY(QQmlListProperty<Output> outputs READ outputs_ NOTIFY outputsChanged)
     Q_PROPERTY(QQmlListProperty<Node> children READ nodes_ NOTIFY nodesChanged)
-    Q_PROPERTY(bool output READ isOutput WRITE setOutput NOTIFY outputChanged)
     Q_PROPERTY(QJSValue details READ details WRITE setDetails NOTIFY detailsChanged)
     Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(int index READ index WRITE setIndex NOTIFY indexChanged)
@@ -36,30 +37,31 @@ public:
     void setDependencyOrder(DependencyOrder);
 
     QQmlListProperty<Input> inputs_();
+    QQmlListProperty<Output> outputs_();
     QQmlListProperty<Param> params_();
     QQmlListProperty<Node> nodes_();
 
     const QList<const Input*> inputs() const;
-
-    bool isOutput() const;
-    void setOutput(bool f);
+    const QList<Input*> inputs();
+    const QList<const Output*> outputs() const;
+    const QList<Output*> outputs();
 
     Q_INVOKABLE Node *node(const QString node);
     const Node *node(const QString node) const;
 
-    const QList<const Node *> upstream() const;
-    const QList<Node *> upstream();
-    Q_INVOKABLE const QVariantList upstreamNodes();
-
-    const QList<const Node *> upstream(const Input *) const;
-    const QList<Node *> upstream(const Input *);
-
-    const QList<const Node *> downstream() const;
-    const QList<Node *> downstream();
-    Q_INVOKABLE const QVariantList downstreamNodes();
-
-    Q_INVOKABLE bool isUpstream(const Node *other);
-    Q_INVOKABLE bool isDownstream(const Node *other);
+//    const QList<const Node *> upstream() const;
+//    const QList<Node *> upstream();
+//    Q_INVOKABLE const QVariantList upstreamNodes();
+//
+//    const QList<const Node *> upstream(const Input *) const;
+//    const QList<Node *> upstream(const Input *);
+//
+//    const QList<const Node *> downstream() const;
+//    const QList<Node *> downstream();
+//    Q_INVOKABLE const QVariantList downstreamNodes();
+//
+//    Q_INVOKABLE bool isUpstream(const Node *other);
+//    Q_INVOKABLE bool isDownstream(const Node *other);
 
     int count() const;
     void setCount(int);
@@ -142,7 +144,7 @@ signals:
     void paramsChanged();
     void nodesChanged();
     void inputsChanged();
-    void outputChanged(bool output);
+    void outputsChanged();
     void detailsChanged();
     void countChanged(int count);
     void indexChanged(int index);
@@ -173,10 +175,16 @@ private:
     static Input *input_at(QQmlListProperty<Input> *, int);
     static void inputs_clear(QQmlListProperty<Input> *);
 
+    // outputs property
+    static void outputs_append(QQmlListProperty<Output> *, Output *);
+    static int outputs_count(QQmlListProperty<Output> *);
+    static Output *output_at(QQmlListProperty<Output> *, int);
+    static void outputs_clear(QQmlListProperty<Output> *);
+
     DependencyOrder m_dependencyOrder;
     QList<Param *> m_params;
     QList<Input *> m_inputs;
-    bool m_outputFlag;
+    QList<Output *> m_outputs;
     QJSValue m_details;
     int m_count;
     int m_index;

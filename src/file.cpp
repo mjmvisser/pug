@@ -16,6 +16,9 @@
 #include "updateoperation.h"
 #include "cookoperation.h"
 #include "releaseoperation.h"
+#include "input.h"
+#include "output.h"
+
 
 File::File(QObject *parent) :
     Branch(parent),
@@ -30,7 +33,7 @@ File::File(QObject *parent) :
     connect(m_queue, &FileOpQueue::error, this, &File::onFileOpQueueError);
 
     Input *input = addInput(this, "input");
-    input->setDependency(Input::Frame);
+    //input->setDependency(Input::Frame);
 
     addParam(this, "linkType");
 }

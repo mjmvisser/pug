@@ -132,19 +132,20 @@ void TractorOperationAttached::generateTask()
     QList<TractorTask *> inputSubtasks;
 
     if (!m_flattenFlag) {
-        foreach (Node *input, node()->upstream()) {
-            TractorOperationAttached *inputAttached = input->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject());
-            inputSubtasks << inputAttached->tractorTask();
+        foreach (Input* input, node()->inputs()) {
+            foreach (Node* n, input->nodes()) {
+                TractorOperationAttached *attached = n->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject());
+                inputSubtasks << attached->tractorTask();
+            }
         }
     }
 
     QList<TractorTask *> childSubtasks;
 
-    foreach (QObject* obj, node()->children()) {
-        Node *child = qobject_cast<Node *>(obj);
-        if (child && child->isOutput()) {
-            TractorOperationAttached *childAttached = child->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject());
-            childSubtasks << childAttached->tractorTask();
+    foreach (Output *output, node()->outputs()) {
+        foreach (Node *n, output->nodes()) {
+            TractorOperationAttached *attached = n->attachedPropertiesObject<TractorOperationAttached>(operationMetaObject());
+            childSubtasks << attached->tractorTask();
         }
     }
 

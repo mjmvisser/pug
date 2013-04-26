@@ -23,8 +23,6 @@ public:
 
     const QDateTime timestamp() const;
 
-    Node::Status status() const;
-
 public slots:
     void sync();
 

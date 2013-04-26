@@ -112,14 +112,13 @@ OperationAttached::Status OperationAttached::inputsStatus() const
     OperationAttached::Status status = OperationAttached::Invalid;
 
     if (m_targets & OperationAttached::Inputs) {
-        foreach (const Node* input, node()->upstream()) {
-            const OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-            OperationAttached::Status inputStatus = inputAttached->status();
-            //trace() << "status of" << input << "is" << inputStatus;
-            if (inputStatus > status)
-                status = inputStatus;
+        foreach (const Input* input, node()->inputs()) {
+            foreach (const Node* n, input->nodes()) {
+                const OperationAttached *attached = n->attachedPropertiesObject<OperationAttached>(operationMetaObject());
+                if (attached->status() > status)
+                    status = attached->status();
+            }
         }
-
     }
 
     return status;
@@ -130,14 +129,11 @@ OperationAttached::Status OperationAttached::childrenStatus() const
     OperationAttached::Status status = OperationAttached::Invalid;
 
     if (m_targets & OperationAttached::Children) {
-        foreach (const QObject* obj, node()->children()) {
-            const Node *child = qobject_cast<const Node *>(obj);
-            if (child && child->isOutput()) {
-                const OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-                OperationAttached::Status childStatus = childAttached->status();
-                //trace() << "status of" << child << "is" << childStatus;
-                if (childStatus > status)
-                    status = childStatus;
+        foreach (const Output *output, node()->outputs()) {
+            foreach (const Node *n, output->nodes()) {
+                const OperationAttached *attached = n->attachedPropertiesObject<OperationAttached>(operationMetaObject());
+                if (attached->status() > status)
+                    status = attached->status();
             }
         }
     }
@@ -148,20 +144,21 @@ OperationAttached::Status OperationAttached::childrenStatus() const
 void OperationAttached::resetInputsStatus()
 {
     // reset inputs
-    foreach (Node *input, node()->upstream()) {
-        OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-        inputAttached->resetAllStatus();
+    foreach (Input *input, node()->inputs()) {
+        foreach (Node *n, input->nodes()) {
+            OperationAttached *attached = n->attachedPropertiesObject<OperationAttached>(operationMetaObject());
+            attached->resetAllStatus();
+        }
     }
 }
 
 void OperationAttached::resetChildrenStatus()
 {
     // reset children
-    foreach (QObject* obj, node()->children()) {
-        Node *child = qobject_cast<Node *>(obj);
-        if (child && child->isOutput()) {
-            OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-            childAttached->resetAllStatus();
+    foreach (Output *output, node()->outputs()) {
+        foreach (Node *n, output->nodes()) {
+            OperationAttached *attached = n->attachedPropertiesObject<OperationAttached>(operationMetaObject());
+            attached->resetAllStatus();
         }
     }
 }
@@ -182,19 +179,20 @@ void OperationAttached::resetAllStatus()
 
 void OperationAttached::resetInputs(QSet<const OperationAttached *>& visited)
 {
-    foreach (Node *input, node()->upstream()) {
-        OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-        inputAttached->resetAll(m_context, visited);
+    foreach (Input* input, node()->inputs()) {
+        foreach (Node* n, input->nodes()) {
+            OperationAttached *attached = n->attachedPropertiesObject<OperationAttached>(operationMetaObject());
+            attached->resetAll(m_context, visited);
+        }
     }
 }
 
 void OperationAttached::resetChildren(QSet<const OperationAttached *>& visited)
 {
-    foreach (QObject* obj, node()->children()) {
-        Node *child = qobject_cast<Node *>(obj);
-        if (child && child->isOutput()) {
-            OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
-            childAttached->resetAll(m_context, visited);
+    foreach (Output* output, node()->outputs()) {
+        foreach (Node* n, output->nodes()) {
+            OperationAttached *attached = n->attachedPropertiesObject<OperationAttached>(operationMetaObject());
+            attached->resetAll(m_context, visited);
         }
     }
 }
@@ -374,27 +372,25 @@ void OperationAttached::runInputs()
     debug() << node() << "running inputs";
 
     // run inputs and connect their finished signal to ourself
-    foreach (Node *input, node()->upstream()) {
-        OperationAttached *inputAttached = input->attachedPropertiesObject<OperationAttached>(operationMetaObject());
+    foreach (Input *input, node()->inputs()) {
+        foreach (Node *n, input->nodes()) {
+            OperationAttached *attached = n->attachedPropertiesObject<OperationAttached>(operationMetaObject());
 
-        OperationAttached::Status inputStatus = inputAttached->status();
+            if (attached->status() == OperationAttached::None
+                    || attached->status() == OperationAttached::Idle
+                    || attached->status() == OperationAttached::Running)
+            {
+                connect(attached, &OperationAttached::finished,
+                        this, &OperationAttached::onInputFinished);
+            }
 
-        //debug() << node() << "input" << input << "has status" << inputStatus;
-
-        if (inputStatus == OperationAttached::None
-                || inputStatus == OperationAttached::Idle
-                || inputStatus == OperationAttached::Running)
-        {
-            connect(inputAttached, &OperationAttached::finished,
-                    this, &OperationAttached::onInputFinished);
-        }
-
-        if (inputStatus == OperationAttached::None) {
-            debug() << node() << "running input" << input;
-            inputAttached->run(m_operation, m_targets);
-        } else if (inputStatus == OperationAttached::Idle) {
-            // input has already been run, so transfer control to it
-            inputAttached->continueRunning();
+            if (attached->status() == OperationAttached::None) {
+                debug() << node() << "running input" << n;
+                attached->run(m_operation, m_targets);
+            } else if (attached->status() == OperationAttached::Idle) {
+                // input has already been run, so transfer control to it
+                attached->continueRunning();
+            }
         }
     }
 }
@@ -406,27 +402,24 @@ void OperationAttached::runChildren()
 
     debug() << node() << "running children";
 
-    foreach (QObject* obj, node()->children()) {
-        Node *child = qobject_cast<Node *>(obj);
-        if (child && child->isOutput()) {
-            OperationAttached *childAttached = child->attachedPropertiesObject<OperationAttached>(operationMetaObject());
+    foreach (Output *output, node()->outputs()) {
+        foreach (Node *n, output->nodes()) {
+            OperationAttached *attached = n->attachedPropertiesObject<OperationAttached>(operationMetaObject());
 
-            OperationAttached::Status childStatus = childAttached->status();
-
-            if (childStatus == OperationAttached::None
-                    || childStatus == OperationAttached::Idle
-                    || childStatus == OperationAttached::Running)
+            if (attached->status() == OperationAttached::None
+                    || attached->status() == OperationAttached::Idle
+                    || attached->status() == OperationAttached::Running)
             {
-                connect(childAttached, &OperationAttached::finished,
+                connect(attached, &OperationAttached::finished,
                         this, &OperationAttached::onChildFinished);
             }
 
-            if (childStatus == OperationAttached::None) {
-                debug() << node() << "running child" << child;
-                childAttached->run(m_operation, m_targets);
-            } else if (childStatus == OperationAttached::Idle) {
+            if (attached->status() == OperationAttached::None) {
+                debug() << node() << "running child" << n;
+                attached->run(m_operation, m_targets);
+            } else if (attached->status() == OperationAttached::Idle) {
                 // child has already been run, so transfer control to it
-                childAttached->continueRunning();
+                attached->continueRunning();
             }
         }
     }

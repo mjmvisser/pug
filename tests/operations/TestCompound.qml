@@ -3,8 +3,10 @@ import Pug 1.0
 Node {
     id: self
     property Node input
+    property Node output: nodeC
 
     inputs: Input { name: "input" }
+    outputs: Output { name: "output" }
 
     count: input.count
 
@@ -34,7 +36,6 @@ Node {
         id: nodeC
         name: "nodeC"
         property Node input: nodeB
-        output: true
         
         inputs: Input { name: "input" }
 
