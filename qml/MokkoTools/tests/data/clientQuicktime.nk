@@ -542,7 +542,7 @@ Dot {
 }
 Text {
  inputs 0
- message "\[value input_sequence.message]_mk_\[value input_scene.message]_\[value input_shot.message]_\[value input_dept.message]_\[value input_version.message]"
+ message "\[value input_sequence.message]_mk_\[value input_shot.message]_\[value input_dept.message]_\[value input_version.message]"
  font /prod/projects/100_mokko/io/fonts/Arial.ttf
  size 42
  yjustify top
@@ -758,8 +758,6 @@ Text {
 push $N68f0140
 Write {
  file /prod/projects/368_cos/dailies/dailies_submission/000_mk_000_001_comp_v001.mov
- colorspace Gamma2.2
- file_type exr
  version 25
  name output_movie
  selected true

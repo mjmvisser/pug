@@ -65,13 +65,13 @@ Process {
         elementsView.elements[index].scan();
     }
     
-    onCookFinished: {
+    UpdateOperation.onCookFinished: {
         for (index = 0; index < count; index++) {
             __setDetails(0);
         }
     }
     
-    onUpdateFinished: {
+    CookOperation.onCookFinished: {
         for (index = 0; index < count; index++) {
             __setDetails(0);
         }

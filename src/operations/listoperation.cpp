@@ -40,6 +40,7 @@ const QMetaObject *ListOperationAttached::operationMetaObject() const
 ListOperation::ListOperation(QObject *parent) :
     Operation(parent)
 {
+    setObjectName("list");
 }
 
 ListOperationAttached *ListOperation::qmlAttachedProperties(QObject *object)

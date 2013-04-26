@@ -9,19 +9,8 @@ class UpdateOperationAttached : public OperationAttached
 public:
     explicit UpdateOperationAttached(QObject *parent = 0);
 
-    virtual void run();
-
-signals:
-    void update(const QVariant env);
-
 protected:
     virtual const QMetaObject *operationMetaObject() const;
-
-private slots:
-    void onUpdateFinished(int);
-
-private:
-    bool m_updatable;
 };
 
 class UpdateOperation : public Operation

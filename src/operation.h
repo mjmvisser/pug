@@ -50,7 +50,7 @@ public:
     Node *node();
 
     virtual void reset();
-    virtual void run() = 0;
+    virtual void run();
 
     void run(Operation *, Targets);
 
@@ -58,15 +58,27 @@ public:
     void resetAll(const QVariantMap, QSet<const OperationAttached *>&);
 
 signals:
+    // attachable signals
+    void prepare(const QVariant context);
+    void prepareFinished(int status);
+
+    void cook(const QVariant context);
+    void cookFinished(int status);
+
     void statusChanged(Status status);
-    void contextChanged(QVariant context);
+    void contextChanged(const QVariant context);
     void finished(OperationAttached *);
 
 protected slots:
+    void onPrepareFinished(int);
+    void onCookFinished(int);
+
     void onInputFinished(OperationAttached *);
     void onChildFinished(OperationAttached *);
 
 protected:
+    void setContext(const QVariantMap);
+
     Status inputsStatus() const;
     Status childrenStatus() const;
 
@@ -117,11 +129,12 @@ protected:
     }
 
 private:
-    void setContext(const QVariantMap);
     void dispatchChildren();
     void dispatchInputs();
     void dispatch();
 
+    int m_prepareCount;
+    int m_cookCount;
     Status m_status;
     QVariantMap m_context;
     Operation *m_operation;

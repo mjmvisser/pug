@@ -8,7 +8,6 @@
 
 ReleaseOperationAttached::ReleaseOperationAttached(QObject *parent) :
     OperationAttached(parent),
-    m_releasable(false),
     m_source(),
     m_versionBranch(),
     m_mode(ReleaseOperationAttached::Copy)
@@ -21,24 +20,7 @@ ReleaseOperationAttached::ReleaseOperationAttached(QObject *parent) :
         file->addInput(this, "versionBranch");
     }
 
-    bool haveReleaseSignal = node()->hasSignal(SIGNAL(release(const QVariant)));
-    bool haveReleaseFinishedSignal = node()->hasSignal(SIGNAL(releaseFinished(int)));
-
-    if (haveReleaseSignal && haveReleaseFinishedSignal) {
-        m_releasable = true;
-        debug() << node() << "found release and releaseFinished signals";
-
-        connect(this, SIGNAL(release(const QVariant)),
-                node(), SIGNAL(release(const QVariant)));
-        connect(node(), SIGNAL(releaseFinished(int)),
-                this, SLOT(onReleaseFinished(int)));
-    } else if (!haveReleaseSignal && haveReleaseFinishedSignal) {
-        error() << node() << "is missing the release signal";
-    } else if (haveReleaseSignal && !haveReleaseFinishedSignal) {
-        error() << node() << "is missing the releaseFinished signal";
-    } else {
-        debug() << node() << "is not releasable";
-    }
+    connect(this, &OperationAttached::prepare, this, &ReleaseOperationAttached::onPrepare);
 }
 
 Node *ReleaseOperationAttached::source()
@@ -160,11 +142,14 @@ int ReleaseOperationAttached::findLastVersion(const QVariantMap context) const
     }
 }
 
-void ReleaseOperationAttached::run()
+void ReleaseOperationAttached::onPrepare()
 {
-    trace() << node() << ".run()";
+    OperationAttached::Status status = OperationAttached::Finished;
 
-    if (m_releasable) {
+    if (receivers(SIGNAL(cook(const QVariant))) > 0) {
+        trace() << node() << "ReleaseOperation.onPrepare()";
+        // if we're going to cook later...
+        // TODO: maybe move this logic to Folder/File?
         Q_ASSERT(operation());
         Q_ASSERT(node());
 
@@ -184,32 +169,17 @@ void ReleaseOperationAttached::run()
 
                 debug() << node() << "setting" << versionFieldName << "to" << version;
                 releaseContext.insert(versionFieldName, version);
+                setContext(releaseContext);
             } else {
                 error() << node() << "Can't find last version";
-                setStatus(OperationAttached::Error);
-                continueRunning();
+                status = OperationAttached::Error;
             }
         }
-
-        Q_ASSERT(receivers(SIGNAL(release(QVariant))) > 0);
-        Q_ASSERT(node()->receivers(SIGNAL(releaseFinished(int))) > 0);
-        emit release(releaseContext);
     } else {
         debug() << node() << "skipping";
-        setStatus(OperationAttached::Finished);
-        continueRunning();
     }
-}
 
-void ReleaseOperationAttached::onReleaseFinished(int s)
-{
-    trace() << node() << ".onReleaseFinished(" << static_cast<OperationAttached::Status>(s) << ")";
-    Q_ASSERT(operation());
-    setStatus(static_cast<OperationAttached::Status>(s));
-
-    info() << "Released" << node() << "with status" << status() << "details" << QJsonDocument::fromVariant(node()->details().toVariant()).toJson();
-
-    continueRunning();
+    emit prepareFinished(status);
 }
 
 const QMetaObject *ReleaseOperationAttached::operationMetaObject() const
@@ -221,6 +191,7 @@ ReleaseOperation::ReleaseOperation(QObject *parent) :
     Operation(parent),
     m_sudo()
 {
+    setObjectName("release");
 }
 
 Sudo *ReleaseOperation::sudo()

@@ -11,19 +11,8 @@ class CookOperationAttached : public OperationAttached
 public:
     explicit CookOperationAttached(QObject *parent = 0);
 
-    Q_INVOKABLE virtual void run();
-
-signals:
-    void cook(const QVariant env);
-
 protected:
     virtual const QMetaObject *operationMetaObject() const;
-
-private slots:
-    void onCookFinished(int);
-
-private:
-    bool m_cookable;
 };
 
 class CookOperation : public Operation

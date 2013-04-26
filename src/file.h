@@ -34,19 +34,13 @@ signals:
     void linkTypeChanged(LinkType linkType);
     void framesChanged(FrameList *frames);
 
-    void update(const QVariant context);
-    void updateFinished(int status);
-
-    void cook(const QVariant context);
-    void cookFinished(int status);
-
-    void release(const QVariant context);
-    void releaseFinished(int status);
+protected:
+    virtual void componentComplete();
 
 private slots:
-    void onUpdate(const QVariant context);
-    void onCook(const QVariant context);
-    void onRelease(const QVariant context);
+    void update_onCook(const QVariant context);
+    void cook_onCook(const QVariant context);
+    void release_onCook(const QVariant context);
 
     void onFileOpQueueFinished();
     void onFileOpQueueError();

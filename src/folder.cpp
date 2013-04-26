@@ -6,6 +6,7 @@
 #include "root.h"
 #include "field.h"
 #include "elementsview.h"
+#include "updateoperation.h"
 #include "releaseoperation.h"
 
 Folder::Folder(QObject *parent) :
@@ -14,18 +15,23 @@ Folder::Folder(QObject *parent) :
 {
     setExactMatch(false);
 
-    // update -> onUpdate
-    connect(this, &Folder::update, this, &Folder::onUpdate);
-
-    // release connections
-    connect(this, &Folder::release, this, &Folder::onRelease);
     connect(m_queue, &FileOpQueue::finished, this, &Folder::onFileOpQueueFinished);
     connect(m_queue, &FileOpQueue::error, this, &Folder::onFileOpQueueError);
 }
 
-void Folder::onUpdate(const QVariant context)
+void Folder::componentComplete()
 {
-    trace() << ".onUpdate(" << context << ")";
+    Branch::componentComplete();
+
+    connect(attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>(), &UpdateOperationAttached::cook,
+            this, &Folder::update_onCook);
+    connect(attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>(), &ReleaseOperationAttached::cook,
+            this, &Folder::release_onCook);
+}
+
+void Folder::update_onCook(const QVariant context)
+{
+    trace() << "UpdateOperation.onCook(" << context << ")";
 
     clearDetails();
 
@@ -68,16 +74,16 @@ void Folder::onUpdate(const QVariant context)
 //    else {
 //        error() << "no match found for" << pattern() << "with" << localContext;
 //
-//        emit updateFinished(OperationAttached::Error);
+//        emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished(OperationAttached::Error);
 //    }
-    emit updateFinished(OperationAttached::Finished);
+    emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished(OperationAttached::Finished);
 }
 
-void Folder::onRelease(const QVariant context)
+void Folder::release_onCook(const QVariant context)
 {
-    trace() << ".onRelease(" << context << ")";
+    trace() << "ReleaseOperation.onCook(" << context << ")";
 
-    ReleaseOperationAttached *attached = attachedPropertiesObject<ReleaseOperationAttached>(&ReleaseOperation::staticMetaObject);
+    ReleaseOperationAttached *attached = attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>();
 
     m_queue->setSudo(attached->sudo());
 
@@ -115,12 +121,12 @@ void Folder::onRelease(const QVariant context)
 void Folder::onFileOpQueueFinished()
 {
     trace() << ".onFileOpQueueFinished()";
-    emit releaseFinished(OperationAttached::Finished);
+    emit attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>()->cookFinished(OperationAttached::Finished);
 }
 
 void Folder::onFileOpQueueError()
 {
     trace() << ".onFileOpQueueError()";
-    emit releaseFinished(OperationAttached::Error);
+    emit attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>()->cookFinished(OperationAttached::Error);
 }
 

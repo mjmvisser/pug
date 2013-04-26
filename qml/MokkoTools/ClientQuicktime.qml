@@ -13,6 +13,8 @@ Process {
     
     property string format
     property string filetype
+    property double fps
+    property string codec
     property string project
     property string sequence
     property string scene
@@ -24,6 +26,8 @@ Process {
     params: [
         Param { name: "format" },
         Param { name: "filetype" },
+        Param { name: "fps" },
+        Param { name: "codec" },
         Param { name: "project" },
         Param { name: "sequence" },
         Param { name: "scene" },
@@ -46,38 +50,40 @@ Process {
     cookable: true
 
     argv: try {
-              if (updating) {
-                  ["true"]    
-              } else if (cooking) {
-                  [Qt.resolvedUrl("scripts/deliveryQuicktime").replace("file://", ""),
-                   "--nukeTemplatePath", nukeTemplate.details[0].element.pattern,
-                   "--inputPath", inputElementsView.elements[index].pattern,
-                   "--frameStart", inputElementsView.elements[index].frameStart(),
-                   "--frameEnd", inputElementsView.elements[index].frameEnd(),
-                   "--outputPath", __outputPath(index),
-                   "--outputFormat", format,
-                   "--project", project,
-                   "--sequence", sequence,
-                   "--scene", scene,
-                   "--shot", shot,
-                   "--version", version,
-                   "--notes", notes,
-                   "--artist", artist]
-              } else {
-                  []
-              }
-          } catch (e) {
-              console.log("argv failed: " + e);
-              []
-          }
+        if (updating) {
+            ["true"]    
+        } else if (cooking) {
+            [Qt.resolvedUrl("scripts/clientQuicktime").replace("file://", ""),
+             "--nukeTemplatePath", nukeTemplate.details[0].element.pattern,
+             "--inputPath", inputElementsView.elements[index].pattern,
+             "--frameStart", inputElementsView.elements[index].frameStart(),
+             "--frameEnd", inputElementsView.elements[index].frameEnd(),
+             "--outputPath", __outputPath(index),
+             "--format", format,
+             "--fps", fps,
+             "--codec", codec,
+             "--project", project,
+             "--sequence", sequence,
+             "--scene", scene,
+             "--shot", shot,
+             "--version", version,
+             "--notes", notes,
+             "--artist", artist]
+        } else {
+            []
+        }
+    } catch (e) {
+        //console.log("argv failed: " + e);
+        []
+    }
     
-    onUpdateFinished: {
+    UpdateOperation.onCookFinished: {
         for (index = 0; index < count; index++) {
             elementsView.elements[index].pattern = __outputPath(index);
         } 
     }
 
-    onCookFinished: {
+    CookOperation.onCookFinished: {
         for (index = 0; index < count; index++) {
             elementsView.elements[index].pattern = __outputPath(index);
         } 

@@ -22,14 +22,14 @@ Process {
     }
     
     argv: try {
-              ["identify",
-               "-format", "RESOLUTION=%wx%h\nCODEC=%m\nCOLORSPACE=%[colorspace]\nDEPTH=%[depth]",
-               __inputPath(index)]
-          } catch (e) {
-              []
-          } 
+        ["identify",
+         "-format", "RESOLUTION=%wx%h\nCODEC=%m\nCOLORSPACE=%[colorspace]\nDEPTH=%[depth]",
+        __inputPath(index)]
+    } catch (e) {
+        []
+    } 
     
-    function parseInfo() {
+    function __parseInfo() {
         for (index = 0; index < count; index++) {
             details[index].element = input.details[index].element;
             var lines = details[index].process.stdout.replace(/\n$/, "").split("\n");
@@ -40,6 +40,5 @@ Process {
         }
     }
     
-    onUpdateFinished: parseInfo()
-    onCookFinished: parseInfo()
+    UpdateOperation.onCookFinished: __parseInfo()
 }        

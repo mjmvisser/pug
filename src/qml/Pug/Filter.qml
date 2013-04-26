@@ -7,12 +7,6 @@ Node {
     
     inputs: Input { name: "source" }
 
-    signal update(var context)
-    signal updateFinished(int status)
-
-    signal cook(var context)
-    signal cookFinished(int status)
-    
     function filter() {
         for (index = 0; index < source.details.length; index++) {
             if (select) {
@@ -23,13 +17,13 @@ Node {
         detailsChanged();
     }
     
-    onUpdate: {
+    UpdateOperation.onCook: {
         filter();
-        updateFinished(Operation.Finished);
+        UpdateOperation.cookFinished(Operation.Finished);
     }
     
-    onCook: {
+    CookOperation.onCook: {
         filter();
-        cookFinished(Operation.Finished);
+        CookOperation.cookFinished(Operation.Finished);
     }
 }

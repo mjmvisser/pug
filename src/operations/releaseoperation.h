@@ -40,8 +40,6 @@ public:
 
     Sudo *sudo();
 
-    Q_INVOKABLE virtual void run();
-
     Q_INVOKABLE const QString findVersionFieldName() const;
     Q_INVOKABLE int findLastVersion(const QVariantMap) const;
 
@@ -51,16 +49,13 @@ signals:
     void versionFieldChanged(const QString versionField);
     void modeChanged(Mode mode);
 
-    void release(const QVariant env);
-
 protected:
     virtual const QMetaObject *operationMetaObject() const;
 
 private slots:
-    void onReleaseFinished(int);
+    void onPrepare();
 
 private:
-    bool m_releasable;
     Node *m_source;
     Branch *m_versionBranch;
     QString m_versionFieldName;

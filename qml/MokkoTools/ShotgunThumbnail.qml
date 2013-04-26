@@ -22,29 +22,29 @@ Process {
     cookable: true
 
     argv: try {
-              if (updating) {
-                  ["true"]    
-              } else if (cooking) {
-                  [Qt.resolvedUrl("scripts/shotgunThumbnail.py").replace("file://", ""),
-                   "--inputPath", inputElementsView.elements[index].pattern,
-                   "--outputPath", __outputPath(index),
-                   "--firstFrame", inputElementsView.elements[index].frameStart(),
-                   "--lastFrame",  inputElementsView.elements[index].frameEnd(),
-                   "--" + (filmstrip ? "filmstrip" : "thumbnail")]
-              } else {
-                  []
-              }
-          } catch (e) {
-              []
-          }
+        if (updating) {
+            ["true"]    
+        } else if (cooking) {
+            [Qt.resolvedUrl("scripts/shotgunThumbnail.py").replace("file://", ""),
+             "--inputPath", inputElementsView.elements[index].pattern,
+             "--outputPath", __outputPath(index),
+             "--firstFrame", inputElementsView.elements[index].frameStart(),
+             "--lastFrame",  inputElementsView.elements[index].frameEnd(),
+             "--" + (filmstrip ? "filmstrip" : "thumbnail")]
+        } else {
+            []
+        }
+    } catch (e) {
+        []
+    }
     
-    onUpdateFinished: {
+    UpdateOperation.onCookFinished: {
         for (index = 0; index < count; index++) {
             elementsView.elements[index].pattern = __outputPath(index);
         } 
     }
 
-    onCookFinished: {
+    CookOperation.onCookFinished: {
         for (index = 0; index < count; index++) {
             elementsView.elements[index].pattern = __outputPath(index);
         } 

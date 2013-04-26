@@ -54,22 +54,18 @@ signals:
     void updatingChanged(bool updating);
     void cookingChanged(bool cooking);
 
-    void update(const QVariant context);
-    void updateFinished(int status);
-    void cook(const QVariant context);
-    void cookFinished(int status);
+protected:
+    virtual void componentComplete();
 
 protected slots:
-    void onUpdate(const QVariant context);
-    void onCook(const QVariant context);
+    void update_onCook(const QVariant context);
+    void cook_onCook(const QVariant context);
     void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onProcessError(QProcess::ProcessError);
     void onReadyReadStandardOutput();
     void onReadyReadStandardError();
 
     void handleFinishedProcess(QProcess *process, OperationAttached::Status status);
-
-    virtual void componentComplete();
 
 private:
     void setUpdating(bool);

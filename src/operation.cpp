@@ -8,6 +8,8 @@ OperationAttached::OperationAttached(QObject *parent) :
     m_operation(),
     m_targets(OperationAttached::Inputs|OperationAttached::Children|OperationAttached::Self)
 {
+    connect(this, &OperationAttached::prepareFinished, this, &OperationAttached::onPrepareFinished);
+    connect(this, &OperationAttached::cookFinished, this, &OperationAttached::onCookFinished);
 }
 
 const QVariantMap OperationAttached::context() const
@@ -50,6 +52,59 @@ Node* OperationAttached::node()
 
 void OperationAttached::reset()
 {
+}
+
+void OperationAttached::run()
+{
+    trace() << node() << ".run()";
+
+    m_prepareCount = receivers(SIGNAL(prepare(const QVariant)));
+    m_cookCount = receivers(SIGNAL(cook(const QVariant)));
+
+    if (m_prepareCount > 0) {
+        info() << "Preparing" << node() << "with" << context();
+        emit prepare(context());
+    } else if (m_cookCount > 0) {
+        info() << "Cooking" << node() << "with" << context();
+        emit cook(context());
+    } else {
+        setStatus(OperationAttached::Finished);
+        continueRunning();
+    }
+}
+
+void OperationAttached::onPrepareFinished(int s)
+{
+    m_prepareCount--;
+    trace() << node() << ".onPrepareFinished(" << static_cast<OperationAttached::Status>(s) << ") [" << m_prepareCount << "]";
+    if (m_prepareCount == 0) {
+        Q_ASSERT(status() == OperationAttached::Running);
+        if (static_cast<OperationAttached::Status>(s) != OperationAttached::Error) {
+            if (m_cookCount > 0) {
+                info() << "Cooking" << node() << "with" << context();
+                emit cook(context());
+                return;
+            }
+        }
+
+        // no cook receivers or the prepare failed
+        setStatus(static_cast<OperationAttached::Status>(s));
+        continueRunning();
+    }
+}
+
+void OperationAttached::onCookFinished(int s)
+{
+    m_cookCount--;
+    trace() << node() << ".onCookFinished(" << static_cast<OperationAttached::Status>(s) << ") [" << m_cookCount << "]";
+    if (m_cookCount == 0) {
+        Q_ASSERT(status() == OperationAttached::Running);
+        setStatus(static_cast<OperationAttached::Status>(s));
+
+        info() << "Cooked" << node() << "with status" << status() << "details" << QJsonDocument::fromVariant(node()->details().toVariant()).toJson();
+
+        continueRunning();
+    }
 }
 
 OperationAttached::Status OperationAttached::inputsStatus() const

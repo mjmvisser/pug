@@ -6,12 +6,6 @@ Node {
     
     inputs: Input { name: "sources" }
 
-    signal update(var context)
-    signal updateFinished(int status)
-
-    signal cook(var context)
-    signal cookFinished(int status)
-    
     function merge() {
         for (var j = 0; j < sources.length; j++) {
             if (sources[j]) {
@@ -24,13 +18,13 @@ Node {
         detailsChanged();
     }
     
-    onUpdate: {
+    UpdateOperation.onCook: {
         merge();
-        updateFinished(Operation.Finished);
+        UpdateOperation.cookFinished(Operation.Finished);
     }
     
-    onCook: {
+    CookOperation.onCook: {
         merge();
-        cookFinished(Operation.Finished);
+        CookOperation.cookFinished(Operation.Finished);
     }
 }

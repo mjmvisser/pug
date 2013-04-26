@@ -83,11 +83,8 @@ PugTestCase {
 
                     inputs: Input { name: "input" }
 
-                    signal update(var context)
-                    signal updateFinished(int status)
-                    
-                    onUpdate: {
-                        trace("onUpdate(" + context);
+                    UpdateOperation.onCook: {
+                        addTrace("UpdateOperation.onCook(" + context);
 
                         var inputElementsView = Util.elementsView(input);
                         var elementsView = Util.elementsView(copier);
@@ -106,14 +103,11 @@ PugTestCase {
                             }
                         }
                         
-                        updateFinished(Operation.Finished);
+                        UpdateOperation.cookFinished(Operation.Finished);
                     }
 
-                    signal cook(var context)
-                    signal cookFinished(int status)
-                    
-                    onCook: {
-                        trace("onCook(" + context);
+                    CookOperation.onCook: {
+                        addTrace("onCook(" + context);
                         var inputElementsView = Util.elementsView(input);
                         var elementsView = Util.elementsView(copier);
                         
@@ -127,7 +121,7 @@ PugTestCase {
                             Util.copy(inputPath, outputPath);
                         }
                         
-                        cookFinished(Operation.Finished);
+                        CookOperation.cookFinished(Operation.Finished);
                     }
                 }
                 
@@ -146,16 +140,13 @@ PugTestCase {
     
             count: 5
             
-            signal cook(var context)
-            signal cookFinished(int status)
-    
-            onCook: {
+            CookOperation.onCook: {
                 for (index = 0; index < count; index++) {
                     details[index] = {"result": name + index,
                                       "context": context};
                 }
                 detailsChanged();
-                cookFinished(Operation.Finished);                              
+                CookOperation.cookFinished(Operation.Finished);                              
             }
         }   
         

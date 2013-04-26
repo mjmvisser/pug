@@ -11,16 +11,13 @@ Node {
     property var retiredOnly: false
     property var page: 0
     
-    signal update(var context)
-    signal updateFinished(int status)
-    
     signal __findFinished(var results)
     signal __findError()
     
     property var __context;
     
-    onUpdate: {
-        addTrace("onUpdate(" + JSON.stringify(context) + ")");
+    UpdateOperation.onCook: {
+        addTrace("UpdateOperation.onCook(" + JSON.stringify(context) + ")");
         __context = context;
         var reply = Shotgun.find(entityType, filters, fields, order, filterOperator, limit, retiredOnly, page);
         reply.finished.connect(__findFinished);
@@ -38,11 +35,11 @@ Node {
         
         detailsChanged();
         
-        updateFinished(Operation.Finished);
+        UpdateOperation.cookFinished(Operation.Finished);
     }
     
     on__FindError: {
         addError(sender().errorString());
-        updateFinished(Operation.Error);
+        UpdateOperation.cookFinished(Operation.Error);
     }
 }

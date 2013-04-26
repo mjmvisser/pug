@@ -6,16 +6,13 @@ Node {
     property int entityId
     property var data
     
-    signal release(var context)
-    signal releaseFinished(int status)
-    
     signal __updateFinished(var result)
     signal __updateError()
     
     property var __context;
     
-    onRelease: {
-        addTrace("onRelease(" + JSON.stringify(context) + ")");
+    ReleaseOperation.onCook: {
+        addTrace("ReleaseOperation.onCook(" + JSON.stringify(context) + ")");
         __context = context;
         var reply = Shotgun.update(entityType, entityId, data);
         reply.finished.connect(__updateFinished);
@@ -35,11 +32,11 @@ Node {
         
         detailsChanged();
         
-        releaseFinished(Operation.Finished);
+        ReleaseOperation.cookFinished(Operation.Finished);
     }
     
     on__UpdateError: {
         addError(sender().errorString());
-        releaseFinished(Operation.Error);
+        ReleaseOperation.cookFinished(Operation.Error);
     }
 }

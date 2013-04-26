@@ -4,17 +4,14 @@ Node {
     id: self
     property var requests
     
-    signal release(var context)
-    signal releaseFinished(int status)
-    
     signal __batchFinished(var results)
     signal __batchError()
     
     property var __context;
     property var __reply;
     
-    onRelease: {
-        addTrace("onRelease(" + JSON.stringify(context) + ")");
+    ReleaseOperation.onCook: {
+        addTrace("ReleaseOperation.onCook(" + JSON.stringify(context) + ")");
         __context = context;
         var reply = Shotgun.batch(requests);
         __reply = reply;
@@ -37,11 +34,11 @@ Node {
         
         detailsChanged();
         
-        releaseFinished(Operation.Finished);
+        ReleaseOperation.cookFinished(Operation.Finished);
     }
     
     on__BatchError: {
         addError(__reply.errorString);
-        releaseFinished(Operation.Error);
+        ReleaseOperation.cookFinished(Operation.Error);
     }
 }

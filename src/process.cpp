@@ -5,6 +5,8 @@
 #include <QJsonDocument>
 
 #include "process.h"
+#include "updateoperation.h"
+#include "cookoperation.h"
 //#include "elementmanager.h"
 //#include "elementview.h"
 
@@ -16,8 +18,23 @@ Process::Process(QObject *parent) :
     m_updatingFlag(false),
     m_cookingFlag(false)
 {
-    connect(this, &Process::update, this, &Process::onUpdate);
-    connect(this, &Process::cook, this, &Process::onCook);
+}
+
+void Process::componentComplete()
+{
+    Node::componentComplete();
+
+    connect(attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>(), &UpdateOperationAttached::cook,
+            this, &Process::update_onCook);
+    connect(attachedPropertiesObject<CookOperation, CookOperationAttached>(), &CookOperationAttached::cook,
+            this, &Process::cook_onCook);
+
+    m_env = newObject();
+
+    QProcessEnvironment systemEnv = QProcessEnvironment::systemEnvironment();
+    foreach (const QString key, systemEnv.keys()) {
+        m_env.setProperty(key, systemEnv.value(key));
+    }
 }
 
 const QStringList Process::argv() const
@@ -128,9 +145,9 @@ void Process::setCooking(bool f)
     }
 }
 
-void Process::onUpdate(const QVariant context)
+void Process::update_onCook(const QVariant context)
 {
-    trace() << ".onUpdate(" << context << ")";
+    trace() << ".UpdateOperation.onCook(" << context << ")";
     Q_ASSERT(!m_cookingFlag);
     if (m_updatableFlag) {
         // TODO: what if count is 0?
@@ -143,13 +160,13 @@ void Process::onUpdate(const QVariant context)
         }
     } else {
         debug() << "not updatable, skipping update";
-        emit updateFinished(OperationAttached::Finished);
+        emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished(OperationAttached::Finished);
     }
 }
 
-void Process::onCook(const QVariant context)
+void Process::cook_onCook(const QVariant context)
 {
-    trace() << ".onCook(" << context << ")";
+    trace() << ".CookOperation.onCook(" << context << ")";
     Q_ASSERT(!m_updatingFlag);
     if (m_cookableFlag) {
         setCooking(true);
@@ -160,7 +177,7 @@ void Process::onCook(const QVariant context)
         }
     } else {
         debug() << "not cookable, skipping cook";
-        emit cookFinished(OperationAttached::Finished);
+        emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished(OperationAttached::Finished);
     }
 }
 
@@ -253,13 +270,13 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
         if (finishedProcessCount == count()) {
             // all done
             setUpdating(false);
-            emit updateFinished(m_statuses.status());
+            emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished(m_statuses.status());
         }
     } else if (m_cookingFlag) {
         if (finishedProcessCount == count()) {
             // all done
             setCooking(false);
-            emit cookFinished(m_statuses.status());
+            emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished(m_statuses.status());
         }
     }
 }
@@ -300,16 +317,4 @@ void Process::onReadyReadStandardError()
 {
     QProcess *process = qobject_cast<QProcess *>(QObject::sender());
     m_stdouts[process].append(process->readAllStandardError());
-}
-
-void Process::componentComplete()
-{
-    Node::componentComplete();
-
-    m_env = newObject();
-
-    QProcessEnvironment systemEnv = QProcessEnvironment::systemEnvironment();
-    foreach (const QString key, systemEnv.keys()) {
-        m_env.setProperty(key, systemEnv.value(key));
-    }
 }

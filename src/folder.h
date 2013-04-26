@@ -10,16 +10,12 @@ class Folder : public Branch
 public:
     explicit Folder(QObject *parent = 0);
 
-signals:
-    void update(const QVariant context);
-    void updateFinished(int status);
-
-    void release(const QVariant context);
-    void releaseFinished(int status);
+protected:
+    virtual void componentComplete();
 
 private slots:
-    void onUpdate(const QVariant context);
-    void onRelease(const QVariant context);
+    void update_onCook(const QVariant);
+    void release_onCook(const QVariant);
 
     void onFileOpQueueFinished();
     void onFileOpQueueError();

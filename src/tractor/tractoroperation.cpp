@@ -419,6 +419,7 @@ TractorOperation::TractorOperation(QObject *parent) :
         m_mode(TractorOperation::Submit),
         m_target()
 {
+    setObjectName("tractor");
 }
 
 TractorOperation::Mode TractorOperation::mode() const

@@ -45,6 +45,7 @@ TestCase {
             inputs: Input { name: "project" }
 
             entityType: "Delivery"
+            
             filters: [["project", "is", project.details[0].entity], ["title", "is", "test"]]
         }
 
