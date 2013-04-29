@@ -140,35 +140,59 @@ void Shotgun::setConvertDateTimesToUtc(bool convert)
 
 const QVariantMap Shotgun::translateFilters(const QVariantList filters, const QString filterOperator) const
 {
-    // trnanslateFilters translates filters param into data structure
-    // expected by rpc call.
+    QVariantMap wrappedFilters;
+    wrappedFilters.insert("filter_operator", filterOperator.isNull() ? "all" : filterOperator);
+    wrappedFilters.insert("filters", filters);
+    return translateFiltersDict(wrappedFilters);
+}
+
+const QVariantMap Shotgun::translateFiltersDict(const QVariantMap sgFilter) const
+{
     QVariantMap newFilters;
+    const QString filterOperator = sgFilter["filter_operator"].toString();
 
-    if (filterOperator.isEmpty() || filterOperator == "all")
-        newFilters["logical_operator"] = "and";
-    else
-        newFilters["logical_operator"] = "or";
+    if (filterOperator == "all" || filterOperator == "and")
+        newFilters.insert("logical_operator", "and");
+    else if (filterOperator == "any" || filterOperator == "or")
+        newFilters.insert("logical_operator", "or");
+    // TODO: else error
 
-    QVariantList conditions;
-    foreach (QVariant v, filters) {
-        if (v.type() == QVariant::List) {
-            QVariantList sgFilter = v.toList();
-            QVariantMap condition;
-            condition["path"] = sgFilter[0];
-            condition["relation"] = sgFilter[1];
+    //if (!sgFilter["filters"].canConvert<QVariantList>())
+    // TODO: error
 
-            QVariantList values = sgFilter.mid(2);
-            if (values.length() == 1 && values[0].type() == QVariant::List)
-                values = values[0].toList();
-
-            condition["values"] = values;
-            conditions.append(condition);
-        }
-    }
-
-    newFilters["conditions"] = conditions;
+    newFilters.insert("conditions", translateFiltersList(sgFilter["filters"].toList()));
 
     return newFilters;
+}
+
+const QVariantList Shotgun::translateFiltersList(const QVariantList filters) const
+{
+    QVariantList conditions;
+
+    foreach (const QVariant sgFilter, filters) {
+        if (sgFilter.canConvert<QVariantList>())
+            conditions << translateFiltersSimple(sgFilter.toList());
+        else if (sgFilter.canConvert<QVariantMap>())
+            conditions << translateFiltersDict(sgFilter.toMap());
+        // TODO: else error
+    }
+
+    return conditions;
+}
+
+const QVariantMap Shotgun::translateFiltersSimple(const QVariantList sgFilter) const
+{
+    QVariantMap condition;
+    condition.insert("path", sgFilter[0]);
+    condition.insert("relation", sgFilter[1]);
+
+    QVariantList values = sgFilter.mid(2);
+    if (values.length() == 1 && values[0].canConvert<QVariantList>())
+        values = values[0].toList();
+
+    condition["values"] = values;
+
+    return condition;
 }
 
 const QVariantMap Shotgun::constructReadParameters(const QString entityType, const QStringList fields,

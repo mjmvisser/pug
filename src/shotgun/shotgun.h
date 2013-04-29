@@ -152,6 +152,9 @@ private:
 
     const QVariantList mapToList(const QVariantMap map, const QString keyName="field_name", const QString valueName="value") const;
     const QVariantMap translateFilters(const QVariantList filters, const QString filterOperator) const;
+    const QVariantMap translateFiltersDict(const QVariantMap sgFilter) const;
+    const QVariantList translateFiltersList(const QVariantList filters) const;
+    const QVariantMap translateFiltersSimple(const QVariantList sgFilter) const;
     const QVariantMap constructReadParameters(const QString entityType, const QStringList fields,
             const QVariantMap filters, bool retiredOnly, const QVariantList order) const;
     bool buildPayload(QJsonObject& payload, const QString method, const QJsonDocument params, bool includeScriptName=true) const;
