@@ -62,7 +62,7 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<ElementView>();
     qmlRegisterType<FrameView>();
     qmlRegisterType<Field>(uri, 1, 0, "Field");
-    qmlRegisterType<Branch>();
+    qmlRegisterType<Branch>(uri, 1, 0, "Branch");
     qmlRegisterType<Folder>(uri, 1, 0, "Folder");
     qmlRegisterType<File>(uri, 1, 0, "File");
     qmlRegisterType<Root>(uri, 1, 0, "Root");
