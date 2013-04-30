@@ -108,6 +108,12 @@ public:
         return qobject_cast<TA *>(qmlAttachedPropertiesObject(&idx, this, &T::staticMetaObject, create));
     }
 
+    Logger trace() const;
+    Logger debug() const;
+    Logger info() const;
+    Logger warning() const;
+    Logger error() const;
+
     Q_INVOKABLE void addTrace(const QString message) const;
     Q_INVOKABLE void addDebug(const QString message) const;
     Q_INVOKABLE void addInfo(const QString message) const;
@@ -124,12 +130,6 @@ signals:
 protected:
     virtual void classBegin() {};
     virtual void componentComplete() {};
-
-    Logger trace() const;
-    Logger debug() const;
-    Logger info() const;
-    Logger warning() const;
-    Logger error() const;
 
 private:
     // data property

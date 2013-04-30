@@ -41,6 +41,7 @@ signals:
 private slots:
     void handleSigInt(int);
     void continueLoading();
+    void onWarnings(const QList<QQmlError> &);
 
 private:
     QQmlEngine* m_engine;

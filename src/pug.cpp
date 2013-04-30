@@ -32,6 +32,8 @@ Pug::Pug(QQmlEngine* engine, QObject *parent) :
         m_engine(engine),
         m_rootComponent()
 {
+    m_engine->setOutputWarningsToStandardError(false);
+
     // QML_IMPORT_PATH doesn't seem to work in qt5 anymore
     QString importPaths = qgetenv("QML_IMPORT_PATH");
     QStringList importPathList = importPaths.split(':', QString::SkipEmptyParts);
@@ -54,6 +56,8 @@ Pug::Pug(QQmlEngine* engine, QObject *parent) :
 
     if (sigaction(SIGINT, &sigInt, 0) == -1)
        qFatal("Couldn't hook SIGINT");
+
+    connect(m_engine, &QQmlEngine::warnings, this, &Pug::onWarnings);
 }
 
 void Pug::intSignalHandler(int unused)
@@ -175,5 +179,16 @@ void Pug::continueLoading() {
     } else {
         m_root = qobject_cast<Root*>(m_rootComponent->create());
         emit loaded();
+    }
+}
+
+void Pug::onWarnings(const QList<QQmlError> &warnings)
+{
+    foreach (const QQmlError err, warnings) {
+        PugItem *item = qobject_cast<PugItem *>(err.object());
+        if (item)
+            item->warning() << err;
+        else
+            warning() << err;
     }
 }
