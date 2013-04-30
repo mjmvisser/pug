@@ -675,7 +675,7 @@ const QMap<QString, QSet<QFileInfo> > Branch::listMatchingPatternsHelper(const Q
                 // check for a partial match
                 QVariant m = parse(entry.filePath() + "/", true);
                 debug() << "containsFields(" << m.toMap() << "," << context << ") returns" << containsFields(m.toMap(), context);
-                if (m.isValid() && containsFields(m.toMap(), context)) {
+                if (m.isValid()) { // && containsFields(m.toMap(), context)) {
                     debug() << "got partial match of" << entry.filePath() << "against" << pattern() << "with" << m.toMap();
                     // recurse
                     result = listMatchingPatternsHelper(entry.filePath() + "/", context, result);
