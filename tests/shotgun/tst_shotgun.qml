@@ -41,6 +41,14 @@ TestCase {
         compare(reply.results, undefined);
     }
     
+    function test_shotgunNestedQuery() {
+        var reply = Shotgun.findOne("Project", [{"filter_operator": "any", "filters": [["name", "is", "888_test"]]}]);
+        spy.target = reply;
+        spy.signalName = "finished";
+        spy.wait(5000);
+        compare(reply.results.type, "Project");
+    }
+    
     function test_shotgunFindOneInvalidFilter() {
         var reply = Shotgun.findOne("Project", [["prodfsd", "is", "SLsdf8k3"]]);
         spy.target = reply;
