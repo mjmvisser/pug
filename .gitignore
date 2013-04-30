@@ -17,3 +17,6 @@ Makefile
 *.BASE.*
 *.LOCAL.*
 *.REMOTE.*
+3rdparty
+include
+lib
