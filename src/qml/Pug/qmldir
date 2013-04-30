@@ -6,4 +6,11 @@ ShotgunFind 1.0 ShotgunFind.qml
 ShotgunCreate 1.0 ShotgunCreate.qml
 ShotgunUpdate 1.0 ShotgunUpdate.qml
 ShotgunBatch 1.0 ShotgunBatch.qml
+ShotgunFilterByField 1.0 ShotgunFilterByField.qml
+ShotgunFilterByEntity 1.0 ShotgunFilterByEntity.qml
+MergeShotgunFilters 1.0 MergeShotgunFilters.qml
+ShotgunDataFromValue 1.0 ShotgunDataFromValue.qml
+ShotgunDataFromEntity 1.0 ShotgunDataFromEntity.qml
+ShotgunDataFromElement 1.0 ShotgunDataFromElement.qml
+MergeShotgunData 1.0 MergeShotgunData.qml
 plugin pugplugin
