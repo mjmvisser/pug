@@ -18,6 +18,7 @@ Node {
     
     UpdateOperation.onCook: {
         addTrace("UpdateOperation.onCook(" + JSON.stringify(context) + ")");
+        index = 0;
         __context = context;
         var reply = Shotgun.find(entityType, filters, fields, order, filterOperator, limit, retiredOnly, page);
         reply.finished.connect(__findFinished);
