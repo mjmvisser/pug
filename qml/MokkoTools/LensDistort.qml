@@ -27,11 +27,10 @@ Process {
 
     count: input ? input.count : 0
 
-    property var inputElementsView: Util.elementsView(input)
-    property var elementsView: Util.elementsView(self)
+    property var self.File: Util.self.File(self)
 
     function __outputPath(index) {
-        return input.details[index].context["PUGWORK"] + (self.name ? self.name + "/" : "") + inputElementsView.elements[0].path() + mode + "_" + format + "_" + index + ".%04d." + fileType;
+        return input.details[index].context["PUGWORK"] + (self.name ? self.name + "/" : "") + input.File.elements[0].path() + mode + "_" + format + "_" + index + ".%04d." + fileType;
     }
 
     cookable: true
@@ -44,8 +43,8 @@ Process {
                  "--inputPath", input.details[index].element.pattern,
                  "--outputFormat", format + (mode == "undistort" ? "_und" : ""),
                  "--outputPath", __outputPath(index),
-                 "--frameStart", inputElementsView.elements[index].frameStart(),
-                 "--frameEnd", inputElementsView.elements[index].frameEnd()]
+                 "--frameStart", input.File.elements[index].frameStart(),
+                 "--frameEnd", input.File.elements[index].frameEnd()]
              } else if (updating) {
                  ["true"]
              } else {
@@ -61,8 +60,8 @@ Process {
         details[index].context["FORMAT"] = format;
 
         // set the pattern and scan for file info
-        elementsView.elements[index].pattern = __outputPath(index, details[index].context);
-        elementsView.elements[index].scan();
+        self.File.elements[index].pattern = __outputPath(index, details[index].context);
+        self.File.elements[index].scan();
     }
     
     UpdateOperation.onCookFinished: {

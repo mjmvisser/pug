@@ -7,10 +7,10 @@
 #include <QFileInfo>
 
 #include "detailsview.h"
-#include "node.h"
-#include "frameview.h"
-#include "filepattern.h"
 #include "framepattern.h"
+
+class Node;
+class FrameView;
 
 class ElementView : public DetailsView
 {

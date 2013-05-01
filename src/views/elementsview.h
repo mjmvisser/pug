@@ -5,14 +5,13 @@
 
 #include "detailsview.h"
 #include "elementview.h"
-#include "node.h"
 
 class ElementsView : public DetailsView
 {
     Q_OBJECT
     Q_PROPERTY(QQmlListProperty<ElementView> elements READ elements_ NOTIFY elementsChanged())
 public:
-    explicit ElementsView(Node *node, QObject *parent = 0);
+    explicit ElementsView(Node *parent);
 
     QQmlListProperty<ElementView> elements_();
 

@@ -11,13 +11,11 @@ Process {
 
     updatable: true
     
-    property var inputElementsView: Util.elementsView(input)
-    
     function __inputPath(index) {
-        if (inputElementsView.elements[index].isSequence()) {
-            return inputElementsView.elements[index].frames[0].path();
+        if (input.File.elements[index].isSequence()) {
+            return input.File.elements[index].frames[0].path();
         } else {
-            return inputElementsView.elements[index].path();
+            return input.File.elements[index].path();
         }
     }
     

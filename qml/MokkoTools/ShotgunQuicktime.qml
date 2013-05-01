@@ -15,9 +15,6 @@ Process {
         Param { name: "fps" }
     ]
 
-    property var inputElementsView: Util.elementsView(input)
-    property var elementsView: Util.elementsView(self)
-
     function __outputPath(index) {
         return input.details[index].context["PUGWORK"] + self.path() + "." + format;
     }
@@ -30,9 +27,9 @@ Process {
             ["true"]    
         } else if (cooking) {
             [Qt.resolvedUrl("scripts/shotgunQuicktime.py").replace("file://", ""),
-             "--inputPath", inputElementsView.elements[index].pattern,
+             "--inputPath", input.File.elements[index].pattern,
              "--outputPath", __outputPath(index),
-             "--firstFrame", inputElementsView.elements[index].frameStart(),
+             "--firstFrame", input.File.elements[index].frameStart(),
              "--format", format,
              "--fps", fps]
         } else {
@@ -44,13 +41,13 @@ Process {
     
     UpdateOperation.onCookFinished: {
         for (index = 0; index < count; index++) {
-            elementsView.elements[index].pattern = __outputPath(index);
+            self.File.elements[index].pattern = __outputPath(index);
         } 
     }
 
     CookOperation.onCookFinished: {
         for (index = 0; index < count; index++) {
-            elementsView.elements[index].pattern = __outputPath(index);
+            self.File.elements[index].pattern = __outputPath(index);
         } 
     }
 }

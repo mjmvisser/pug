@@ -59,17 +59,6 @@ bool Util::copy(const QString src, const QString dest)
     return QFile::copy(src, dest);
 }
 
-ElementsView *Util::elementsView(Node *node)
-{
-    if (node) {
-        // no parent means V8 takes ownership
-        ElementsView *obj = new ElementsView(node);
-        return obj;
-    } else {
-        return 0;
-    }
-}
-
 const QVariantMap Util::mergeContexts(const QVariantMap first, const QVariantMap second) const
 {
     return Node::mergeContexts(first, second);

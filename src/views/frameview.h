@@ -6,7 +6,6 @@
 #include <QDateTime>
 
 #include "detailsview.h"
-#include "node.h"
 
 class FrameView : public DetailsView
 {

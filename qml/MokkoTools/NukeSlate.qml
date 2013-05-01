@@ -29,9 +29,6 @@ Process {
         Param { name: "artist" }
     ]
 
-    property var sequenceElementsView: Util.elementsView(sequence)
-    property var elementsView: Util.elementsView(self)
-
     function __outputPath(index) {
         return sequence.details[index].context["PUGWORK"] + self.path() + "." + filetype;
     }
@@ -47,13 +44,13 @@ Process {
               } else if (cooking) {
                   [Qt.resolvedUrl("scripts/nukeSlate").replace("file://", ""),
                    "--nukeTemplatePath", nukeTemplate.details[0].element.pattern,
-                   "--vignettePath", sequenceElementsView.elements[index].frames[0].path(),
+                   "--vignettePath", sequence.File.elements[index].frames[0].path(),
                    "--outputPath", __outputPath(index),
                    "--outputFormat", format,
                    "--project", project,
                    "--shot", shot,
                    "--version", version,
-                   "--length", sequenceElementsView.elements[index].frames.length,
+                   "--length", sequence.File.elements[index].frames.length,
                    "--notes", notes,
                    "--artist", artist]
               } else {
@@ -65,13 +62,13 @@ Process {
     
     onUpdateFinished: {
         for (index = 0; index < count; index++) {
-            elementsView.elements[index].pattern = __outputPath(index);
+            self.File.elements[index].pattern = __outputPath(index);
         } 
     }
 
     onCookFinished: {
         for (index = 0; index < count; index++) {
-            elementsView.elements[index].pattern = __outputPath(index);
+            self.File.elements[index].pattern = __outputPath(index);
         } 
     }
 }

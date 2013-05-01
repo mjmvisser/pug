@@ -2,7 +2,6 @@
 
 #include "listoperation.h"
 #include "branch.h"
-#include "elementsview.h"
 
 ListOperationAttached::ListOperationAttached(QObject *parent) :
     OperationAttached(parent)
@@ -17,14 +16,9 @@ void ListOperationAttached::run()
     Branch *branch = qobject_cast<Branch *>(node());
 
     if (branch) {
-        QScopedPointer<ElementsView> elementsView(new ElementsView(node()));
-
-
-        for (int elementIndex = 0; elementIndex < elementsView->elementCount(); elementIndex++) {
-            const ElementView *element = elementsView->elementAt(elementIndex);
-            if (element)
-                // TODO: print frames
-                std::cout << element->pattern().toUtf8().constData() << std::endl;
+        for (int index = 0; index < branch->count(); index++) {
+            // TODO: print frames
+            std::cout << node()->details().property(index).property("element").property("pattern").toString().toUtf8().constData() << std::endl;
         }
     }
 

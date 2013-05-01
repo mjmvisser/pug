@@ -4,6 +4,9 @@
 #include "branch.h"
 #include "fileopqueue.h"
 
+class UpdateOperationAttached;
+class ReleaseOperationAttached;
+
 class Folder : public Branch
 {
     Q_OBJECT
@@ -21,9 +24,9 @@ private slots:
     void onFileOpQueueError();
 
 private:
+    UpdateOperationAttached *updateOperationAttached();
+    ReleaseOperationAttached *releaseOperationAttached();
     FileOpQueue* m_queue;
 };
-
-Q_DECLARE_METATYPE(Folder*) // makes available to QVariant
 
 #endif // BRANCH_H

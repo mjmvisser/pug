@@ -79,22 +79,19 @@ PugTestCase {
                     name: "copier"
                     count: input ? input.count : 0
                     
-                    property var input: workFile
+                    property Node input: workFile
 
                     inputs: Input { name: "input" }
 
                     UpdateOperation.onCook: {
                         addTrace("UpdateOperation.onCook(" + context);
 
-                        var inputElementsView = Util.elementsView(input);
-                        var elementsView = Util.elementsView(copier);
-                        
                         for (index = 0; index < count; index++) {
-                            var inputPath = elementsView.elements[index].path();
-                            var outputDir = inputElementsView.elements[index].directory() + "temp/";
-                            var outputPath = outputDir + "temp_" + inputElementsView.elements[index].baseName() + "." + inputElementsView.elements[index].extension();
+                            var inputPath = copier.File.elements[index].path();
+                            var outputDir = input.File.elements[index].directory() + "temp/";
+                            var outputPath = outputDir + "temp_" + input.File.elements[index].baseName() + "." + input.File.elements[index].extension();
     
-                            elementsView.elements[index].pattern = outputPath;
+                            copier.File.elements[index].pattern = outputPath;
                             details[index].context = input.details[index].context;
                             for (var attrname in context) {
                                 if (context.hasOwnProperty(attrname)) {
@@ -108,13 +105,11 @@ PugTestCase {
 
                     CookOperation.onCook: {
                         addTrace("onCook(" + context);
-                        var inputElementsView = Util.elementsView(input);
-                        var elementsView = Util.elementsView(copier);
                         
                         for (index = 0; index < count; index++) {
-                            var inputPath = inputElementsView.elements[index].path();
-                            var outputDir = elementsView.elements[index].directory();
-                            var outputPath = elementsView.elements[index].path();
+                            var inputPath = input.File.elements[index].path();
+                            var outputDir = copier.File.elements[index].directory();
+                            var outputPath = copier.File.elements[index].path();
     
                             if (!Util.exists(outputDir))
                                 Util.mkpath(outputDir);
@@ -181,15 +176,12 @@ PugTestCase {
         update.run(cookFile, context);
         updateSpy.wait(500);
 
-        var workFileElementsView = Util.elementsView(workFile);
-        var cookFileElementsView = Util.elementsView(cookFile);
-
         compare(update.status, Operation.Finished);
         compare(workFile.UpdateOperation.status, Operation.Finished);
         compare(cookFile.UpdateOperation.status, Operation.Finished);
-        compare(workFileElementsView.elements[0].path(), workPaths[0]);
-        compare(workFileElementsView.elements[1].path(), workPaths[1]);
-        compare(workFileElementsView.elements[2].path(), workPaths[2]);
+        compare(workFile.elements[0].path(), workPaths[0]);
+        compare(workFile.elements[1].path(), workPaths[1]);
+        compare(workFile.elements[2].path(), workPaths[2]);
         compare(cookFile.details.length, 3);
 
         cook.run(cookFile, context);
@@ -203,9 +195,9 @@ PugTestCase {
         compare(workFile.CookOperation.status, Operation.Finished);
         compare(copier.details.length, 3);
         compare(cookFile.details.length, 3);
-        compare(cookFileElementsView.elements[0].path(), cookPaths[0]);
-        compare(cookFileElementsView.elements[1].path(), cookPaths[1]);
-        compare(cookFileElementsView.elements[2].path(), cookPaths[2]);
+        compare(cookFile.elements[0].path(), cookPaths[0]);
+        compare(cookFile.elements[1].path(), cookPaths[1]);
+        compare(cookFile.elements[2].path(), cookPaths[2]);
     }
     
     function test_cookCompound() {

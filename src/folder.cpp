@@ -5,8 +5,8 @@
 #include "folder.h"
 #include "root.h"
 #include "field.h"
-#include "elementsview.h"
 #include "updateoperation.h"
+#include "cookoperation.h"
 #include "releaseoperation.h"
 
 Folder::Folder(QObject *parent) :
@@ -23,10 +23,8 @@ void Folder::componentComplete()
 {
     Branch::componentComplete();
 
-    connect(attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>(), &UpdateOperationAttached::cook,
-            this, &Folder::update_onCook);
-    connect(attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>(), &ReleaseOperationAttached::cook,
-            this, &Folder::release_onCook);
+    connect(updateOperationAttached(), &UpdateOperationAttached::cook, this, &Folder::update_onCook);
+    connect(releaseOperationAttached(), &ReleaseOperationAttached::cook, this, &Folder::release_onCook);
 }
 
 void Folder::update_onCook(const QVariant context)
@@ -35,17 +33,7 @@ void Folder::update_onCook(const QVariant context)
 
     clearDetails();
 
-    QScopedPointer<ElementsView> elementsView(new ElementsView(this));
-
-    QVariantMap localContext;
-    if (root())
-        // TODO: this is hella sketchy
-        localContext = mergeContexts(context.toMap(),
-            root()->details().property(0).property("context").toVariant().toMap());
-    else
-        localContext = context.toMap();
-
-    QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(localContext);
+    QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(context.toMap());
 
     info() << "Update matched" << matches.keys() << "from" << pattern();
 
@@ -54,40 +42,35 @@ void Folder::update_onCook(const QVariant context)
     if (matches.size() > 0) {
         int index = 0;
         QMapIterator<QString, QSet<QFileInfo> > i(matches);
+
         while (i.hasNext()) {
             i.next();
 
-            if (i.value().toList().length() > 0) {
-                ElementView *element = elementsView->elementAt(index);
-                element->setPattern(i.key());
-                element->scan(i.value().toList());
+            setDetail(index, "element", "pattern", toScriptValue(i.key()));
+            QVariantMap elementContext = parse(i.key()).toMap();
+            setContext(index, mergeContexts(context.toMap(), elementContext));
 
-                QVariantMap elementContext = parse(i.key()).toMap();
+            Q_ASSERT(i.value().size() <= 1);
 
-                setContext(index, mergeContexts(localContext, elementContext));
+            if (i.value().size() > 0) {
+                const QFileInfo info = i.value().toList().first();
+                setDetail(index, "timestamp", toScriptValue(info.lastModified()));
+            } else {
+                setDetail(index, "timestamp", QJSValue(QJSValue::NullValue));
             }
 
             index++;
         }
-
     }
-//    else {
-//        error() << "no match found for" << pattern() << "with" << localContext;
-//
-//        emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished();
-//    }
-    emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished();
+
+    emit updateOperationAttached()->cookFinished();
 }
 
 void Folder::release_onCook(const QVariant context)
 {
     trace() << "ReleaseOperation.onCook(" << context << ")";
 
-    ReleaseOperationAttached *attached = attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>();
-
-    m_queue->setSudo(attached->sudo());
-
-    QScopedPointer<ElementsView> elementsView(new ElementsView(this));
+    m_queue->setSudo(releaseOperationAttached()->sudo());
 
     QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(context.toMap());
 
@@ -100,16 +83,20 @@ void Folder::release_onCook(const QVariant context)
         QMapIterator<QString, QSet<QFileInfo> > i(matches);
         while (i.hasNext()) {
             i.next();
-            ElementView *element = elementsView->elementAt(index);
-            element->setPattern(i.key());
-            element->scan(i.value().toList());
 
-            if (element->timestamp().isNull())
-                m_queue->mkdir(i.key());
-
+            setDetail(index, "element", "pattern", toScriptValue(i.key()));
             QVariantMap elementContext = parse(i.key()).toMap();
-
             setContext(index, mergeContexts(context.toMap(), elementContext));
+
+            Q_ASSERT(i.value().size() <= 1);
+
+            if (i.value().size() > 0) {
+                const QFileInfo info = i.value().toList().first();
+                setDetail(index, "timestamp", toScriptValue(info.lastModified()));
+            } else {
+                setDetail(index, "timestamp", QJSValue(QJSValue::NullValue));
+                m_queue->mkdir(i.key());
+            }
 
             index++;
         }
@@ -128,5 +115,15 @@ void Folder::onFileOpQueueError()
 {
     trace() << ".onFileOpQueueError()";
     emit attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>()->cookFinished();
+}
+
+UpdateOperationAttached *Folder::updateOperationAttached()
+{
+    return attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>();
+}
+
+ReleaseOperationAttached *Folder::releaseOperationAttached()
+{
+    return attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>();
 }
 

@@ -73,12 +73,8 @@ PugTestCase {
         update.run(file1, context);
         spy.wait(500);
         
-        var branch1ElementsView = Util.elementsView(branch1);
-        var branch2ElementsView = Util.elementsView(branch2);
-        var file1ElementsView = Util.elementsView(file1);
-        
         compare(file1.UpdateOperation.status, Operation.Finished);
-        compare(file1ElementsView.elements.length, 1);
-        compare(file1ElementsView.elements[0].pattern, tmpDir + "updatetests/abc/foo/def/bar/ghi/18/somefile.%04d.ext");
+        compare(file1.elements.length, 1);
+        compare(file1.elements[0].pattern, tmpDir + "updatetests/abc/foo/def/bar/ghi/18/somefile.%04d.ext");
     }
 }

@@ -1,13 +1,14 @@
 #include <QScopedPointer>
 
 #include "elementsview.h"
+#include "node.h"
 
-ElementsView::ElementsView(Node *node, QObject *parent) :
-    DetailsView(node, parent)
+ElementsView::ElementsView(Node *parent) :
+    DetailsView(parent, parent)
 {
-    Q_ASSERT(node);
-    connect(node, &Node::detailsChanged, this, &ElementsView::sync);
-    connect(node, &Node::detailsChanged, this, &ElementsView::elementsChanged);
+    Q_ASSERT(node());
+    connect(node(), &Node::detailsChanged, this, &ElementsView::sync);
+    connect(node(), &Node::detailsChanged, this, &ElementsView::elementsChanged);
     sync();
 }
 

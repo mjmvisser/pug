@@ -37,9 +37,6 @@ Process {
         Param { name: "artist" }
     ]
 
-    property var inputElementsView: Util.elementsView(input)
-    property var elementsView: Util.elementsView(self)
-
     function __outputPath(index) {
         return input.details[index].context["PUGWORK"] + self.path() + "." + filetype;
     }
@@ -55,9 +52,9 @@ Process {
         } else if (cooking) {
             [Qt.resolvedUrl("scripts/clientQuicktime").replace("file://", ""),
              "--nukeTemplatePath", nukeTemplate.details[0].element.pattern,
-             "--inputPath", inputElementsView.elements[index].pattern,
-             "--frameStart", inputElementsView.elements[index].frameStart(),
-             "--frameEnd", inputElementsView.elements[index].frameEnd(),
+             "--inputPath", input.File.elements[index].pattern,
+             "--frameStart", input.File.elements[index].frameStart(),
+             "--frameEnd", input.File.elements[index].frameEnd(),
              "--outputPath", __outputPath(index),
              "--format", format,
              "--fps", fps,
@@ -79,13 +76,13 @@ Process {
     
     UpdateOperation.onCookFinished: {
         for (index = 0; index < count; index++) {
-            elementsView.elements[index].pattern = __outputPath(index);
+            self.File.elements[index].pattern = __outputPath(index);
         } 
     }
 
     CookOperation.onCookFinished: {
         for (index = 0; index < count; index++) {
-            elementsView.elements[index].pattern = __outputPath(index);
+            self.File.elements[index].pattern = __outputPath(index);
         } 
     }
 }

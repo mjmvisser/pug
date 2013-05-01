@@ -2,16 +2,21 @@
 #define FILE_H
 
 #include "branch.h"
-#include "framelist.h"
 #include "sudo.h"
 #include "fileopqueue.h"
+#include "elementview.h"
+
+class ElementsView;
+class UpdateOperationAttached;
+class CookOperationAttached;
+class ReleaseOperationAttached;
 
 class File : public Branch
 {
     Q_OBJECT
     Q_PROPERTY(Node *input READ input WRITE setInput NOTIFY inputChanged)
     Q_PROPERTY(LinkType linkType READ linkType WRITE setLinkType NOTIFY linkTypeChanged)
-    Q_PROPERTY(FrameList *frames READ frames WRITE setFrames NOTIFY framesChanged)
+    Q_PROPERTY(QQmlListProperty<ElementView> elements READ elements_ NOTIFY elementsChanged())
     Q_ENUMS(LinkType)
 public:
     enum LinkType { Hard, Symbolic };
@@ -25,13 +30,14 @@ public:
     LinkType linkType() const;
     void setLinkType(LinkType);
 
-    FrameList *frames();
-    void setFrames(FrameList *frames);
+    QQmlListProperty<ElementView> elements_();
+
+    static ElementsView *qmlAttachedProperties(QObject *);
 
 signals:
     void inputChanged(Node *input);
     void linkTypeChanged(LinkType linkType);
-    void framesChanged(FrameList *frames);
+    void elementsChanged();
 
 protected:
     virtual void componentComplete();
@@ -45,14 +51,18 @@ private slots:
     void onFileOpQueueError();
 
 private:
+    ElementsView *elementsView();
+    UpdateOperationAttached *updateOperationAttached();
+    CookOperationAttached *cookOperationAttached();
+    ReleaseOperationAttached *releaseOperationAttached();
+
     bool makeLink(const QString &src, const QString &dest) const;
     void releaseFile(const QString srcPath, const QString destPath, int mode) const;
 
     Node *m_input;
     LinkType m_linkType;
-    FrameList *m_frames;
     FileOpQueue* m_queue;
 };
-Q_DECLARE_METATYPE(File*) // makes available to QVariant
+QML_DECLARE_TYPEINFO(File, QML_HAS_ATTACHED_PROPERTIES)
 
 #endif // FILE_H

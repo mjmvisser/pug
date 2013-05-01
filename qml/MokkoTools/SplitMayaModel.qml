@@ -10,8 +10,7 @@ Process {
     count: input ? input.count : 0
 
     function __outputPath(index, context) {
-        var inputElementsView = Util.elementsView(input);
-        return context["PUGWORK"] + (self.name ? self.name + "/" : "") + "_{lod}_" + index + "." + inputElementsView.elements[index].extension();
+        return context["PUGWORK"] + (self.name ? self.name + "/" : "") + "_{lod}_" + index + "." + input.File.elements[index].extension();
     }
 
     argv: {

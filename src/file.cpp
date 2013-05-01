@@ -24,7 +24,6 @@ File::File(QObject *parent) :
     Branch(parent),
     m_input(),
     m_linkType(File::Hard),
-    m_frames(0),
     m_queue(new FileOpQueue(this))
 {
     setExactMatch(true);
@@ -42,12 +41,10 @@ void File::componentComplete()
 {
     Branch::componentComplete();
 
-    connect(attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>(), &UpdateOperationAttached::cook,
-            this, &File::update_onCook);
-    connect(attachedPropertiesObject<CookOperation, CookOperationAttached>(), &CookOperationAttached::cook,
-            this, &File::cook_onCook);
-    connect(attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>(), &ReleaseOperationAttached::cook,
-            this, &File::release_onCook);
+    connect(elementsView(), &ElementsView::elementsChanged, this, &File::elementsChanged);
+    connect(updateOperationAttached(), &UpdateOperationAttached::cook, this, &File::update_onCook);
+    connect(cookOperationAttached(), &CookOperationAttached::cook, this, &File::cook_onCook);
+    connect(releaseOperationAttached(), &ReleaseOperationAttached::cook, this, &File::release_onCook);
 }
 
 Node *File::input()
@@ -81,32 +78,14 @@ void File::setLinkType(File::LinkType lt)
     }
 }
 
-FrameList *File::frames()
+QQmlListProperty<ElementView> File::elements_()
 {
-    return m_frames;
-}
-
-void File::setFrames(FrameList *f)
-{
-    // forward framesChanged signal from FrameList to ourself
-    if (!m_frames || !f || m_frames->list() != f->list()) {
-        if (m_frames)
-            disconnect(m_frames, &FrameList::framesChanged, this, &File::framesChanged);
-
-        if (f)
-            connect(f, &FrameList::framesChanged, this, &File::framesChanged);
-
-        m_frames = f;
-
-        emit framesChanged(f);
-    }
+    return elementsView()->elements_();
 }
 
 void File::update_onCook(const QVariant context)
 {
     trace() << "UpdateOperation.onCook(" << context << ")";
-
-    QScopedPointer<ElementsView> elementsView(new ElementsView(this));
 
     clearDetails();
 
@@ -114,9 +93,9 @@ void File::update_onCook(const QVariant context)
         setCount(m_input->count());
 
         debug() << "input count is" << m_input->count();
-        debug() << "element manager count is" << elementsView->elementCount();
+        debug() << "element manager count is" << elementsView()->elementCount();
 
-        for (int index = 0; index < elementsView->elementCount(); index++) {
+        for (int index = 0; index < elementsView()->elementCount(); index++) {
             QScopedPointer<ElementsView> inputElementsView(new ElementsView(m_input));
             ElementView *inputElement = inputElementsView->elementAt(index);
             Q_ASSERT(inputElement);
@@ -141,20 +120,10 @@ void File::update_onCook(const QVariant context)
 
                     QFileInfoList framesInfoList = matches[elementPattern.pattern()].toList();
 
-                    ElementView *element = elementsView->elementAt(index);
+                    ElementView *element = elementsView()->elementAt(index);
 
                     element->setPattern(elementPattern.pattern());
-
-                    if (m_frames) {
-                        if (m_frames->list() != inputElement->frameList()) {
-                            error() << "frames [" << m_frames->pattern() << "] don't match input frames [" << inputElement->framePattern() << "]";
-                        } else {
-                            FramePattern fp(m_frames->list());
-                            element->scan(framesInfoList, fp);
-                        }
-                    } else {
-                        element->scan(framesInfoList);
-                    }
+                    element->scan(framesInfoList);
                 }
             }
         }
@@ -173,15 +142,9 @@ void File::update_onCook(const QVariant context)
                 i.next();
 
                 if (i.value().toList().length() > 0) {
-                    ElementView *element = elementsView->elementAt(index);
+                    ElementView *element = elementsView()->elementAt(index);
                     element->setPattern(i.key());
-
-                    if (m_frames) {
-                        FramePattern fp(m_frames->list());
-                        element->scan(i.value().toList(), fp);
-                    } else {
-                        element->scan(i.value().toList());
-                    }
+                    element->scan(i.value().toList());
 
                     const QVariantMap elementContext = parse(i.key()).toMap();
 
@@ -193,7 +156,7 @@ void File::update_onCook(const QVariant context)
         }
     }
 
-    emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished();
+    emit updateOperationAttached()->cookFinished();
 }
 
 void File::cook_onCook(const QVariant context)
@@ -212,8 +175,7 @@ void File::cook_onCook(const QVariant context)
 
             FilePattern inputPattern = FilePattern(inputElement->pattern());
 
-            QScopedPointer<ElementsView> elementsView(new ElementsView(this));
-            ElementView *element = elementsView->elementAt(index);
+            ElementView *element = elementsView()->elementAt(index);
             Q_ASSERT(element);
 
             const QVariantMap elementContext = mergeContexts(context.toMap(),
@@ -229,37 +191,30 @@ void File::cook_onCook(const QVariant context)
                 if (inputPattern.isSequence()) {
                     if (destPattern.isSequence()) {
                         // input and this are both sequences
-                        if (!m_frames || inputElement->frameList() == m_frames->list()) {
-                            // frames match
-                            element->setFrameCount(inputElement->frameCount());
-                            for (int frameIndex = 0; frameIndex < inputElement->frameCount(); frameIndex++) {
-                                debug() << "cooking frameIndex" << frameIndex;
-                                FrameView *frame = element->frameAt(frameIndex);
-                                FrameView *inputFrame = inputElement->frameAt(frameIndex);
-                                Q_ASSERT(frame);
-                                Q_ASSERT(inputFrame);
+                        element->setFrameCount(inputElement->frameCount());
+                        for (int frameIndex = 0; frameIndex < inputElement->frameCount(); frameIndex++) {
+                            debug() << "cooking frameIndex" << frameIndex;
+                            FrameView *frame = element->frameAt(frameIndex);
+                            FrameView *inputFrame = inputElement->frameAt(frameIndex);
+                            Q_ASSERT(frame);
+                            Q_ASSERT(inputFrame);
 
-                                frame->setFrame(inputFrame->frame());
+                            frame->setFrame(inputFrame->frame());
 
-                                const QString srcPath = inputPattern.path(inputFrame->frame());
-                                const QString destPath = destPattern.path(inputFrame->frame());
+                            const QString srcPath = inputPattern.path(inputFrame->frame());
+                            const QString destPath = destPattern.path(inputFrame->frame());
 
-                                // TODO: dependency check
-                                if (!makeLink(srcPath, destPath)) {
-                                    emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished();
-                                    return;
-                                }
+                            // TODO: dependency check
+                            if (!makeLink(srcPath, destPath)) {
+                                emit cookOperationAttached()->cookFinished();
+                                return;
                             }
-                        } else {
-                            error() << "frames [" << m_frames->pattern() << "] do not match input element frames [" << inputElement->framePattern() << "]";
-                            emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished();
-                            return;
                         }
                     } else {
                         error() << "input is a sequence, but this node is not";
                         debug() << "inputPattern is" << inputPattern.pattern();
                         debug() << "destPattern is" << destPattern.pattern();
-                        emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished();
+                        emit cookOperationAttached()->cookFinished();
                         return;
                     }
                 } else {
@@ -267,7 +222,7 @@ void File::cook_onCook(const QVariant context)
                         // TODO: at some point we want to support this
                         // how? need a frame range for this node tho
                         error() << "this node is a sequence, but input node is not";
-                        emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished();
+                        emit cookOperationAttached()->cookFinished();
                     } else {
                         debug() << "cooking element";
                         const QString srcPath = inputPattern.path();
@@ -275,20 +230,40 @@ void File::cook_onCook(const QVariant context)
 
                         // TODO: dependency check
                         if (!makeLink(srcPath, destPath)) {
-                            emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished();
+                            emit cookOperationAttached()->cookFinished();
                             return;
                         }
                     }
                 }
             } else {
                 error() << "fields incomplete for input context" << elementContext;
-                emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished();
+                emit cookOperationAttached()->cookFinished();
                 return;
             }
         }
     }
 
-    emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished();
+    emit cookOperationAttached()->cookFinished();
+}
+
+ElementsView *File::elementsView()
+{
+    return attachedPropertiesObject<File, ElementsView>();
+}
+
+UpdateOperationAttached *File::updateOperationAttached()
+{
+    return attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>();
+}
+
+CookOperationAttached *File::cookOperationAttached()
+{
+    return attachedPropertiesObject<CookOperation, CookOperationAttached>();
+}
+
+ReleaseOperationAttached *File::releaseOperationAttached()
+{
+    return attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>();
 }
 
 bool File::makeLink(const QString &src, const QString &dest) const
@@ -339,25 +314,22 @@ void File::release_onCook(const QVariant context)
 {
     trace() << "ReleaseOperation.onCook(" << context << ")";
 
-    ReleaseOperationAttached *attached = attachedPropertiesObject<ReleaseOperationAttached>(&ReleaseOperation::staticMetaObject);
-
-    if (attached->source()) {
+    if (releaseOperationAttached()->source()) {
         clearDetails();
 
-        m_queue->setSudo(attached->sudo());
+        m_queue->setSudo(releaseOperationAttached()->sudo());
 
-        QScopedPointer<ElementsView> elementsView(new ElementsView(this));
-        QScopedPointer<ElementsView> sourceElementsView(new ElementsView(attached->source()));
+        QScopedPointer<ElementsView> sourceElementsView(new ElementsView(releaseOperationAttached()->source()));
 
         int index = 0;
         setCount(sourceElementsView->elementCount());
 
         for (int sourceIndex = 0; sourceIndex < sourceElementsView->elementCount(); sourceIndex++) {
             ElementView *sourceElement = sourceElementsView->elementAt(sourceIndex);
-            ElementView *element = elementsView->elementAt(index);
+            ElementView *element = elementsView()->elementAt(index);
 
             QVariantMap destContext = mergeContexts(context.toMap(),
-                    attached->source()->details().property(index).property("context").toVariant().toMap());
+                    releaseOperationAttached()->source()->details().property(index).property("context").toVariant().toMap());
 
             FilePattern srcPattern = FilePattern(sourceElement->pattern());
             FilePattern destPattern = FilePattern(map(destContext));
@@ -368,21 +340,17 @@ void File::release_onCook(const QVariant context)
             if (srcPattern.isSequence()) {
                 if (destPattern.isSequence()) {
                     // source and destination are both sequences
-                    if (!frames() || sourceElement->frameList() == frames()->list()) {
-                        element->setFrameCount(sourceElement->frameCount());
+                    element->setFrameCount(sourceElement->frameCount());
 
-                        for (int frameIndex = 0; frameIndex < sourceElement->frameCount(); frameIndex++) {
-                            int frame = sourceElement->frameAt(frameIndex)->frame();
-                            element->frameAt(frameIndex)->setFrame(frame);
+                    for (int frameIndex = 0; frameIndex < sourceElement->frameCount(); frameIndex++) {
+                        int frame = sourceElement->frameAt(frameIndex)->frame();
+                        element->frameAt(frameIndex)->setFrame(frame);
 
-                            const QString srcPath = srcPattern.path(frame);
-                            const QString destPath = destPattern.path(frame);
+                        const QString srcPath = srcPattern.path(frame);
+                        const QString destPath = destPattern.path(frame);
 
-                            // TODO: preserve timestamps?
-                            releaseFile(srcPath, destPath, attached->mode());
-                        }
-                    } else {
-                        error() << "dest frames [" << frames()->list() << "] doesn't match source element [" << sourceElement->frameList() << "]";
+                        // TODO: preserve timestamps?
+                        releaseFile(srcPath, destPath, releaseOperationAttached()->mode());
                     }
                 } else {
                     error() << "source is a sequence, but dest is not";
@@ -396,7 +364,7 @@ void File::release_onCook(const QVariant context)
                     const QString srcPath = srcPattern.path();
                     const QString destPath = destPattern.path();
 
-                    releaseFile(srcPath, destPath, attached->mode());
+                    releaseFile(srcPath, destPath, releaseOperationAttached()->mode());
                 }
             }
 
@@ -407,7 +375,7 @@ void File::release_onCook(const QVariant context)
             m_queue->run();
     }
 
-    emit attached->cookFinished();
+    emit releaseOperationAttached()->cookFinished();
 }
 
 void File::releaseFile(const QString srcPath, const QString destPath, int mode) const
@@ -444,4 +412,11 @@ void File::onFileOpQueueError()
 {
     trace() << ".onFileOpQueueError()";
     emit attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>()->cookFinished();
+}
+
+ElementsView *File::qmlAttachedProperties(QObject *parent)
+{
+    Node *node = qobject_cast<Node *>(parent);
+    Q_ASSERT(node);
+    return new ElementsView(node);
 }

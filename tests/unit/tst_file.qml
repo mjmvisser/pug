@@ -101,14 +101,11 @@ PugTestCase {
         update.run(file, {FOO: "foo", BAR: "0001", BAZ: "baz"});
         updateSpy.wait(500);
         
-        var fileElementsView = Util.elementsView(file);
-        var branchElementsView = Util.elementsView(branch);
-        
         compare(file.UpdateOperation.status, Operation.Finished);
-        compare(fileElementsView.elements[0].pattern, tmpDir + "filetests/abc/foo.%04d.baz");
-        verify(fileElementsView.elements[0].frames[0]);
-        compare(fileElementsView.elements[0].frames[0].frame, 1);
-        compare(fileElementsView.elements[0].frames[0].path(), tmpDir + "filetests/abc/foo.0001.baz");
+        compare(file.elements[0].pattern, tmpDir + "filetests/abc/foo.%04d.baz");
+        verify(file.elements[0].frames[0]);
+        compare(file.elements[0].frames[0].frame, 1);
+        compare(file.elements[0].frames[0].path(), tmpDir + "filetests/abc/foo.0001.baz");
     }
     
     function test_fileLink() {
@@ -127,19 +124,18 @@ PugTestCase {
         
         compare(absFile.UpdateOperation.status, Operation.Finished);
 
-        var absFileElementsView = Util.elementsView(absFile);
-        compare(absFileElementsView.elements.length, 1);
-        compare(absFileElementsView.elements[0].frames.length, 5);
-        compare(absFileElementsView.elements[0].frames[0].frame, 1);
-        compare(absFileElementsView.elements[0].frames[1].frame, 2);
-        compare(absFileElementsView.elements[0].frames[2].frame, 3);
-        compare(absFileElementsView.elements[0].frames[3].frame, 4);
-        compare(absFileElementsView.elements[0].frames[4].frame, 5);
-        compare(absFileElementsView.elements[0].pattern, tmpDir + "filetests/abc/foo.%04d.baz");
-        compare(absFileElementsView.elements[0].frames[0].path(), tmpDir + "filetests/abc/foo.0001.baz");
-        compare(absFileElementsView.elements[0].frames[1].path(), tmpDir + "filetests/abc/foo.0002.baz");
-        compare(absFileElementsView.elements[0].frames[2].path(), tmpDir + "filetests/abc/foo.0003.baz");
-        compare(absFileElementsView.elements[0].frames[3].path(), tmpDir + "filetests/abc/foo.0004.baz");
-        compare(absFileElementsView.elements[0].frames[4].path(), tmpDir + "filetests/abc/foo.0005.baz");
+        compare(absFile.elements.length, 1);
+        compare(absFile.elements[0].frames.length, 5);
+        compare(absFile.elements[0].frames[0].frame, 1);
+        compare(absFile.elements[0].frames[1].frame, 2);
+        compare(absFile.elements[0].frames[2].frame, 3);
+        compare(absFile.elements[0].frames[3].frame, 4);
+        compare(absFile.elements[0].frames[4].frame, 5);
+        compare(absFile.elements[0].pattern, tmpDir + "filetests/abc/foo.%04d.baz");
+        compare(absFile.elements[0].frames[0].path(), tmpDir + "filetests/abc/foo.0001.baz");
+        compare(absFile.elements[0].frames[1].path(), tmpDir + "filetests/abc/foo.0002.baz");
+        compare(absFile.elements[0].frames[2].path(), tmpDir + "filetests/abc/foo.0003.baz");
+        compare(absFile.elements[0].frames[3].path(), tmpDir + "filetests/abc/foo.0004.baz");
+        compare(absFile.elements[0].frames[4].path(), tmpDir + "filetests/abc/foo.0005.baz");
     }
 }    

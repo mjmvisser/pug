@@ -169,18 +169,15 @@ PugTestCase {
         var releasePath_v004 = tmpDir + "releasetests/abc/foo/release/main/v004/bar.txt";
         var altReleasePath_v001 = tmpDir + "releasetests/abc/foo/release/alt/v001/bar.txt";
         
-        var workFileElementsView = Util.elementsView(workFile);
-        var releaseFileElementsView = Util.elementsView(releaseFile);
-        
         release.run(releaseFile, context);
         releaseSpy.wait(500);
         compare(release.status, Operation.Finished);
         compare(workFile.details.length, 1);
-        compare(workFileElementsView.elements.length, 1);
-        compare(workFileElementsView.elements[0].path(), workPath);
+        compare(workFile.elements.length, 1);
+        compare(workFile.elements[0].path(), workPath);
         compare(workFile.ReleaseOperation.status, Operation.Finished);
-        compare(releaseFileElementsView.elements.length, 1);
-        compare(releaseFileElementsView.elements[0].path(), releasePath_v003);
+        compare(releaseFile.elements.length, 1);
+        compare(releaseFile.elements[0].path(), releasePath_v003);
         compare(releaseFile.details.length, 1);
         verify(Util.exists(releasePath_v003));
         
@@ -190,8 +187,8 @@ PugTestCase {
         compare(workFile.ReleaseOperation.status, Operation.Finished);
         compare(workFile.details.length, 1);
         compare(releaseFile.details.length, 1);
-        compare(releaseFileElementsView.elements.length, 1);
-        compare(releaseFileElementsView.elements[0].path(), releasePath_v004);
+        compare(releaseFile.elements.length, 1);
+        compare(releaseFile.elements[0].path(), releasePath_v004);
         verify(Util.exists(releasePath_v004));
         
         update.run(releaseFile, context);
@@ -206,8 +203,8 @@ PugTestCase {
         compare(workFile.ReleaseOperation.status, Operation.Finished);
         compare(workFile.details.length, 1);
         compare(releaseFile.details.length, 1);
-        compare(releaseFileElementsView.elements.length, 1);
-        compare(releaseFileElementsView.elements[0].path(), altReleasePath_v001);
+        compare(releaseFile.elements.length, 1);
+        compare(releaseFile.elements[0].path(), altReleasePath_v001);
         verify(Util.exists(releasePath_v004));
 
         delete context["VARIATION"];
@@ -230,8 +227,6 @@ PugTestCase {
         update.run(releaseSeq, context);
         updateSpy.wait(500);
 
-        var releaseSeqElementsView = Util.elementsView(releaseSeq);
-        
         release.run(releaseSeq, context);
         releaseSpy.wait(500);
         
@@ -244,8 +239,8 @@ PugTestCase {
         
         compare(workSeq.details.length, 1);
         compare(releaseSeq.details.length, 1);
-        compare(releaseSeqElementsView.elements.length, 1);
-        compare(releaseSeqElementsView.elements[0].pattern, releasePath);
+        compare(releaseSeq.elements.length, 1);
+        compare(releaseSeq.elements[0].pattern, releasePath);
         
         for (var frame = 1; frame <= 4; frame++) {
             var framePath = releasePath.replace("%04d", zeroFill(frame, 4));

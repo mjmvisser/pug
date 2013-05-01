@@ -6,7 +6,9 @@
 
 #include "elementview.h"
 #include "elementsview.h"
+#include "frameview.h"
 #include "framepattern.h"
+#include "filepattern.h"
 
 /*!
     \class ElementView
@@ -142,7 +144,7 @@ void ElementView::setTimestamp(const QDateTime ts)
         error() << "Can't set timestamp on element with frames";
     } else {
         if (timestamp() != ts) {
-            node()->setDetail(m_index, "element", "timestamp", toScriptValue(ts));
+            node()->setDetail(m_index, "timestamp", toScriptValue(ts));
         }
     }
 }
