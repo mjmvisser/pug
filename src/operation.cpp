@@ -1,6 +1,7 @@
 #include "operation.h"
 #include "node.h"
 #include "root.h"
+#include "logger.h"
 
 OperationAttached::OperationAttached(QObject *parent) :
     PugItem(parent),
@@ -8,6 +9,8 @@ OperationAttached::OperationAttached(QObject *parent) :
     m_operation(),
     m_targets(OperationAttached::Inputs|OperationAttached::Children|OperationAttached::Self)
 {
+    setLog(new Log(this));
+
     connect(this, &OperationAttached::prepareFinished, this, &OperationAttached::onPrepareFinished);
     connect(this, &OperationAttached::cookFinished, this, &OperationAttached::onCookFinished);
 }
@@ -52,6 +55,7 @@ Node* OperationAttached::node()
 
 void OperationAttached::reset()
 {
+    log()->clear();
 }
 
 void OperationAttached::run()
@@ -63,9 +67,11 @@ void OperationAttached::run()
 
     if (m_prepareCount > 0) {
         info() << "Preparing" << node() << "with" << context();
+        node()->setLog(log());
         emit prepare(context());
     } else if (m_cookCount > 0) {
         info() << "Cooking" << node() << "with" << context();
+        node()->setLog(log());
         emit cook(context());
     } else {
         setStatus(OperationAttached::Finished);
@@ -73,36 +79,43 @@ void OperationAttached::run()
     }
 }
 
-void OperationAttached::onPrepareFinished(int s)
+void OperationAttached::onPrepareFinished()
 {
     m_prepareCount--;
-    trace() << node() << ".onPrepareFinished(" << static_cast<OperationAttached::Status>(s) << ") [" << m_prepareCount << "]";
+    trace() << node() << ".onPrepareFinished() [" << m_prepareCount << "]";
     if (m_prepareCount == 0) {
         Q_ASSERT(status() == OperationAttached::Running);
-        if (static_cast<OperationAttached::Status>(s) != OperationAttached::Error) {
+        if (log()->maxLevel() < Log::Error) {
             if (m_cookCount > 0) {
                 info() << "Cooking" << node() << "with" << context();
                 emit cook(context());
                 return;
+            } else {
+                // no cook receivers, we're done
+                setStatus(OperationAttached::Finished);
             }
+        } else {
+            setStatus(OperationAttached::Error);
         }
-
-        // no cook receivers or the prepare failed
-        setStatus(static_cast<OperationAttached::Status>(s));
         continueRunning();
     }
 }
 
-void OperationAttached::onCookFinished(int s)
+void OperationAttached::onCookFinished()
 {
     m_cookCount--;
-    trace() << node() << ".onCookFinished(" << static_cast<OperationAttached::Status>(s) << ") [" << m_cookCount << "]";
+    trace() << node() << ".onCookFinished() [" << m_cookCount << "]";
     if (m_cookCount == 0) {
         Q_ASSERT(status() == OperationAttached::Running);
-        setStatus(static_cast<OperationAttached::Status>(s));
+
+        if (log()->maxLevel() < Log::Error)
+            setStatus(OperationAttached::Finished);
+        else
+            setStatus(OperationAttached::Error);
 
         info() << "Cooked" << node() << "with status" << status() << "details" << QJsonDocument::fromVariant(node()->details().toVariant()).toJson();
 
+        node()->setLog(0);
         continueRunning();
     }
 }

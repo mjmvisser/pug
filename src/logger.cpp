@@ -110,6 +110,21 @@ QStringList Log::messages(Log::MessageType level)
     return result;
 }
 
+Log::MessageType Log::maxLevel() const
+{
+    Log::MessageType result = Log::Invalid;
+    foreach (const Log::Message &message, m_messages) {
+        if (message.type > result)
+            result = message.type;
+    }
+    return result;
+}
+
+void Log::clear()
+{
+    m_messages.clear();
+}
+
 QDebug operator<<(QDebug dbg, const QJSValue jsvalue)
 {
     if (jsvalue.isUndefined()) {

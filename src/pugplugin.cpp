@@ -25,6 +25,7 @@
 #include "fileopqueue.h"
 #include "util.h"
 #include "logger.h"
+#include "console.h"
 #include "sudo.h"
 #include "nodemodel.h"
 #include "tractorblock.h"
@@ -47,6 +48,13 @@ static QObject *Util_provider(QQmlEngine *engine, QJSEngine *scriptEngine)
     Q_UNUSED(engine)
     Q_UNUSED(scriptEngine)
     return new Util();
+}
+
+static QObject *Console_provider(QQmlEngine *engine, QJSEngine *scriptEngine)
+{
+    Q_UNUSED(engine)
+    Q_UNUSED(scriptEngine)
+    return Console::log();
 }
 
 void PugPlugin::registerTypes(const char *uri)
@@ -79,6 +87,7 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<ShotgunField>(uri, 1, 0, "ShotgunField");
     qmlRegisterType<FileOpQueue>(uri, 1, 0, "FileOpQueue");
     qmlRegisterType<Log>(uri, 1, 0, "Log");
+    qmlRegisterSingletonType<Console>(uri, 1, 0, "Console", Console_provider);
     qmlRegisterSingletonType<Util>(uri, 1, 0, "Util", Util_provider);
     qmlRegisterType<NodeModel>(uri, 1, 0, "NodeModel");
     qmlRegisterType<TractorBlock>();

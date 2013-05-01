@@ -74,9 +74,9 @@ void Folder::update_onCook(const QVariant context)
 //    else {
 //        error() << "no match found for" << pattern() << "with" << localContext;
 //
-//        emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished(OperationAttached::Error);
+//        emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished();
 //    }
-    emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished(OperationAttached::Finished);
+    emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished();
 }
 
 void Folder::release_onCook(const QVariant context)
@@ -121,12 +121,12 @@ void Folder::release_onCook(const QVariant context)
 void Folder::onFileOpQueueFinished()
 {
     trace() << ".onFileOpQueueFinished()";
-    emit attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>()->cookFinished(OperationAttached::Finished);
+    emit attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>()->cookFinished();
 }
 
 void Folder::onFileOpQueueError()
 {
     trace() << ".onFileOpQueueError()";
-    emit attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>()->cookFinished(OperationAttached::Error);
+    emit attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>()->cookFinished();
 }
 

@@ -41,6 +41,9 @@ public:
 
     Q_INVOKABLE QStringList messages(MessageType level);
 
+    Q_INVOKABLE MessageType maxLevel() const;
+    Q_INVOKABLE void clear();
+
 signals:
     void levelChanged(MessageType level);
 

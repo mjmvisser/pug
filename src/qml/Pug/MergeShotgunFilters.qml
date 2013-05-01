@@ -28,6 +28,6 @@ Node {
                              "filters": filterList};
         detailsChanged(); 
         
-        UpdateOperation.cookFinished(Operation.Finished);
+        UpdateOperation.cookFinished();
     }
 }

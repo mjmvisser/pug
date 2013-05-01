@@ -44,9 +44,9 @@ Node {
         
         if (self.count == 0) {
             error("Nothing in input " + input.name + " matched " + JSON.stringify(context));
-            updateFinished(Operation.Error);
+            updateFinished();
         } else {
-            updateFinished(Operation.Finished);
+            updateFinished();
         }
     }
 }

@@ -19,11 +19,11 @@ Node {
     
     UpdateOperation.onCook: {
         filter();
-        UpdateOperation.cookFinished(Operation.Finished);
+        UpdateOperation.cookFinished();
     }
     
     CookOperation.onCook: {
         filter();
-        CookOperation.cookFinished(Operation.Finished);
+        CookOperation.cookFinished();
     }
 }

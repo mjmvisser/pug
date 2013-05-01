@@ -20,6 +20,6 @@ Node {
                                                  "id": entity.details[index].entity.id};
         }
         detailsChanged();
-        CookOperation.cookFinished(Operation.Finished);
+        CookOperation.cookFinished();
     }
 }

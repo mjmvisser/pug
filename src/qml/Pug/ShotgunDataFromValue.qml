@@ -28,6 +28,6 @@ Node {
         details[0].data = {};
         details[0].data[shotgunField] = newValue;
         detailsChanged();
-        CookOperation.cookFinished(Operation.Finished);
+        CookOperation.cookFinished();
     }
 }

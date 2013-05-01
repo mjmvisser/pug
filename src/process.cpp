@@ -153,14 +153,13 @@ void Process::update_onCook(const QVariant context)
         // TODO: what if count is 0?
         clearDetails();
         setUpdating(true);
-        m_statuses.clear();
         for (int index = 0; index < count(); index++) {
             setIndex(index);
             executeForIndex(index, context);
         }
     } else {
         debug() << "not updatable, skipping update";
-        emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished(OperationAttached::Finished);
+        emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished();
     }
 }
 
@@ -170,14 +169,13 @@ void Process::cook_onCook(const QVariant context)
     Q_ASSERT(!m_updatingFlag);
     if (m_cookableFlag) {
         setCooking(true);
-        m_statuses.clear();
         for (int index = 0; index < count(); index++) {
             setIndex(index);
             executeForIndex(index, context);
         }
     } else {
         debug() << "not cookable, skipping cook";
-        emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished(OperationAttached::Finished);
+        emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished();
     }
 }
 
@@ -243,9 +241,9 @@ void Process::executeForIndex(int index, const QVariant context)
     m_processes[index]->closeWriteChannel();
 }
 
-void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status status)
+void Process::handleFinishedProcess(QProcess *process)
 {
-    trace() << ".handleFinishedProcess(" << process << "," << status << ")";
+    trace() << ".handleFinishedProcess(" << process << ")";
     Q_ASSERT(process);
     Q_ASSERT(m_cookingFlag || m_updatingFlag);
 
@@ -262,21 +260,19 @@ void Process::handleFinishedProcess(QProcess *process, OperationAttached::Status
     m_processes[index] = 0;
     process->deleteLater();
 
-    m_statuses << status;
-
     int finishedProcessCount = 0;
     qCount(m_processes, static_cast<QProcess *>(0), finishedProcessCount);
     if (m_updatingFlag) {
         if (finishedProcessCount == count()) {
             // all done
             setUpdating(false);
-            emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished(m_statuses.status());
+            emit attachedPropertiesObject<UpdateOperation, UpdateOperationAttached>()->cookFinished();
         }
     } else if (m_cookingFlag) {
         if (finishedProcessCount == count()) {
             // all done
             setCooking(false);
-            emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished(m_statuses.status());
+            emit attachedPropertiesObject<CookOperation, CookOperationAttached>()->cookFinished();
         }
     }
 }
@@ -288,10 +284,8 @@ void Process::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 
     if (exitStatus == QProcess::CrashExit || (!m_ignoreExitCode && exitCode != 0)) {
         error() << "process failed:" << m_argv;
-        handleFinishedProcess(process, OperationAttached::Error);
-    } else {
-        handleFinishedProcess(process, OperationAttached::Finished);
     }
+    handleFinishedProcess(process);
 }
 
 void Process::onProcessError(QProcess::ProcessError err)
@@ -304,7 +298,7 @@ void Process::onProcessError(QProcess::ProcessError err)
     error() << "process failed:" << m_argv;
     error() << "stdout:" << m_stdouts[process];
     error() << "stderr:" << m_stderrs[process];
-    handleFinishedProcess(process, OperationAttached::Error);
+    handleFinishedProcess(process);
 }
 
 void Process::onReadyReadStandardOutput()

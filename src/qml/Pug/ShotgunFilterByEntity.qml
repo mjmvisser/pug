@@ -31,6 +31,6 @@ Node {
             count = 0;
         }
         
-        UpdateOperation.cookFinished(Operation.Finished);
+        UpdateOperation.cookFinished();
     }
 }

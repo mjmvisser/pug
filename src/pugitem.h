@@ -48,8 +48,8 @@ public:
     Log::MessageType logLevel() const;
     void setLogLevel(Log::MessageType);
 
-    Log *log();
-    const Log *log() const;
+    Log *log() const;
+    void setLog(Log *);
 
     Q_INVOKABLE bool inherits(const QString) const;
 

@@ -28,7 +28,7 @@ Node {
                                   "context": context};
             }
             detailsChanged();
-            CookOperation.cookFinished(Operation.Finished);                              
+            CookOperation.cookFinished();                              
         }
     }
 
@@ -47,7 +47,7 @@ Node {
                                   "context": context};
             }
             detailsChanged();
-            CookOperation.cookFinished(Operation.Finished);                              
+            CookOperation.cookFinished();                              
         }
     }
 }        

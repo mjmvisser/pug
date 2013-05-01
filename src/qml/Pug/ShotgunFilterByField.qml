@@ -34,10 +34,10 @@ Node {
                 count = 0;
             }
             
-            UpdateOperation.cookFinished(Operation.Finished);
+            UpdateOperation.cookFinished();
         } catch (e) {
             addError("Cook failed: " + e);
-            UpdateOperation.cookFinished(Operation.Error);
+            UpdateOperation.cookFinished();
         }
     }
 }

@@ -22,6 +22,6 @@ Node {
         }
         detailsChanged(); 
         
-        CookOperation.cookFinished(Operation.Finished);
+        CookOperation.cookFinished();
     }
 }

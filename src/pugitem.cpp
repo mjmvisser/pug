@@ -1,6 +1,7 @@
 #include <QtQml>
 
 #include "pugitem.h"
+#include "console.h"
 
 /*!
     \class PugItem
@@ -18,9 +19,10 @@
     are available to all Pug items.
 */
 
+
 PugItem::PugItem(QObject *parent) :
     QObject(parent),
-    m_log(new Log(this)),
+    m_log(),
     m_logLevel(Log::Invalid)
 {
 }
@@ -140,14 +142,17 @@ void PugItem::setLogLevel(Log::MessageType l)
     }
 }
 
-Log *PugItem::log()
+Log *PugItem::log() const
 {
-    return m_log;
+    if (m_log)
+        return m_log;
+    else
+        return Console::log();
 }
 
-const Log *PugItem::log() const
+void PugItem::setLog(Log *l)
 {
-    return m_log;
+    m_log = l;
 }
 
 bool PugItem::hasMethod(const char *method) const
@@ -180,37 +185,37 @@ bool PugItem::hasProperty(const char *prop) const
 
 Logger PugItem::trace() const
 {
-    Q_ASSERT(m_log);
-    m_log->setLevel(logLevel());
-    return Logger(m_log, Log::Trace);
+    Q_ASSERT(log());
+    log()->setLevel(logLevel());
+    return Logger(log(), Log::Trace);
 }
 
 Logger PugItem::debug() const
 {
-    Q_ASSERT(m_log);
-    m_log->setLevel(logLevel());
-    return Logger(m_log, Log::Debug);
+    Q_ASSERT(log());
+    log()->setLevel(logLevel());
+    return Logger(log(), Log::Debug);
 }
 
 Logger PugItem::info() const
 {
-    Q_ASSERT(m_log);
-    m_log->setLevel(logLevel());
-    return Logger(m_log, Log::Info);
+    Q_ASSERT(log());
+    log()->setLevel(logLevel());
+    return Logger(log(), Log::Info);
 }
 
 Logger PugItem::warning() const
 {
-    Q_ASSERT(m_log);
-    m_log->setLevel(logLevel());
-    return Logger(m_log, Log::Warning);
+    Q_ASSERT(log());
+    log()->setLevel(logLevel());
+    return Logger(log(), Log::Warning);
 }
 
 Logger PugItem::error() const
 {
-    Q_ASSERT(m_log);
-    m_log->setLevel(logLevel());
-    return Logger(m_log, Log::Error);
+    Q_ASSERT(log());
+    log()->setLevel(logLevel());
+    return Logger(log(), Log::Error);
 }
 
 void PugItem::addTrace(const QString message) const
@@ -247,3 +252,4 @@ uint qHash(const QFileInfo &fileInfo)
 {
     return qHash(fileInfo.absoluteFilePath());
 }
+

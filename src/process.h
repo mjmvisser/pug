@@ -65,7 +65,7 @@ protected slots:
     void onReadyReadStandardOutput();
     void onReadyReadStandardError();
 
-    void handleFinishedProcess(QProcess *process, OperationAttached::Status status);
+    void handleFinishedProcess(QProcess *process);
 
 private:
     void setUpdating(bool);
@@ -83,7 +83,6 @@ private:
     QVector<QProcess *> m_processes;
     QHash<QProcess *, QString> m_stdouts;
     QHash<QProcess *, QString> m_stderrs;
-    OperationStatusList m_statuses;
 };
 
 #endif // PROCESS_H

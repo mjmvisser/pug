@@ -60,18 +60,18 @@ public:
 signals:
     // attachable signals
     void prepare(const QVariant context);
-    void prepareFinished(int status);
+    void prepareFinished();
 
     void cook(const QVariant context);
-    void cookFinished(int status);
+    void cookFinished();
 
     void statusChanged(Status status);
     void contextChanged(const QVariant context);
     void finished(OperationAttached *);
 
 protected slots:
-    void onPrepareFinished(int);
-    void onCookFinished(int);
+    void onPrepareFinished();
+    void onCookFinished();
 
     void onInputFinished(OperationAttached *);
     void onChildFinished(OperationAttached *);

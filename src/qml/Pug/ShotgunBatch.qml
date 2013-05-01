@@ -34,11 +34,11 @@ Node {
         
         detailsChanged();
         
-        ReleaseOperation.cookFinished(Operation.Finished);
+        ReleaseOperation.cookFinished();
     }
     
     on__BatchError: {
         addError(__reply.errorString);
-        ReleaseOperation.cookFinished(Operation.Error);
+        ReleaseOperation.cookFinished();
     }
 }

@@ -36,11 +36,11 @@ Node {
         
         detailsChanged();
         
-        UpdateOperation.cookFinished(Operation.Finished);
+        UpdateOperation.cookFinished();
     }
     
     on__FindError: {
         addError(sender().errorString());
-        UpdateOperation.cookFinished(Operation.Error);
+        UpdateOperation.cookFinished();
     }
 }

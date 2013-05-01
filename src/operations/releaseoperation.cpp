@@ -144,8 +144,6 @@ int ReleaseOperationAttached::findLastVersion(const QVariantMap context) const
 
 void ReleaseOperationAttached::onPrepare()
 {
-    OperationAttached::Status status = OperationAttached::Finished;
-
     if (receivers(SIGNAL(cook(const QVariant))) > 0) {
         trace() << node() << "ReleaseOperation.onPrepare()";
         // if we're going to cook later...
@@ -172,14 +170,13 @@ void ReleaseOperationAttached::onPrepare()
                 setContext(releaseContext);
             } else {
                 error() << node() << "Can't find last version";
-                status = OperationAttached::Error;
             }
         }
     } else {
         debug() << node() << "skipping";
     }
 
-    emit prepareFinished(status);
+    emit prepareFinished();
 }
 
 const QMetaObject *ReleaseOperationAttached::operationMetaObject() const

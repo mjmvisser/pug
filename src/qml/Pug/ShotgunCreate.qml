@@ -32,11 +32,11 @@ Node {
                     
         detailsChanged();
         
-        ReleaseOperation.cookFinished(Operation.Finished);
+        ReleaseOperation.cookFinished();
     }
     
     on__CreateError: {
         addError(sender().errorString());
-        ReleaseOperation.cookFinished(Operation.Error);
+        ReleaseOperation.cookFinished();
     }
 }
