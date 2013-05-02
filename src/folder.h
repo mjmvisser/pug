@@ -17,8 +17,8 @@ protected:
     virtual void componentComplete();
 
 private slots:
-    void update_onCook(const QVariant);
-    void release_onCook(const QVariant);
+    void update_onCook();
+    void release_onCook();
 
     void onFileOpQueueFinished();
     void onFileOpQueueError();

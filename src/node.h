@@ -26,6 +26,7 @@ class Node : public PugItem
     Q_PROPERTY(QJSValue details READ details WRITE setDetails NOTIFY detailsChanged)
     Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(int index READ index WRITE setIndex NOTIFY indexChanged)
+    Q_PROPERTY(QVariantMap context READ context WRITE setContext NOTIFY contextChanged)
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
     Q_ENUMS(Status DependencyOrder)
@@ -81,6 +82,9 @@ public:
 
     int index() const;
     void setIndex(int);
+
+    const QVariantMap context() const;
+    void setContext(const QVariantMap &);
 
     QJSValue details();
     const QJSValue details() const;
@@ -162,6 +166,7 @@ signals:
     void detailsChanged();
     void countChanged(int count);
     void indexChanged(int index);
+    void contextChanged(const QVariantMap &context);
     void xChanged(qreal x);
     void yChanged(qreal y);
 
@@ -209,6 +214,7 @@ private:
     QJSValue m_details;
     int m_count;
     int m_index;
+    QVariantMap m_context;
     QJSValue m_frames;
     qreal m_x, m_y; // should this be QVector2D? does it matter?
 //    QList<Node *> m_extraDependencies;

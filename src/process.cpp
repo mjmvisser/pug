@@ -145,9 +145,9 @@ void Process::setCooking(bool f)
     }
 }
 
-void Process::update_onCook(const QVariant context)
+void Process::update_onCook()
 {
-    trace() << ".UpdateOperation.onCook(" << context << ")";
+    trace() << ".UpdateOperation.onCook()";
     Q_ASSERT(!m_cookingFlag);
     if (m_updatableFlag) {
         // TODO: what if count is 0?
@@ -155,7 +155,7 @@ void Process::update_onCook(const QVariant context)
         setUpdating(true);
         for (int index = 0; index < count(); index++) {
             setIndex(index);
-            executeForIndex(index, context);
+            executeForIndex(index);
         }
     } else {
         debug() << "not updatable, skipping update";
@@ -163,15 +163,15 @@ void Process::update_onCook(const QVariant context)
     }
 }
 
-void Process::cook_onCook(const QVariant context)
+void Process::cook_onCook()
 {
-    trace() << ".CookOperation.onCook(" << context << ")";
+    trace() << ".CookOperation.onCook()";
     Q_ASSERT(!m_updatingFlag);
     if (m_cookableFlag) {
         setCooking(true);
         for (int index = 0; index < count(); index++) {
             setIndex(index);
-            executeForIndex(index, context);
+            executeForIndex(index);
         }
     } else {
         debug() << "not cookable, skipping cook";
@@ -179,14 +179,14 @@ void Process::cook_onCook(const QVariant context)
     }
 }
 
-void Process::executeForIndex(int index, const QVariant context)
+void Process::executeForIndex(int index)
 {
     Q_ASSERT(m_updatingFlag || m_cookingFlag);
 
     Q_ASSERT(details().isArray());
 
     // save the context
-    setDetail(index, "context", toScriptValue(context));
+    setDetail(index, "context", toScriptValue(context()));
 
     if (m_processes.size() != count())
         m_processes.resize(count());
@@ -200,7 +200,7 @@ void Process::executeForIndex(int index, const QVariant context)
     }
 
     // add our env
-    for (QVariantMap::const_iterator it = context.toMap().constBegin(); it != context.toMap().constEnd(); ++it) {
+    for (QVariantMap::const_iterator it = context().constBegin(); it != context().constEnd(); ++it) {
         if (it.value().canConvert<QString>())
             processEnv.insert(it.key(), it.value().toString());
     }
@@ -217,7 +217,7 @@ void Process::executeForIndex(int index, const QVariant context)
     m_processes[index]->setProcessEnvironment(processEnv);
 
     // stash the context before we get argv, since that may change it
-    setDetail(index, "context", toScriptValue(context));
+    setDetail(index, "context", toScriptValue(context()));
 
     debug() << "process argv:" << m_argv;
 

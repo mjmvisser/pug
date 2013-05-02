@@ -144,7 +144,7 @@ int ReleaseOperationAttached::findLastVersion(const QVariantMap context) const
 
 void ReleaseOperationAttached::onPrepare()
 {
-    if (receivers(SIGNAL(cook(const QVariant))) > 0) {
+    if (receivers(SIGNAL(cook())) > 0) {
         trace() << node() << "ReleaseOperation.onPrepare()";
         // if we're going to cook later...
         // TODO: maybe move this logic to Folder/File?

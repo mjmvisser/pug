@@ -83,9 +83,9 @@ QQmlListProperty<ElementView> File::elements_()
     return elementsView()->elements_();
 }
 
-void File::update_onCook(const QVariant context)
+void File::update_onCook()
 {
-    trace() << "UpdateOperation.onCook(" << context << ")";
+    trace() << "UpdateOperation.onCook()";
 
     clearDetails();
 
@@ -100,7 +100,7 @@ void File::update_onCook(const QVariant context)
             ElementView *inputElement = inputElementsView->elementAt(index);
             Q_ASSERT(inputElement);
 
-            const QVariantMap elementContext = mergeContexts(context.toMap(),
+            const QVariantMap elementContext = mergeContexts(context(),
                     m_input->details().property(index).property("context").toVariant().toMap());
 
             setContext(index, elementContext);
@@ -128,7 +128,7 @@ void File::update_onCook(const QVariant context)
             }
         }
     } else {
-        QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(context.toMap());
+        QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(context());
         debug() << "matched patterns" << matches.keys();
 
         setCount(matches.size());
@@ -148,7 +148,7 @@ void File::update_onCook(const QVariant context)
 
                     const QVariantMap elementContext = parse(i.key()).toMap();
 
-                    setContext(index, mergeContexts(context.toMap(), elementContext));
+                    setContext(index, mergeContexts(context(), elementContext));
                 }
 
                 index++;
@@ -159,9 +159,9 @@ void File::update_onCook(const QVariant context)
     emit updateOperationAttached()->cookFinished();
 }
 
-void File::cook_onCook(const QVariant context)
+void File::cook_onCook()
 {
-    trace() << "CookOperation.onCook(" << context << ")";
+    trace() << "CookOperation.onCook()";
 
     if (m_input) {
         setCount(m_input->count());
@@ -178,7 +178,7 @@ void File::cook_onCook(const QVariant context)
             ElementView *element = elementsView()->elementAt(index);
             Q_ASSERT(element);
 
-            const QVariantMap elementContext = mergeContexts(context.toMap(),
+            const QVariantMap elementContext = mergeContexts(context(),
                     m_input->details().property(index).property("context").toVariant().toMap());
 
             setContext(index, elementContext);
@@ -310,9 +310,9 @@ bool File::makeLink(const QString &src, const QString &dest) const
     return success;
 }
 
-void File::release_onCook(const QVariant context)
+void File::release_onCook()
 {
-    trace() << "ReleaseOperation.onCook(" << context << ")";
+    trace() << "ReleaseOperation.onCook()";
 
     if (releaseOperationAttached()->source()) {
         clearDetails();
@@ -328,7 +328,7 @@ void File::release_onCook(const QVariant context)
             ElementView *sourceElement = sourceElementsView->elementAt(sourceIndex);
             ElementView *element = elementsView()->elementAt(index);
 
-            QVariantMap destContext = mergeContexts(context.toMap(),
+            QVariantMap destContext = mergeContexts(context(),
                     releaseOperationAttached()->source()->details().property(index).property("context").toVariant().toMap());
 
             FilePattern srcPattern = FilePattern(sourceElement->pattern());

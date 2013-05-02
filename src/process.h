@@ -58,8 +58,8 @@ protected:
     virtual void componentComplete();
 
 protected slots:
-    void update_onCook(const QVariant context);
-    void cook_onCook(const QVariant context);
+    void update_onCook();
+    void cook_onCook();
     void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onProcessError(QProcess::ProcessError);
     void onReadyReadStandardOutput();
@@ -70,7 +70,7 @@ protected slots:
 private:
     void setUpdating(bool);
     void setCooking(bool);
-    void executeForIndex(int index, const QVariant context);
+    void executeForIndex(int index);
 
     QStringList m_argv;
     QString m_stdin;

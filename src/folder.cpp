@@ -27,13 +27,13 @@ void Folder::componentComplete()
     connect(releaseOperationAttached(), &ReleaseOperationAttached::cook, this, &Folder::release_onCook);
 }
 
-void Folder::update_onCook(const QVariant context)
+void Folder::update_onCook()
 {
-    trace() << "UpdateOperation.onCook(" << context << ")";
+    trace() << "UpdateOperation.onCook()";
 
     clearDetails();
 
-    QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(context.toMap());
+    QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(context());
 
     info() << "Update matched" << matches.keys() << "from" << pattern();
 
@@ -48,7 +48,7 @@ void Folder::update_onCook(const QVariant context)
 
             setDetail(index, "element", "pattern", toScriptValue(i.key()));
             QVariantMap elementContext = parse(i.key()).toMap();
-            setContext(index, mergeContexts(context.toMap(), elementContext));
+            setContext(index, mergeContexts(context(), elementContext));
 
             Q_ASSERT(i.value().size() <= 1);
 
@@ -66,13 +66,13 @@ void Folder::update_onCook(const QVariant context)
     emit updateOperationAttached()->cookFinished();
 }
 
-void Folder::release_onCook(const QVariant context)
+void Folder::release_onCook()
 {
-    trace() << "ReleaseOperation.onCook(" << context << ")";
+    trace() << "ReleaseOperation.onCook()";
 
     m_queue->setSudo(releaseOperationAttached()->sudo());
 
-    QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(context.toMap());
+    QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(context());
 
     info() << "Release matched" << matches.keys() << "from" << pattern();
 
@@ -86,7 +86,7 @@ void Folder::release_onCook(const QVariant context)
 
             setDetail(index, "element", "pattern", toScriptValue(i.key()));
             QVariantMap elementContext = parse(i.key()).toMap();
-            setContext(index, mergeContexts(context.toMap(), elementContext));
+            setContext(index, mergeContexts(context(), elementContext));
 
             Q_ASSERT(i.value().size() <= 1);
 

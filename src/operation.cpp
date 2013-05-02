@@ -62,17 +62,19 @@ void OperationAttached::run()
 {
     trace() << node() << ".run()";
 
-    m_prepareCount = receivers(SIGNAL(prepare(const QVariant)));
-    m_cookCount = receivers(SIGNAL(cook(const QVariant)));
+    m_prepareCount = receivers(SIGNAL(prepare()));
+    m_cookCount = receivers(SIGNAL(cook()));
 
     if (m_prepareCount > 0) {
         info() << "Preparing" << node() << "with" << context();
         node()->setLog(log());
-        emit prepare(context());
+        node()->setContext(context());
+        emit prepare();
     } else if (m_cookCount > 0) {
         info() << "Cooking" << node() << "with" << context();
         node()->setLog(log());
-        emit cook(context());
+        node()->setContext(context());
+        emit cook();
     } else {
         setStatus(OperationAttached::Finished);
         continueRunning();
@@ -88,7 +90,9 @@ void OperationAttached::onPrepareFinished()
         if (log()->maxLevel() < Log::Error) {
             if (m_cookCount > 0) {
                 info() << "Cooking" << node() << "with" << context();
-                emit cook(context());
+                node()->setLog(log());
+                node()->setContext(context());
+                emit cook();
                 return;
             } else {
                 // no cook receivers, we're done

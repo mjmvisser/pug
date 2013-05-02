@@ -59,10 +59,10 @@ public:
 
 signals:
     // attachable signals
-    void prepare(const QVariant context);
+    void prepare();
     void prepareFinished();
 
-    void cook(const QVariant context);
+    void cook();
     void cookFinished();
 
     void statusChanged(Status status);

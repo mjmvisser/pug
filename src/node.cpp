@@ -549,6 +549,19 @@ void Node::setIndex(int index)
     }
 }
 
+const QVariantMap Node::context() const
+{
+    return m_context;
+}
+
+void Node::setContext(const QVariantMap &c)
+{
+    if (m_context != c) {
+        m_context = c;
+        emit contextChanged(c);
+    }
+}
+
 const Node *Node::rootBranch() const
 {
     const Node* p = this;
