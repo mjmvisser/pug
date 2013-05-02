@@ -11,7 +11,7 @@ Process {
         Input { name: "input" }
     ]
     
-    property string format
+    property string resolution
     property string filetype
     property double fps
     property string codec
@@ -24,7 +24,7 @@ Process {
     property string artist
     
     params: [
-        Param { name: "format" },
+        Param { name: "resolution" },
         Param { name: "filetype" },
         Param { name: "fps" },
         Param { name: "codec" },
@@ -56,7 +56,7 @@ Process {
              "--frameStart", input.File.elements[index].frameStart(),
              "--frameEnd", input.File.elements[index].frameEnd(),
              "--outputPath", __outputPath(index),
-             "--format", format,
+             "--resolution", resolution,
              "--fps", fps,
              "--codec", codec,
              "--project", project,

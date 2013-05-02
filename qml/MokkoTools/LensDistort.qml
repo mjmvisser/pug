@@ -15,49 +15,46 @@ Process {
     ]
     
     // params
-    property string format
+    property string inputResolution
+    property string outputResolution
     property string fileType: "jpg"
     property string mode: "undistort"
 
     params: [
-        Param { name: "format" },
+        Param { name: "inputResolution" },
+        Param { name: "outputResolution" },
         Param { name: "fileType" },
         Param { name: "mode" }
     ]
 
     count: input ? input.count : 0
 
-    property var self.File: Util.self.File(self)
-
     function __outputPath(index) {
-        return input.details[index].context["PUGWORK"] + (self.name ? self.name + "/" : "") + input.File.elements[0].path() + mode + "_" + format + "_" + index + ".%04d." + fileType;
+        return input.details[index].context["PUGWORK"] + (self.name ? self.name + "/" : "") + input.File.elements[0].path() + mode + "_" + outputResolution + "_" + index + ".%04d." + fileType;
     }
 
     cookable: true
     updatable: true
 
-    argv: try { 
-            if (cooking) {
-                [Qt.resolvedUrl("scripts/lensdistort").replace("file://", ""),
-                 "--nukeNodePath", nukeScript.details[0].element.pattern,
-                 "--inputPath", input.details[index].element.pattern,
-                 "--outputFormat", format + (mode == "undistort" ? "_und" : ""),
-                 "--outputPath", __outputPath(index),
-                 "--frameStart", input.File.elements[index].frameStart(),
-                 "--frameEnd", input.File.elements[index].frameEnd()]
-             } else if (updating) {
-                 ["true"]
-             } else {
-                 []
-             }
-          } catch (e) {
-              []
-          } 
+    argv: { 
+        if (cooking) {
+            [Qt.resolvedUrl("scripts/lensdistort").replace("file://", ""),
+             "--nukeNodePath", nukeScript.details[0].element.pattern,
+             "--inputPath", input.details[index].element.pattern,
+             "--inputResolution", inputResolution,
+             "--outputResolution", outputResolution,
+             "--outputPath", __outputPath(index),
+             "--frameStart", inputElementsView.elements[index].frameStart(),
+             "--frameEnd", inputElementsView.elements[index].frameEnd()];
+        } else {
+            ["true"];
+        }
+    } 
     
     function __setDetails(index) {
         // merge the input context
         details[index].context = Util.mergeContexts(input.details[index].context, details[index].context);
-        details[index].context["FORMAT"] = format;
+        details[index].context["RESOLUTION"] = outputResolution;
 
         // set the pattern and scan for file info
         self.File.elements[index].pattern = __outputPath(index, details[index].context);

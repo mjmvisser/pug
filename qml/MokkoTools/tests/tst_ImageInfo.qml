@@ -7,7 +7,7 @@ TestCase {
     id: self
     name: "ImageInfoTests"
 
-    property string testImagePath: Qt.resolvedUrl("data/test.png").replace("file://", "")
+    property string testImagePath: Qt.resolvedUrl("data/images/test.png").replace("file://", "")
     
     Root {
         operations: [

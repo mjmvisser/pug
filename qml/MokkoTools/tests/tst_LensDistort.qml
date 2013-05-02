@@ -3,7 +3,7 @@ import Pug 1.0
 import MokkoTools 1.0
 
 TestCase {
-    property string testSequencePath: Qt.resolvedUrl("data/testSequence.%04d.exr").replace("file://", "")
+    property string testSequencePath: Qt.resolvedUrl("data/images/testSequence.%04d.exr").replace("file://", "")
     property string testNukeDist: Qt.resolvedUrl("data/testNukeDist.nk").replace("file://", "")
     
     Root {
@@ -37,7 +37,8 @@ TestCase {
                 id: undist
                 input: seq
                 nukeScript: nukeDistortFile
-                format: "100"
+                inputResolution: "2048x1152"
+                outputResolution: "2240x1260"
                 fileType: "jpg"
             }
         }
@@ -56,9 +57,8 @@ TestCase {
         verify(seq.details.length == 1);
         verify(undist.details.length == 1);
         
-        var elementsView = Util.elementsView(undist);
-        for (var i = 0; i < elementsView.elements[0].frames.length; i++) {
-            verify(Util.exists(elementsView.element[0].frames[i].path()));
+        for (var i = 0; i < undist.File.elements[0].frames.length; i++) {
+            verify(Util.exists(undist.File.element[0].frames[i].path()));
         }
         
     }

@@ -3,7 +3,7 @@ import Pug 1.0
 import MokkoTools 1.0
 
 TestCase {
-    property string testSequencePath: Qt.resolvedUrl("data/testSequence.{FRAME}.exr").replace("file://", "")
+    property string testSequencePath: Qt.resolvedUrl("data/images/testSequence.{FRAME}.exr").replace("file://", "")
     property string testNukeTemplatePath: Qt.resolvedUrl("data/clientQuicktime.nk").replace("file://", "")
     
     Root {
@@ -36,7 +36,7 @@ TestCase {
             name: "clientQuicktime"
             input: seq
             nukeTemplate: template
-            format: "1920x1080"
+            resolution: "1920x1080"
             fps: 24
             codec: "DNxHD 115"
             filetype: "mov"
@@ -65,7 +65,6 @@ TestCase {
         compare(seq.details.length, 1);
         compare(clientQuicktime.details.length, 1);
         
-        var elementsView = Util.elementsView(clientQuicktime);
-        verify(Util.exists(elementsView.elements[0].path()));
+        verify(Util.exists(clientQuicktime.File.elements[0].path()));
     }
 }

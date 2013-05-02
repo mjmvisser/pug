@@ -3,7 +3,7 @@ import Pug 1.0
 import MokkoTools 1.0
 
 TestCase {
-    property string testSequencePath: Qt.resolvedUrl("data/testSequence.%04d.exr").replace("file://", "")
+    property string testSequencePath: Qt.resolvedUrl("data/images/testSequence.%04d.exr").replace("file://", "")
     
     Root {
         operations: [
@@ -21,6 +21,13 @@ TestCase {
             name: "mokkotoolstests"
             pattern: "/usr/tmp/mokkotoolstests"
 
+            outputs: [
+                Output { name: "quicktimes" }
+            ]
+
+            property list<Node> quicktimes
+            quicktimes: [mp4, webm]
+
             File {
                 id: seq
                 name: "seq"
@@ -31,14 +38,12 @@ TestCase {
                 id: mp4
                 input: seq
                 format: "mp4"
-                output: true
             }
             
             ShotgunQuicktime {
                 id: webm
                 input: seq
                 format: "webm"
-                output: true
             }
         }
     }
