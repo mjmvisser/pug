@@ -15,8 +15,8 @@
     \brief The base class of all classes in the Pug module.
 
     PugItem is the base class of all classes in the Pug module. It has properties and
-    methods for instance naming, child Pug items, the parent Pug item and logging that
-    are available to all Pug items.
+    methods for instance naming, child Pug children, the parent Pug item and logging that
+    are available to all Pug children.
 */
 
 
@@ -27,16 +27,16 @@ PugItem::PugItem(QObject *parent) :
 {
 }
 
-QQmlListProperty<PugItem> PugItem::data_()
+QQmlListProperty<PugItem> PugItem::children_()
 {
-    return QQmlListProperty<PugItem>(this, 0, PugItem::data_append,
-                                        PugItem::data_count,
-                                        PugItem::data_at,
-                                        PugItem::data_clear);
+    return QQmlListProperty<PugItem>(this, 0, PugItem::children_append,
+                                        PugItem::children_count,
+                                        PugItem::child_at,
+                                        PugItem::children_clear);
 }
 
-// data property
-void PugItem::data_append(QQmlListProperty<PugItem> *prop, PugItem *item)
+// children property
+void PugItem::children_append(QQmlListProperty<PugItem> *prop, PugItem *item)
 {
     if (!item)
         return;
@@ -46,20 +46,20 @@ void PugItem::data_append(QQmlListProperty<PugItem> *prop, PugItem *item)
     item->setParent(that);
 }
 
-int PugItem::data_count(QQmlListProperty<PugItem> *prop)
+int PugItem::children_count(QQmlListProperty<PugItem> *prop)
 {
     Q_UNUSED(prop);
     return 0;
 }
 
-PugItem *PugItem::data_at(QQmlListProperty<PugItem> *prop, int i)
+PugItem *PugItem::child_at(QQmlListProperty<PugItem> *prop, int i)
 {
     Q_UNUSED(prop);
     Q_UNUSED(i);
     return 0;
 }
 
-void PugItem::data_clear(QQmlListProperty<PugItem> *prop)
+void PugItem::children_clear(QQmlListProperty<PugItem> *prop)
 {
     Q_UNUSED(prop)
 }
