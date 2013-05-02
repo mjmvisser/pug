@@ -960,12 +960,15 @@ const QString Node::format(const QString pattern, const QVariant data) const
         const Field *f = findField(fieldName);
         if (f) {
             QVariant value = f->get(fields);
-            if (value.isValid())
+            if (value.isValid()) {
                 result += f->format(value);
-            else
+            } else {
                 error() << ".format couldn't find value for field" << fieldName;
+                return QString();
+            }
         } else {
-            warning() << ".format couldn't find field" << fieldName;
+            error() << ".format couldn't find field" << fieldName;
+            return QString();
         }
 
         lastEnd = match.capturedEnd();
