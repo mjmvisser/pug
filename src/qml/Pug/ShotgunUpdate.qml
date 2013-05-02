@@ -4,7 +4,7 @@ Node {
     id: self
     property var entityType
     property int entityId
-    property var dataValues
+    property var data
     
     signal __updateFinished(var result)
     signal __updateError()
@@ -15,7 +15,7 @@ Node {
         addTrace("ReleaseOperation.onCook(" + JSON.stringify(context) + ")");
         index = 0;
         __context = context;
-        var reply = Shotgun.update(entityType, entityId, dataValues);
+        var reply = Shotgun.update(entityType, entityId, data);
         reply.finished.connect(__updateFinished);
         reply.error.connect(__updateError);
     }

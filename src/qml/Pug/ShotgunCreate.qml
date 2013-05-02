@@ -3,7 +3,7 @@ import Pug 1.0
 Node {
     id: self
     property var entityType
-    property var dataValues
+    property var data
     property var returnFields: []
     
     signal __createFinished(var result)
@@ -14,7 +14,7 @@ Node {
     ReleaseOperation.onCook: {
         addTrace("ReleaseOperation.onCook(" + JSON.stringify(context) + ")");
         __context = context;
-        var reply = Shotgun.create(entityType, dataValues, returnFields);
+        var reply = Shotgun.create(entityType, data, returnFields);
         reply.finished.connect(__createFinished);
         reply.error.connect(__createError);
     }
