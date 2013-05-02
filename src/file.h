@@ -4,8 +4,8 @@
 #include "branch.h"
 #include "sudo.h"
 #include "fileopqueue.h"
-#include "elementview.h"
 
+class ElementView;
 class ElementsView;
 class UpdateOperationAttached;
 class CookOperationAttached;

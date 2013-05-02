@@ -49,6 +49,8 @@ public:
     Q_INVOKABLE const QVariant get(const QVariantMap) const;
     Q_INVOKABLE const QString format(const QVariant) const;
 
+    static const QStringList fieldNames(const QString pattern);
+
 signals:
     void envChanged(const QString env);
     void regexpChanged(const QString regexp);

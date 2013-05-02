@@ -395,11 +395,11 @@ const QString ShotgunField::buildPatternValue(int index, const QVariantMap conte
     debug() << "formatting" << m_pattern << "with" << fieldContext;
 
     if (branch->fieldsComplete(fieldContext)) {
-        QString value = branch->formatFields(m_pattern, fieldContext);
+        QString value = branch->format(m_pattern, fieldContext);
         if (!value.isEmpty())
             result = value;
         else
-            error() << branch << ".formatFields(" << m_pattern << "," << fieldContext << ") returned null";
+            error() << branch << ".format(" << m_pattern << "," << fieldContext << ") returned null";
     }
 
     return result;

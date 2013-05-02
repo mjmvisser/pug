@@ -81,29 +81,6 @@ Branch::Branch(QObject *parent) :
     setDependencyOrder(Node::InputsSelfChildren);
 }
 
-const QList<const Field *> Branch::fields(const QStringList fieldNameList) const
-{
-    QList<const Field *> results;
-
-    // add our list of field names to those passed in
-    QStringList fnames = fieldNameList;
-    fnames.append(fieldNames(pattern()));
-
-    // parent fields
-    const Branch *s = root();
-    if (s) {
-        results.append(s->fields(fnames));
-    }
-
-    // our fields
-    foreach (const Field *f, m_fields) {
-        if (fnames.contains(f->name()))
-            results.append(f);
-    }
-
-    return results;
-}
-
 const Branch *Branch::root() const
 {
     if (m_root) {
@@ -130,11 +107,6 @@ void Branch::setRoot(Branch *branch)
         m_root = branch;
         emit rootChanged(m_root);
     }
-}
-
-QQmlListProperty<Field> Branch::fields_()
-{
-    return QQmlListProperty<Field>(this, m_fields);
 }
 
 //void Branch::setPaths(const QStringList paths, const QVariantMap context)
@@ -220,232 +192,6 @@ const Branch *Branch::parentBranch() const
     return firstParent<Branch>();
 }
 
-Field *Branch::findField(const QString name)
-{
-    if (name.isEmpty())
-        return 0;
-
-    // check our fields first
-    foreach (Field *field, m_fields) {
-        if (field->name() == name) {
-            return field;
-        }
-    }
-
-    // check our parent input
-    Branch *p = parentBranch();
-    if (p) {
-        return p->findField(name);
-    }
-
-    return 0;
-}
-
-const Field *Branch::findField(const QString name) const
-{
-    // check our fields first
-    foreach (const Field *field, m_fields) {
-        if (field->name() == name) {
-            return field;
-        }
-    }
-
-    // check our parent input
-    const Branch *p = parentBranch();
-    if (p) {
-        return p->findField(name);
-    }
-
-    return 0;
-}
-
-//bool Branch::hasField(const QString name) const
-//{
-//    foreach (const Field *field, m_fields) {
-//        if (field->name() == name) {
-//            return true;
-//        }
-//    }
-//    return false;
-//}
-
-const QStringList Branch::fieldNames(const QString pattern) const
-{
-    QStringList results;
-    static const QRegularExpression re("\\{(\\w+)\\}");
-
-    QRegularExpressionMatchIterator it = re.globalMatch(pattern);
-    while (it.hasNext()) {
-        QRegularExpressionMatch match = it.next();
-
-        results.append(match.captured(1));
-    }
-
-    return results;
-}
-
-static const QString escapeSpecialCharacters(const QString r)
-{
-    QString result = r;
-    result.replace('.', "\\.");
-
-    return result;
-}
-
-const QVariant Branch::match(const QString pattern, const QString path, bool exact, bool partial) const
-{
-    trace() << ".match(" << pattern << "," << path << "," << exact << ")";
-    static const QRegularExpression replaceFieldsRegexp("\\{(\\w+)\\}");
-
-    const QString escapedPattern = escapeSpecialCharacters(pattern);
-    QRegularExpressionMatchIterator it = replaceFieldsRegexp.globalMatch(escapedPattern);
-
-    // adapted from QString::replace code
-
-    int lastEnd = 0;
-    // assemble a regular expression string
-    QString matchRegexpStr = "^";
-    QSet<const QString> usedFieldNames;
-    while (it.hasNext()) {
-        QRegularExpressionMatch match = it.next();
-        // add the part before the match
-        int len = match.capturedStart() - lastEnd;
-        if (len > 0) {
-            matchRegexpStr += escapedPattern.mid(lastEnd, len);
-        }
-
-        // add "(" field.regexp ")"
-        QString fieldName = match.captured(1);
-        const Field *f = findField(fieldName);
-        if (f) {
-            if (!usedFieldNames.contains(fieldName)) {
-                matchRegexpStr += "(?<";
-                matchRegexpStr += fieldName;
-                matchRegexpStr += ">";
-                matchRegexpStr += f->regexp();
-                matchRegexpStr += ")";
-                usedFieldNames.insert(fieldName);
-            } else {
-                // already used, so just reference the previous match
-                matchRegexpStr += "(?P=";
-                matchRegexpStr += fieldName;
-                matchRegexpStr += ")";
-            }
-        } else {
-            warning() << ".match couldn't find field " << fieldName;
-        }
-
-        lastEnd = match.capturedEnd();
-    }
-
-    // trailing string after the last match
-    if (escapedPattern.length() > lastEnd) {
-        matchRegexpStr += escapedPattern.mid(lastEnd);
-    }
-
-    // replace %04d with \d{4}
-    static const QRegularExpression replaceFrameSpecRegexp("%0(\\d+)d");
-    matchRegexpStr.replace(replaceFrameSpecRegexp, "\\d{\\1}");
-
-    // replace #### with \d{4}
-    matchRegexpStr.replace("####", "\\d{4}");
-
-    if (exact)
-        matchRegexpStr += "$";
-
-    debug() << ".match" << path << "with" << matchRegexpStr;
-
-    QRegularExpression matchRegexp(matchRegexpStr);
-
-    Q_ASSERT_X(matchRegexp.isValid(), QString("regular expression: " + matchRegexpStr).toUtf8(), matchRegexp.errorString().toUtf8());
-
-    QRegularExpressionMatch match = matchRegexp.match(path, 0,
-            partial ? QRegularExpression::PartialPreferCompleteMatch : QRegularExpression::NormalMatch);
-
-    debug() << "result:" << match;
-
-    if (match.hasMatch() || match.hasPartialMatch()) {
-        QVariantMap context;
-
-        foreach (QString fieldName, fieldNames(pattern)) {
-            const Field *f = findField(fieldName);
-            if (f && !match.captured(fieldName).isNull()) {
-                context[fieldName] = f->parse(match.captured(fieldName));
-            }
-        }
-
-        QString remainder;
-        if (match.capturedEnd() >= 0) {
-            remainder = path.mid(match.capturedEnd());
-        } else {
-            // annoying inconsistency (bug?) -- if no capture groups, there is no implicit group 0
-            remainder = path.mid(pattern.length());
-        }
-
-        if (remainder.length() > 0) {
-            if (!exact)
-                context["_"] = remainder;
-            else
-                return QVariant();
-        }
-
-        debug() << "result:" << context;
-
-        return context;
-    }
-
-    return QVariant();
-}
-
-const QString Branch::formatFields(const QString pattern, const QVariant data) const
-{
-    //trace() << ".formatFields(" << pattern << ", " << data << ")";
-    QVariantMap fields;
-    if (data.isValid() && data.type() == QVariant::Map) {
-        fields = data.toMap();
-    } else {
-        error() << "invalid context data" << data;
-        return QString();
-    }
-
-    static QRegularExpression re("\\{(\\w+)\\}");
-
-    QString result;
-    QRegularExpressionMatchIterator it = re.globalMatch(pattern);
-    int lastEnd = 0;
-    int index = 0;
-    while (it.hasNext()) {
-        QRegularExpressionMatch match = it.next();
-
-        // add the part before the match
-        int len = match.capturedStart() - lastEnd;
-        if (len > 0) {
-            result += pattern.mid(lastEnd, len);
-        }
-
-        QString fieldName = match.captured(1);
-        const Field *f = findField(fieldName);
-        if (f) {
-            QVariant value = f->get(fields);
-            if (value.isValid())
-                result += f->format(value);
-            else
-                error() << ".formatFields couldn't find value for field" << fieldName;
-        } else {
-            warning() << ".formatFields couldn't find field" << fieldName;
-        }
-
-        lastEnd = match.capturedEnd();
-        index++;
-    }
-
-    // trailing string after the last match
-    if (pattern.length() > lastEnd) {
-        result += pattern.mid(lastEnd);
-    }
-
-    return result;
-}
 
 const QVariant Branch::parse(const QString path, bool partial) const
 {
@@ -491,29 +237,10 @@ const QVariant Branch::parse(const QString path, bool partial) const
     return QVariant();
 }
 
-bool Branch::fieldsComplete(const QString pattern, const QVariantMap context) const
-{
-    foreach (const QString fieldName, fieldNames(pattern)) {
-        const Field *field = findField(fieldName);
-        if (!field) {
-            debug() << "can't find field" << fieldName;
-            return false;
-        }
-
-        QVariant value = field->get(context);
-        if (!value.isValid()) {
-            debug() << "field is not valid" << fieldName;
-            return false;
-        }
-    }
-
-    return true;
-}
-
 bool Branch::fieldsComplete(const QVariantMap context) const
 {
     trace() << ".fieldsComplete(" << context << ")";
-    return fieldsComplete(m_pattern, context) && (!root() || root()->fieldsComplete(context));
+    return Node::fieldsComplete(m_pattern, context) && (!root() || root()->fieldsComplete(context));
 }
 
 const QString Branch::map(const QVariant context) const
@@ -537,14 +264,14 @@ const QString Branch::map(const QVariant context) const
         if (root()) {
             QString parentPath = root()->map(context);
             if (!parentPath.isNull())
-                return parentPath + formatFields(m_pattern, context.toMap());
+                return parentPath + format(m_pattern, context.toMap());
             else
                 return QString();
         } else {
             return QString();
         }
     } else {
-        return formatFields(m_pattern, context.toMap());
+        return format(m_pattern, context.toMap());
     }
 }
 
@@ -620,7 +347,7 @@ const QMap<QString, QSet<QFileInfo> > Branch::listMatchingPatterns(const QVarian
         // special case for absolute path
         // strip off path components until fields are complete
         QDir parentDir(m_pattern);
-        while (parentDir.cdUp() && !fieldsComplete(parentDir.dirName(), context));
+        while (parentDir.cdUp() && !Node::fieldsComplete(parentDir.dirName(), context));
 
         result = listMatchingPatternsHelper(parentDir, context, result);
     }
@@ -630,7 +357,7 @@ const QMap<QString, QSet<QFileInfo> > Branch::listMatchingPatterns(const QVarian
 bool Branch::containsFields(const QVariantMap& needle, const QVariantMap& haystack) const
 {
     // return true if all fields in needle are contained in haystack
-    foreach (const QString fieldName, fieldNames(m_pattern)) {
+    foreach (const QString fieldName, Field::fieldNames(m_pattern)) {
         if (needle.contains(fieldName)) {
             if (!haystack.contains(fieldName) ||
                     (needle[fieldName] != haystack[fieldName])) {
@@ -697,4 +424,3 @@ const QMap<QString, QSet<QFileInfo> > Branch::listMatchingPatternsHelper(const Q
 
     return result;
 }
-

@@ -218,3 +218,19 @@ const QString Field::format(const QVariant value) const
     }
 }
 
+const QStringList Field::fieldNames(const QString pattern)
+{
+    QStringList results;
+    static const QRegularExpression re("\\{(\\w+)\\}");
+
+    QRegularExpressionMatchIterator it = re.globalMatch(pattern);
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+
+        results.append(match.captured(1));
+    }
+
+    return results;
+}
+
+

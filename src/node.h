@@ -12,11 +12,13 @@
 #include "operation.h"
 #include "input.h"
 #include "output.h"
+#include "field.h"
 
 class Node : public PugItem
 {
     Q_OBJECT
     Q_PROPERTY(DependencyOrder dependencyOrder READ dependencyOrder WRITE setDependencyOrder NOTIFY dependencyOrderChanged)
+    Q_PROPERTY(QQmlListProperty<Field> fields READ fields_ NOTIFY fieldsChanged)
     Q_PROPERTY(QQmlListProperty<Param> params READ params_ NOTIFY paramsChanged)
     Q_PROPERTY(QQmlListProperty<Input> inputs READ inputs_ NOTIFY inputsChanged)
     Q_PROPERTY(QQmlListProperty<Output> outputs READ outputs_ NOTIFY outputsChanged)
@@ -36,6 +38,7 @@ public:
     DependencyOrder dependencyOrder() const;
     void setDependencyOrder(DependencyOrder);
 
+    QQmlListProperty<Field> fields_();
     QQmlListProperty<Input> inputs_();
     QQmlListProperty<Output> outputs_();
     QQmlListProperty<Param> params_();
@@ -45,6 +48,16 @@ public:
     const QList<Input*> inputs();
     const QList<const Output*> outputs() const;
     const QList<Output*> outputs();
+
+    Field *findField(const QString name);
+    const Field *findField(const QString name) const;
+    //const QList<const Field *> fields(const QStringList fieldNameList = QStringList()) const;
+
+    bool fieldsComplete(const QString pattern, const QVariantMap context) const;
+    bool containsFields(const QVariantMap& needle, const QVariantMap& haystack) const;
+
+    Q_INVOKABLE const QVariant match(const QString pattern, const QString path, bool exact, bool partial) const;
+    Q_INVOKABLE const QString format(const QString pattern, const QVariant data) const;
 
     Q_INVOKABLE Node *node(const QString node);
     const Node *node(const QString node) const;
@@ -141,6 +154,7 @@ public:
 
 signals:
     void dependencyOrderChanged(DependencyOrder dependencyOrder);
+    void fieldsChanged();
     void paramsChanged();
     void nodesChanged();
     void inputsChanged();
@@ -156,6 +170,12 @@ protected:
 
 private:
     const Node *nodeInChildren(const QString n) const;
+
+    // fields property
+    static void fields_append(QQmlListProperty<Field> *, Field *);
+    static int fields_count(QQmlListProperty<Field> *);
+    static Field *field_at(QQmlListProperty<Field> *, int);
+    static void fields_clear(QQmlListProperty<Field> *);
 
     // children property
     static void nodes_append(QQmlListProperty<Node> *, Node *);
@@ -182,6 +202,7 @@ private:
     static void outputs_clear(QQmlListProperty<Output> *);
 
     DependencyOrder m_dependencyOrder;
+    QList<Field *> m_fields;
     QList<Param *> m_params;
     QList<Input *> m_inputs;
     QList<Output *> m_outputs;
