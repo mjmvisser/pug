@@ -46,7 +46,7 @@ ShotgunCreate {
         id: codeData
         name: "codeData"
         shotgunField: "code"
-        value: code
+        value: format(code, context)
     }
 
     ShotgunDataFromValue {

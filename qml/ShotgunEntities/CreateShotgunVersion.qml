@@ -66,7 +66,7 @@ ShotgunCreate {
         id: codeData
         name: "codeData"
         shotgunField: "code"
-        value: code
+        value: format(code, context)
     }
 
     property var __elementsView: Util.elementsView(frames)    
