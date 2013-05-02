@@ -128,6 +128,11 @@ OperationAttached::Status Pug::runOperation(const QString operationName, const Q
 
     Node *node = m_root->node(nodePath);
 
+    if (!node) {
+        PugItem::error() << "can't find node" << nodePath;
+        return OperationAttached::Error;
+    }
+
     if (node->path() != nodePath) {
         PugItem::error() << "path of node returned is" << node->path() << "not" << nodePath;
         return OperationAttached::Error;
