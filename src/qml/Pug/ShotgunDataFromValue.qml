@@ -8,7 +8,7 @@ Node {
     params: [
         Param { name: "shotgunField" },
         Param { name: "value" }
-    ]f
+    ]
     
     CookOperation.onCook: {
         count = 1;
