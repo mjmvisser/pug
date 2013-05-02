@@ -44,8 +44,8 @@ Process {
              "--inputResolution", inputResolution,
              "--outputResolution", outputResolution,
              "--outputPath", __outputPath(index),
-             "--frameStart", inputElementsView.elements[index].frameStart(),
-             "--frameEnd", inputElementsView.elements[index].frameEnd()];
+             "--frameStart", input.File.elements[index].frameStart(),
+             "--frameEnd", input.File.elements[index].frameEnd()];
         } else {
             ["true"];
         }

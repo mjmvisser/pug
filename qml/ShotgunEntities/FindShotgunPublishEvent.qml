@@ -54,12 +54,10 @@ ShotgunFind {
     }
     
     
-    property var __elementsView: Util.elementsView(self)
-    
     UpdateOperation.onCookFinished: {
         for (var i = 0; i < details.length; i++) {
-            __elementsView.elements[i].pattern = details[i].entity.sg_path;
-            __elementsView.elements[i].scan();
+            self.File.elements[i].pattern = details[i].entity.sg_path;
+            self.File.elements[i].scan();
         }
     }
 }
