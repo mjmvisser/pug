@@ -11,7 +11,7 @@ ShotgunCreate {
         Input { name: "sg_entity" },
         Input { name: "sg_step" },
         Input { name: "sg_user" },
-        Input { name: "frames" },
+        Input { name: "file" },
         Input { name: "sg_publishEvent" },
         Input { name: "__data" }
     ]
@@ -21,13 +21,13 @@ ShotgunCreate {
     ]
 
     returnFields: ["code", "sg_project", "entity", "sg_step", "sg_description", 
-                   "sg_path_to_frames", "sg_first_frame", "sg_last_frame", "user"]
+                   "sg_path_to_file", "sg_first_frame", "sg_last_frame", "user"]
 
     property Node sg_project: null
     property Node sg_entity: null
     property Node sg_step: null
     property Node sg_user: null
-    property Branch frames: null
+    property Branch file: null
     property Node sg_publishEvent: null
 
     property string code
@@ -66,10 +66,10 @@ ShotgunCreate {
         id: codeData
         name: "codeData"
         shotgunField: "code"
-        value: format(code, context)
+        value: file.format(code, file.details[index].context)
     }
 
-    property var __elementsView: Util.elementsView(frames)    
+    property var __elementsView: Util.elementsView(file)    
     
     ShotgunDataFromValue {
         id: firstFrameData
@@ -88,14 +88,14 @@ ShotgunCreate {
     ShotgunDataFromValue {
         id: pathData
         name: "pathData"
-        shotgunField: "sg_path_to_frames"
+        shotgunField: "sg_path_to_file"
         value: __elementsView.element[index].pattern()
     }
 
     ShotgunThumbnail {
         id: thumbnail
         name: "thumbnail"
-        input: frames
+        input: file
     }
 
     ShotgunDataFromElement {
@@ -108,7 +108,7 @@ ShotgunCreate {
     ShotgunThumbnail {
         id: filmstrip
         name: "filmstrip"
-        input: frames
+        input: file
         filmstrip: true
     }
 
@@ -150,7 +150,7 @@ ShotgunCreate {
     ShotgunQuicktime {
         id: movieMp4
         name: "movieMp4"
-        input: frames
+        input: file
         format: "mp4"
         fps: sg_project.sg_frame_rate || 24
     }
@@ -170,7 +170,7 @@ ShotgunCreate {
                filmstripData, createdByData, updatedByData, userData]
     }
 
-    dataValues: {    
+    data: {    
         try {
             return [__data.details[0].data];            
         } catch (e) {

@@ -11,7 +11,7 @@ ShotgunCreate {
         Input { name: "sg_step" },
         Input { name: "sg_user" },
         Input { name: "sg_dependencies" },
-        Input { name: "frames" },
+        Input { name: "file" },
         Input { name: "__data" }
         
     ]
@@ -28,7 +28,7 @@ ShotgunCreate {
     property Node sg_step: null
     property Node sg_user: null 
     property list<Node> sg_dependencies
-    property Node frames: null
+    property Node file: null
 
     property string code
     property string category
@@ -46,7 +46,7 @@ ShotgunCreate {
         id: codeData
         name: "codeData"
         shotgunField: "code"
-        value: format(code, context)
+        value: file.format(code, file.details[index].context)
     }
 
     ShotgunDataFromValue {
@@ -81,7 +81,7 @@ ShotgunCreate {
         id: pathData
         name: "pathData"
         shotgunField: "sg_path"
-        element: frames
+        element: file
     }
 
     ShotgunDataFromEntity {
@@ -108,7 +108,7 @@ ShotgunCreate {
     ShotgunThumbnail {
         id: thumbnail
         name: "thumbnail"
-        input: frames
+        input: file
     }
 
     ShotgunDataFromElement {
@@ -121,7 +121,7 @@ ShotgunCreate {
     ShotgunThumbnail {
         id: filmstrip
         name: "filmstrip"
-        input: frames
+        input: file
         filmstrip: true
     }
 
@@ -161,7 +161,7 @@ ShotgunCreate {
                descriptionData, imageData, filmstripData, createdByData, updatedByData]
     }
 
-    dataValues: {    
+    data: {    
         try {
             return [__projectFilter.details[0].data];            
         } catch (e) {
