@@ -31,8 +31,6 @@ PugTestCase {
         }
 
         fields: [     
-            Field { name: "FOO" },
-            Field { name: "BAR" },
             Field { name: "BAZ"; type: Field.Integer },
             Field { name: "FILENAME"; values: "somefile" },
             FrameSpecField { name: "FRAME" }
@@ -42,10 +40,11 @@ PugTestCase {
             id: branch1
             name: "branch1"
             pattern: tmpDir + "updatetests/abc/{FOO}/def/{BAR}/"
-            
-            Field {
-                name: "BAR"
-            }
+
+            fields: [     
+                Field { name: "FOO" },
+                Field { name: "BAR" }
+            ]
         }
         
         Folder {
