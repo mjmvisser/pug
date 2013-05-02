@@ -15,7 +15,7 @@ parser.add_option("", "--fps", type="float", action="store")
 parser.add_option("", "--frameStart", type="int", action="store")
 parser.add_option("", "--frameEnd", type="int", action="store")
 parser.add_option("", "--outputPath", action="store")
-parser.add_option("", "--format", action="store")
+parser.add_option("", "--resolution", action="store")
 parser.add_option("", "--codec", action="store", choices=codecs)
 parser.add_option("", "--project", action="store")
 parser.add_option("", "--sequence", action="store")
@@ -28,7 +28,7 @@ parser.add_option("", "--onlyDump", action="store_true")
 
 options, args = parser.parse_args()
 
-for required_attr in ["nukeTemplatePath", "inputPath", "fps", "outputPath", "format", "codec"]:
+for required_attr in ["nukeTemplatePath", "inputPath", "fps", "outputPath", "resolution", "codec"]:
     if not getattr(options, required_attr):
         parser.error("No --%s specified." % required_attr)
 
@@ -68,23 +68,20 @@ input_date = nuke.toNode("input_date")
 input_date["message"].setValue(datetime.date.today().isoformat())
 
 output_format = nuke.toNode("output_format")
-try:
-    output_format["format"].setValue(options.format)
-except TypeError:
-    mobj = re.match(r"(\d+)x(\d+)", options.format)
-    if mobj:
-        width = int(mobj.group(1))
-        height = int(mobj.group(2))
-        # given a resolution, find a matching format
-        for f in nuke.formats():
-            if f.width() == width and f.height() == height:
-                # found it!
-                output_format["format"].setValue(f)
-                break
-        else:
-            parser.error("can't find matching format for " + options.format)
+mobj = re.match(r"(\d+)x(\d+)", options.resolution)
+if mobj:
+    width = int(mobj.group(1))
+    height = int(mobj.group(2))
+    # given a resolution, find a matching format
+    for f in nuke.formats():
+        if f.width() == width and f.height() == height:
+            # found it!
+            output_format["format"].setValue(f)
+            break
     else:
-        parser.error("can't parse format: " + options.format)
+        parser.error("can't find matching resolution for " + options.resolution)
+else:
+    parser.error("can't parse resolution: " + options.resolution)
     
 output_movie = nuke.toNode("output_movie")
 output_movie["file"].fromUserText(os.path.abspath(options.outputPath))
