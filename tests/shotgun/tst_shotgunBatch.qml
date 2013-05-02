@@ -100,7 +100,7 @@ TestCase {
         update.run(batchPublishEvent, {});
         updateSpy.wait(5000);
         
-        verify(batchPublishEvent.data);
+        verify(batchPublishEvent.requests);
         compare(batchPublishEvent.requests[0].data.code, findPublishEvent.details[0].entity.code + "A");
         compare(batchPublishEvent.requests[1].data.code, "test");
     }
