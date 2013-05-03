@@ -13,13 +13,14 @@ Node {
         Param { name: "shotgunField" }
     ]
     
-    CookOperation.onCook: {
-        for (index = 0; index < entity.count; index++) {
+    ReleaseOperation.onCook: {
+        count = entity.count;
+        for (index = 0; index < count; index++) {
             details[index].data = {};
             details[index].data[shotgunField] = {"type": entity.details[index].entity.type,
                                                  "id": entity.details[index].entity.id};
         }
         detailsChanged();
-        CookOperation.cookFinished();
+        ReleaseOperation.cookFinished();
     }
 }

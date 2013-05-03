@@ -190,10 +190,10 @@ void Pug::continueLoading() {
 void Pug::onWarnings(const QList<QQmlError> &warnings)
 {
     foreach (const QQmlError err, warnings) {
-        PugItem *item = qobject_cast<PugItem *>(err.object());
-        if (item)
-            item->warning() << err;
-        else
+//        PugItem *item = qobject_cast<PugItem *>(err.object());
+//        if (item)
+//            item->warning() << err;
+//        else
             warning() << err;
     }
 }

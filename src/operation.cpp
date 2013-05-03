@@ -9,8 +9,6 @@ OperationAttached::OperationAttached(QObject *parent) :
     m_operation(),
     m_targets(OperationAttached::Inputs|OperationAttached::Children|OperationAttached::Self)
 {
-    setLog(new Log(this));
-
     connect(this, &OperationAttached::prepareFinished, this, &OperationAttached::onPrepareFinished);
     connect(this, &OperationAttached::cookFinished, this, &OperationAttached::onCookFinished);
 }
@@ -56,6 +54,7 @@ Node* OperationAttached::node()
 void OperationAttached::reset()
 {
     log()->clear();
+    node()->log()->clear();
 }
 
 void OperationAttached::run()
@@ -67,12 +66,10 @@ void OperationAttached::run()
 
     if (m_prepareCount > 0) {
         info() << "Preparing" << node() << "with" << context();
-        node()->setLog(log());
         node()->setContext(context());
         emit prepare();
     } else if (m_cookCount > 0) {
         info() << "Cooking" << node() << "with" << context();
-        node()->setLog(log());
         node()->setContext(context());
         emit cook();
     } else {
@@ -87,10 +84,9 @@ void OperationAttached::onPrepareFinished()
     trace() << node() << ".onPrepareFinished() [" << m_prepareCount << "]";
     if (m_prepareCount == 0) {
         Q_ASSERT(status() == OperationAttached::Running);
-        if (log()->maxLevel() < Log::Error) {
+        if (log()->maxLevel() < Log::Error && node()->log()->maxLevel() < Log::Error) {
             if (m_cookCount > 0) {
                 info() << "Cooking" << node() << "with" << context();
-                node()->setLog(log());
                 node()->setContext(context());
                 emit cook();
                 return;
@@ -112,14 +108,13 @@ void OperationAttached::onCookFinished()
     if (m_cookCount == 0) {
         Q_ASSERT(status() == OperationAttached::Running);
 
-        if (log()->maxLevel() < Log::Error)
+        if (log()->maxLevel() < Log::Error && node()->log()->maxLevel() < Log::Error)
             setStatus(OperationAttached::Finished);
         else
             setStatus(OperationAttached::Error);
 
         info() << "Cooked" << node() << "with status" << status() << "details" << QJsonDocument::fromVariant(node()->details().toVariant()).toJson();
 
-        node()->setLog(0);
         continueRunning();
     }
 }
@@ -528,6 +523,7 @@ void OperationAttached::dispatchChildren()
         break;
 
     case OperationAttached::Error:
+        setStatus(OperationAttached::Error);
         emit finished(this);
         break;
 

@@ -10,11 +10,12 @@ Node {
         Param { name: "value" }
     ]
     
-    CookOperation.onCook: {
+    ReleaseOperation.onCook: {
+        index = 0;
         count = 1;
         details[0].data = {};
         details[0].data[shotgunField] = value;
         detailsChanged();
-        CookOperation.cookFinished();
+        ReleaseOperation.cookFinished();
     }
 }

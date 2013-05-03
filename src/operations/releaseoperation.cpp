@@ -128,7 +128,7 @@ int ReleaseOperationAttached::findLastVersion(const QVariantMap context) const
         for (int index = 0; index < versionBranch->details().property("length").toInt(); index++) {
             QVariantMap versionContext = Node::mergeContexts(context,
                     versionBranch->details().property(index).property("context").toVariant().toMap());
-            QVariant version = versionField->get(versionContext);
+            QVariant version = versionField->value(versionContext);
             if (version.isValid() && version.canConvert<int>() && version.toInt() > lastVersion) {
                 lastVersion = version.toInt();
             }

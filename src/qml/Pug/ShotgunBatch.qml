@@ -6,17 +6,18 @@ Node {
     
     signal __batchFinished(var results)
     signal __batchError()
-    
-    property var __context;
-    property var __reply;
+    property var reply
     
     ReleaseOperation.onCook: {
         addTrace("ReleaseOperation.onCook(" + JSON.stringify(context) + ")");
-        __context = context;
-        var reply = Shotgun.batch(requests);
-        __reply = reply;
-        reply.finished.connect(__batchFinished);
-        reply.error.connect(__batchError);
+        __reply = Shotgun.batch(requests);
+        if (__reply) {
+            __reply.finished.connect(__batchFinished);
+            __reply.error.connect(__batchError);
+        } else {
+            addError("Shotgun.batch failed");
+            ReleaseOperation.cookFinished();
+        }
     }
     
     on__BatchFinished: {
@@ -24,7 +25,7 @@ Node {
 
         count = results.length;
         for (index = 0; index < results.length; index++) {
-            details[index].context = __context;
+            details[index].context = context;
             if (requests[index].request_type == "delete") {
                 details[index].result = results[index];   
             } else {

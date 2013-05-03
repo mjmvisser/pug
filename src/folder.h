@@ -28,5 +28,6 @@ private:
     ReleaseOperationAttached *releaseOperationAttached();
     FileOpQueue* m_queue;
 };
+Q_DECLARE_METATYPE(Folder*) // makes available to QVariant
 
 #endif // BRANCH_H

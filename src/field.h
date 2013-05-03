@@ -46,8 +46,8 @@ public:
     void setFormatSpec(const QString);
 
     Q_INVOKABLE const QVariant parse(const QString) const;
-    Q_INVOKABLE const QVariant get(const QVariantMap) const;
     Q_INVOKABLE const QString format(const QVariant) const;
+    Q_INVOKABLE const QVariant value(const QVariantMap) const;
 
     static const QStringList fieldNames(const QString pattern);
 

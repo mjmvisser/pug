@@ -54,6 +54,8 @@ private:
     QString m_pattern;
     bool m_exactMatchFlag;
 };
+Q_DECLARE_METATYPE(Branch*) // makes available to QVariant
+
 //
 //inline QDebug operator<<(QDebug dbg, const Branch *branch)
 //{

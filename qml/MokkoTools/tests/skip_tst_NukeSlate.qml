@@ -3,7 +3,7 @@ import Pug 1.0
 import MokkoTools 1.0
 
 TestCase {
-    property string testSequencePath: Qt.resolvedUrl("data/testSequence.{FRAME}.exr").replace("file://", "")
+    property string testSequencePath: Qt.resolvedUrl("data/images/testSequence.{FRAME}.exr").replace("file://", "")
     property string testNukeTemplatePath: Qt.resolvedUrl("data/slate.nk").replace("file://", "")
     
     Root {

@@ -22,7 +22,7 @@
 
 PugItem::PugItem(QObject *parent) :
     QObject(parent),
-    m_log(),
+    m_log(new Log(this)),
     m_logLevel(Log::Invalid)
 {
 }
@@ -241,11 +241,6 @@ void PugItem::addWarning(const QString message) const
 void PugItem::addError(const QString message) const
 {
     error() << message.toUtf8().constData();
-}
-
-QObject *PugItem::sender()
-{
-    return QObject::sender();
 }
 
 uint qHash(const QFileInfo &fileInfo)

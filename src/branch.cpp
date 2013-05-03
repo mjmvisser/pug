@@ -249,13 +249,13 @@ const QString Branch::map(const QVariant context) const
     //trace() << ".map(" << context << ")";
 
     if (!context.isValid()) {
-        error() << "Can't map" << m_pattern << "with invalid context";
+        warning() << "Can't map" << m_pattern << "with invalid context";
         return QString();
     } else if (!context.canConvert<QVariantMap>()) {
-        error() << "Can't map" << m_pattern << "with non-map context" << context;
+        warning() << "Can't map" << m_pattern << "with non-map context" << context;
         return QString();
     } else if (!fieldsComplete(context.toMap())) {
-        error() << "Can't map" << m_pattern << "with incomplete context" << context.toMap();
+        warning() << "Can't map" << m_pattern << "with incomplete context" << context.toMap();
         return QString();
     }
 

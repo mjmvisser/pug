@@ -4,8 +4,8 @@ import MokkoDepts 1.0
 import ShotgunEntities 1.0
 
 Root {
-    logLevel: Log.Info
-    
+    logLevel: Log.Error
+    id: root
     
     Component.onCompleted: {
         Shotgun.baseUrl = "https://mokko.shotgunstudio.com";
@@ -50,7 +50,6 @@ Root {
         Field { name: "SHOT"; env: "MOKKO_SHOT" },
         Field { name: "ASSET"; env: "MOKKO_ASSET_NAME" },
         Field { name: "ASSET_TYPE"; env: "MOKKO_ASSET_TYPE" },
-        Field { name: "DEPARTMENT"; env: "MOKKO_DEPARTMENT" },
         Field { name: "USER"; env: "USER" },
         Field { name: "VARIATION"; env: "MOKKO_VARIATION" },
         FrameSpecField { name: "FRAME" },
@@ -60,9 +59,10 @@ Root {
         Field { name: "RESOLUTION"; regexp: "[0-9]+x[0-9]+" }
     ]
     
-    ShotgunHumanUser {
+    FindShotgunHumanUser {
         id: sg_user
         name: "sg_user"
+        root: root
     }
 
     Folder {
@@ -77,34 +77,36 @@ Root {
     	pattern: "{PROJECT}/"
         root: prod
 
-        ShotgunProject {
+        FindShotgunProject {
             id: sg_project
             name: "sg_project"
+            project: project
         }
     }
     
-    // Transfer {
-        // id: transfer
-        // name: "transfer"
-        // root: project
+    // // Transfer {
+        // // id: transfer
+        // // name: "transfer"
+        // // root: project
+    // // }
+// 
+    // Delivery {
+        // id: delivery
+        // name: "delivery"
+        // root: project 
     // }
-
-    Delivery {
-        id: delivery
-        name: "delivery"
-        root: project 
-    }
-    
+//     
     Folder {
         id: sequence
         name: "sequence"
     	pattern: "shots/{SEQUENCE}/"
     	root: project
 
-        ShotgunSequence {
+        FindShotgunSequence {
             id: sg_sequence
             name: "sg_sequence"
-            project: sg_project
+            sg_project: sg_project
+            sequence: sequence
         }
     }
     
@@ -114,20 +116,21 @@ Root {
     	pattern: "{SHOT}/"
     	root: sequence
 
-        ShotgunShot {
+        FindShotgunShot {
             id: sg_shot
             name: "sg_shot"
-            project: sg_project
-            sequence: sg_sequence
+            sg_project: sg_project
+            sg_sequence: sg_sequence
+            shot: shot
         }
     }
-    
-    // Footage {
-        // id: footage
-        // name: "footage"
-        // root: shot
-    // }
-    
+//     
+    // // Footage {
+        // // id: footage
+        // // name: "footage"
+        // // root: shot
+    // // }
+//     
     Plates {
         id: plate
         name: "plate"
@@ -139,17 +142,17 @@ Root {
         name: "tracking"
         root: shot
     }
-    
-    // Folder {
-        // id: asset
-        // name: "asset"
-        // pattern: "assets/{ASSET_TYPE}/{ASSET}/"
-        // root: project
-    // }
-    
-    // Modeling {
-        // id: model
-        // name: "model"
-        // root: asset
-    // }
+//     
+    // // Folder {
+        // // id: asset
+        // // name: "asset"
+        // // pattern: "assets/{ASSET_TYPE}/{ASSET}/"
+        // // root: project
+    // // }
+//     
+    // // Modeling {
+        // // id: model
+        // // name: "model"
+        // // root: asset
+    // // }
 }

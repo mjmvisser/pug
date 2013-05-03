@@ -544,8 +544,7 @@ void Node::setIndex(int index)
 {
     if (m_index != index) {
         m_index = index;
-        if (m_index >= 0 && m_index < m_count)
-            emit indexChanged(index);
+        emit indexChanged(index);
     }
 }
 
@@ -950,7 +949,7 @@ const QString Node::format(const QString pattern, const QVariant data) const
     if (data.isValid() && data.type() == QVariant::Map) {
         fields = data.toMap();
     } else {
-        error() << "invalid context data" << data;
+        warning() << "invalid context data" << data;
         return QString();
     }
 
@@ -972,15 +971,15 @@ const QString Node::format(const QString pattern, const QVariant data) const
         QString fieldName = match.captured(1);
         const Field *f = findField(fieldName);
         if (f) {
-            QVariant value = f->get(fields);
+            QVariant value = f->value(fields);
             if (value.isValid()) {
                 result += f->format(value);
             } else {
-                error() << ".format couldn't find value for field" << fieldName;
+                warning() << ".format couldn't find value for field" << fieldName;
                 return QString();
             }
         } else {
-            error() << ".format couldn't find field" << fieldName;
+            warning() << ".format couldn't find field" << fieldName;
             return QString();
         }
 
@@ -1002,13 +1001,13 @@ bool Node::fieldsComplete(const QString pattern, const QVariantMap context) cons
     foreach (const QString fieldName, Field::fieldNames(pattern)) {
         const Field *field = findField(fieldName);
         if (!field) {
-            debug() << "can't find field" << fieldName;
+            warning() << "can't find field" << fieldName;
             return false;
         }
 
-        QVariant value = field->get(context);
+        QVariant value = field->value(context);
         if (!value.isValid()) {
-            debug() << "field is not valid" << fieldName;
+            warning() << "field is not valid" << fieldName;
             return false;
         }
     }

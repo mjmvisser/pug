@@ -105,6 +105,10 @@ void Field::setValues(const QStringList values)
 
             m_values = values;
             emit valuesChanged(m_values);
+
+            // if it's a single value, it's also the new default value
+            if (values.length() == 1)
+                setDefaultValue(values[0]);
         }
     }
 }
@@ -171,7 +175,7 @@ const QVariant Field::parse(const QString s) const
     }
 }
 
-const QVariant Field::get(const QVariantMap context) const
+const QVariant Field::value(const QVariantMap context) const
 {
     QVariant value;
     if (context.contains(name())) {

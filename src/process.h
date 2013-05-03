@@ -84,5 +84,6 @@ private:
     QHash<QProcess *, QString> m_stdouts;
     QHash<QProcess *, QString> m_stderrs;
 };
+Q_DECLARE_METATYPE(Process*) // makes available to QVariant
 
 #endif // PROCESS_H

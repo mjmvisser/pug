@@ -5,6 +5,10 @@ ShotgunCreate {
     id: self
     entityType: "PublishEvent"
 
+    fields: [
+        Field { name: "DESCRIPTION" }
+    ]
+
     inputs: [
         Input { name: "sg_project" },
         Input { name: "sg_entity" },
@@ -60,21 +64,21 @@ ShotgunCreate {
         id: resolutionData
         name: "resolutionData"
         shotgunField: "sg_res"
-        value: "{RESOLUTION}"
+        value: self.format("{RESOLUTION}", file.details[index].context)
     }
 
     ShotgunDataFromValue {
         id: versionData
         name: "versionData"
         shotgunField: "sg_version"
-        value: "{VERSION}"
+        value: file.details[index].context[file.ReleaseOperation.versionBranch.versionField]
     }
     
     ShotgunDataFromValue {
         id: variationData
         name: "variationData"
         shotgunField: "sg_variation"
-        value: "{VARIATION}"
+        value: self.format("{VARIATION}", context)
     }
     
     ShotgunDataFromElement {
@@ -102,7 +106,7 @@ ShotgunCreate {
         id: descriptionData
         name: "descriptionData"
         shotgunField: "description"
-        value: "{DESCRIPTION}"
+        value: self.format("{DESCRIPTION}", context)
     }
     
     ShotgunThumbnail {
@@ -161,12 +165,5 @@ ShotgunCreate {
                descriptionData, imageData, filmstripData, createdByData, updatedByData]
     }
 
-    data: {    
-        try {
-            return [__projectFilter.details[0].data];            
-        } catch (e) {
-            addWarning(e);
-        }
-    }
+    data: __data.details[0].data            
 }
-

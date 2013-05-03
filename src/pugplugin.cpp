@@ -20,8 +20,6 @@
 #include "releaseoperation.h"
 #include "updateoperation.h"
 #include "shotgun.h"
-#include "shotgunentity.h"
-#include "shotgunfield.h"
 #include "fileopqueue.h"
 #include "util.h"
 #include "logger.h"
@@ -83,8 +81,6 @@ void PugPlugin::registerTypes(const char *uri)
     qmlRegisterType<UpdateOperation>(uri, 1, 0, "UpdateOperation");
     qmlRegisterSingletonType<Shotgun>(uri, 1, 0, "Shotgun", Shotgun_provider);
     qmlRegisterType<ShotgunReply>(uri, 1, 0, "ShotgunReply");
-    qmlRegisterType<ShotgunEntity>(uri, 1, 0, "ShotgunEntity");
-    qmlRegisterType<ShotgunField>(uri, 1, 0, "ShotgunField");
     qmlRegisterType<FileOpQueue>(uri, 1, 0, "FileOpQueue");
     qmlRegisterType<Log>(uri, 1, 0, "Log");
     qmlRegisterSingletonType<Console>(uri, 1, 0, "Console", Console_provider);

@@ -8,16 +8,19 @@ Node {
     
     signal __updateFinished(var result)
     signal __updateError()
-    
-    property var __context;
+    property var _reply
     
     ReleaseOperation.onCook: {
         addTrace("ReleaseOperation.onCook(" + JSON.stringify(context) + ")");
         index = 0;
-        __context = context;
-        var reply = Shotgun.update(entityType, entityId, data);
-        reply.finished.connect(__updateFinished);
-        reply.error.connect(__updateError);
+        __reply = Shotgun.update(entityType, entityId, data);
+        if (__reply) {
+            __reply.finished.connect(__updateFinished);
+            __reply.error.connect(__updateError);
+        } else {
+            addError("Shotgun.update failed");
+            ReleaseOperation.cookFinished();
+        }
     }
     
     on__UpdateFinished: {
@@ -25,7 +28,7 @@ Node {
 
         if (result) {
             count = 1;
-            details[0].context = __context; 
+            details[0].context = context; 
             details[0].entity = result;
         } else {
             count = 0;
@@ -37,7 +40,7 @@ Node {
     }
     
     on__UpdateError: {
-        addError(sender().errorString());
+        addError(__reply.errorString);
         ReleaseOperation.cookFinished();
     }
 }

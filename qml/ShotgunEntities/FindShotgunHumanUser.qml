@@ -13,7 +13,7 @@ ShotgunFind {
     property Root root
     
     UpdateOperation.onPrepare: {
-        filters = [["login", "is", root.formatFields("{USER}", context)]];
+        filters = [["login", "is", root.format("{USER}", context)]];
         UpdateOperation.prepareFinished(Operation.Finished);
     }
 }

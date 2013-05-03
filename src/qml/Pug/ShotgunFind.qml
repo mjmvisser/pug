@@ -13,16 +13,19 @@ Node {
     
     signal __findFinished(var results)
     signal __findError()
-    
-    property var __context;
+    property var __reply
     
     UpdateOperation.onCook: {
         addTrace("UpdateOperation.onCook(" + JSON.stringify(context) + ")");
         index = 0;
-        __context = context;
-        var reply = Shotgun.find(entityType, filters, fields, order, filterOperator, limit, retiredOnly, page);
-        reply.finished.connect(__findFinished);
-        reply.error.connect(__findError);
+        __reply = Shotgun.find(entityType, filters, fields, order, filterOperator, limit, retiredOnly, page);
+        if (__reply) {
+            __reply.finished.connect(__findFinished);
+            __reply.error.connect(__findError);
+        } else {
+            addError("Shotgun.create failed");
+            UpdateOperation.cookFinished();
+        }
     }
     
     on__FindFinished: {
@@ -30,7 +33,7 @@ Node {
 
         count = results.length;
         for (index = 0; index < results.length; index++) {
-            details[index].context = __context; 
+            details[index].context = context; 
             details[index].entity = results[index];
         }
         
@@ -40,7 +43,7 @@ Node {
     }
     
     on__FindError: {
-        addError(sender().errorString());
+        addError(__reply.errorString);
         UpdateOperation.cookFinished();
     }
 }

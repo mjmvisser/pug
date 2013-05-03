@@ -3,25 +3,26 @@ import ShotgunEntities 1.0
 import MokkoTools 1.0
 
 Folder {
-    pattern: "dept/plate/"
+    id: plates
+    pattern: "dept/{STEP}/"
     
     fields: [
-        Field { name: "DEPARTMENT"; values: "plate" },
+        Field { name: "STEP"; values: "plate" },
         Field { name: "EXT"; values: "dpx" }
     ]
 
-    ShotgunStep {
+    FindShotgunStep {
         id: sg_step
         name: "sg_step"
-        step: "plate"
+        step: plates
     }
 
-    LatestShotgunPublishEvent {
+    FindShotgunPublishEvent {
         id: sg_currentPlate
         name: "sg_currentPlate"
-        project: node("/project/sg_project")
-        link: node("/shot/sg_shot")
-        step: sg_step
+        sg_project: node("/project/sg_project")
+        sg_entity: node("/shot/sg_shot")
+        sg_step: sg_step
     }
         
 

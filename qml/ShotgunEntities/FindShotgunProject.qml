@@ -25,10 +25,6 @@ ShotgunFind {
     }
     
     filters: {
-        try {
-            return [__projectFilter.details[0].filter];            
-        } catch (e) {
-            addWarning(e);
-        }
+        return [__projectFilter.details[0].filter];            
     }
 }

@@ -353,12 +353,12 @@ void File::release_onCook()
                         releaseFile(srcPath, destPath, releaseOperationAttached()->mode());
                     }
                 } else {
-                    error() << "source is a sequence, but dest is not";
+                    error() << "source" << srcPattern.pattern() << "is a sequence, but dest" << destPattern.pattern() << "is not";
                     break;
                 }
             } else {
                 if (destPattern.isSequence()) {
-                    error() << "dest is a sequence, but source is not";
+                    error() << "dest" << destPattern.pattern() << "is a sequence, but source" << srcPattern.pattern() << "is not";
                     break;
                 } else {
                     const QString srcPath = srcPattern.path();
@@ -373,9 +373,9 @@ void File::release_onCook()
 
         if (log()->maxLevel() < Log::Error)
             m_queue->run();
+    } else {
+        emit releaseOperationAttached()->cookFinished();
     }
-
-    emit releaseOperationAttached()->cookFinished();
 }
 
 void File::releaseFile(const QString srcPath, const QString destPath, int mode) const

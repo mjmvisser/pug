@@ -247,4 +247,10 @@ PugTestCase {
             verify(Util.exists(framePath), framePath);
         }
     }
+    
+    function test_attachedInputs() {
+        for (var i = 0; i < releaseSeq.inputs.length; i++) {
+            verify(releaseSeq.inputs[i].nodes[0] != null || releaseSeq.inputs[i].name != "source");
+        }
+    }
 }

@@ -6,6 +6,10 @@ ShotgunCreate {
     id: self
     entityType: "Version"
 
+    fields: [
+        Field { name: "DESCRIPTION" }
+    ]
+
     inputs: [
         Input { name: "sg_project" },
         Input { name: "sg_entity" },
@@ -27,7 +31,7 @@ ShotgunCreate {
     property Node sg_entity: null
     property Node sg_step: null
     property Node sg_user: null
-    property Branch file: null
+    property File file: null
     property Node sg_publishEvent: null
 
     property string code
@@ -59,37 +63,35 @@ ShotgunCreate {
         id: descriptionData
         name: "descriptionData"
         shotgunField: "description"
-        value: "{DESCRIPTION}"
+        value: self.format("{DESCRIPTION}", context);
     }
 
     ShotgunDataFromValue {
         id: codeData
         name: "codeData"
         shotgunField: "code"
-        value: file.format(code, file.details[index].context)
+        value: self.format(code, file.details[index].context)
     }
 
-    property var __elementsView: Util.elementsView(file)    
-    
     ShotgunDataFromValue {
         id: firstFrameData
         name: "firstFrameData"
         shotgunField: "sg_first_frame"
-        value: __elementsView.element[index].frameStart() 
+        value: file.element[index].frameStart() 
     }
 
     ShotgunDataFromValue {
         id: lastFrameData
         name: "lastFrameData"
         shotgunField: "sg_last_frame"
-        value: __elementsView.element[index].frameEnd() 
+        value: file.element[index].frameEnd() 
     }
     
     ShotgunDataFromValue {
         id: pathData
         name: "pathData"
         shotgunField: "sg_path_to_file"
-        value: __elementsView.element[index].pattern()
+        value: file.element[index].pattern()
     }
 
     ShotgunThumbnail {
@@ -163,6 +165,7 @@ ShotgunCreate {
     }
     
     MergeShotgunData {
+        logLevel: Log.Info
         id: mergeData
         name: "mergeData"
         data: [projectData, entityData, stepData, descriptionData, 
@@ -170,11 +173,5 @@ ShotgunCreate {
                filmstripData, createdByData, updatedByData, userData]
     }
 
-    data: {    
-        try {
-            return [__data.details[0].data];            
-        } catch (e) {
-            addWarning(e);
-        }
-    }
+    data: __data.details[0].data;            
 }

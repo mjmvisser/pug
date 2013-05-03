@@ -63,6 +63,7 @@ private:
     LinkType m_linkType;
     FileOpQueue* m_queue;
 };
+Q_DECLARE_METATYPE(File*) // makes available to QVariant
 QML_DECLARE_TYPEINFO(File, QML_HAS_ATTACHED_PROPERTIES)
 
 #endif // FILE_H

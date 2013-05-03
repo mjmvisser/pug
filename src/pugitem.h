@@ -120,8 +120,6 @@ public:
     Q_INVOKABLE void addWarning(const QString message) const;
     Q_INVOKABLE void addError(const QString message) const;
 
-    Q_INVOKABLE QObject *sender();
-
 signals:
     void parentChanged(PugItem *parent);
     void nameChanged(const QString name);

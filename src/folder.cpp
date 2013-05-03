@@ -70,51 +70,62 @@ void Folder::release_onCook()
 {
     trace() << "ReleaseOperation.onCook()";
 
-    m_queue->setSudo(releaseOperationAttached()->sudo());
+    if (!releaseOperationAttached()->versionFieldName().isEmpty()) {
 
-    QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(context());
-
-    info() << "Release matched" << matches.keys() << "from" << pattern();
-
-    setCount(matches.size());
-
-    if (matches.size() > 0) {
-        int index = 0;
-        QMapIterator<QString, QSet<QFileInfo> > i(matches);
-        while (i.hasNext()) {
-            i.next();
-
-            setDetail(index, "element", "pattern", toScriptValue(i.key()));
-            QVariantMap elementContext = parse(i.key()).toMap();
-            setContext(index, mergeContexts(context(), elementContext));
-
-            Q_ASSERT(i.value().size() <= 1);
-
-            if (i.value().size() > 0) {
-                const QFileInfo info = i.value().toList().first();
-                setDetail(index, "timestamp", toScriptValue(info.lastModified()));
-            } else {
-                setDetail(index, "timestamp", QJSValue(QJSValue::NullValue));
-                m_queue->mkdir(i.key());
-            }
-
-            index++;
+        if (!context().contains(releaseOperationAttached()->versionFieldName())) {
+            error() << "context has no" << releaseOperationAttached()->versionFieldName();
+            emit releaseOperationAttached()->cookFinished();
+            return;
         }
-    }
 
-    m_queue->run();
+        m_queue->setSudo(releaseOperationAttached()->sudo());
+
+        QMap<QString, QSet<QFileInfo> > matches = listMatchingPatterns(context());
+
+        info() << "Release matched" << matches.keys() << "from" << pattern();
+
+        setCount(matches.size());
+
+        if (matches.size() > 0) {
+            int index = 0;
+            QMapIterator<QString, QSet<QFileInfo> > i(matches);
+            while (i.hasNext()) {
+                i.next();
+
+                setDetail(index, "element", "pattern", toScriptValue(i.key()));
+                QVariantMap elementContext = parse(i.key()).toMap();
+                setContext(index, mergeContexts(context(), elementContext));
+
+                Q_ASSERT(i.value().size() <= 1);
+
+                if (i.value().size() > 0) {
+                    const QFileInfo info = i.value().toList().first();
+                    setDetail(index, "timestamp", toScriptValue(info.lastModified()));
+                } else {
+                    setDetail(index, "timestamp", QJSValue(QJSValue::NullValue));
+                    m_queue->mkdir(i.key());
+                }
+
+                index++;
+            }
+        }
+
+        m_queue->run();
+    } else {
+        emit releaseOperationAttached()->cookFinished();
+    }
 }
 
 void Folder::onFileOpQueueFinished()
 {
     trace() << ".onFileOpQueueFinished()";
-    emit attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>()->cookFinished();
+    emit releaseOperationAttached()->cookFinished();
 }
 
 void Folder::onFileOpQueueError()
 {
     trace() << ".onFileOpQueueError()";
-    emit attachedPropertiesObject<ReleaseOperation, ReleaseOperationAttached>()->cookFinished();
+    emit releaseOperationAttached()->cookFinished();
 }
 
 UpdateOperationAttached *Folder::updateOperationAttached()

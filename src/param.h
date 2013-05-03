@@ -30,6 +30,7 @@ private:
     QString m_text;
     QString m_help;
 };
-//Q_DECLARE_METATYPE(Param*)
+
+Q_DECLARE_METATYPE(Param*)
 
 #endif // PARAM_H
